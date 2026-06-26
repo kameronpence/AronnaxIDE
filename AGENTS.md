@@ -1,5 +1,21 @@
 # Agent Instructions
 
+## Codex = the verifier
+
+On MiniIDE, **Claude Code writes the code; Codex (you) verifies it.** When invoked
+for review (typically `codex review --uncommitted --title "<task-id>: <title>"`),
+review the in-scope diff **adversarially** for bugs, correctness issues, race
+conditions, Swift 6 concurrency problems, resource leaks, weak error handling, and
+**slop** (dead code, copy-paste, misleading names, unhandled cases). Prefer a few
+high-confidence findings over a pile of nits; for each give severity, `file:line`,
+why it's wrong, and a concrete fix. **No API anywhere** — don't introduce
+API-key-based calls (you use ChatGPT; Claude uses Claude Max).
+
+The full create→verify loop, finding-triage tiers, and how findings become beads
+issues are in **`docs/WORKFLOW.md`**. Project design is in **`docs/PLAN.md`**.
+
+---
+
 This project uses **bd** (beads) for issue tracking. Run `bd prime` for full workflow context.
 
 > **Architecture in one line:** Issues live in a local Dolt database

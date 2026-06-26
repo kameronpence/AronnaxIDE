@@ -9,3 +9,4 @@
 {"id":"int-58f7f423","kind":"field_change","created_at":"2026-06-26T21:30:40.229886Z","actor":"Kameron Pence","issue_id":"IDE-48l.6","extra":{"field":"status","new_value":"in_progress","old_value":"open"}}
 {"id":"int-264d9cbc","kind":"field_change","created_at":"2026-06-26T21:31:10.61047Z","actor":"Kameron Pence","issue_id":"IDE-48l.6","extra":{"field":"status","new_value":"closed","old_value":"in_progress"}}
 {"id":"int-b15fe781","kind":"field_change","created_at":"2026-06-26T21:31:45.472983Z","actor":"Kameron Pence","issue_id":"IDE-48l","extra":{"field":"status","new_value":"closed","old_value":"in_progress"}}
+{"id":"int-5b051df7","kind":"field_change","created_at":"2026-06-26T21:38:14.3049Z","actor":"Kameron Pence","issue_id":"IDE-48l.4","extra":{"field":"status","new_value":"closed","old_value":"open"}}
