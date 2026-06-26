@@ -73,10 +73,11 @@ final class SSHManager {
         ]
     }
 
-    /// POSIX single-quote escaping so a token survives the remote shell as one
-    /// argument: wrap in single quotes and close/escape/reopen around any embedded
-    /// single quote (`'` → `'\''`).
-    private func shellQuote(_ token: String) -> String {
+    /// POSIX single-quote escaping so a token survives a shell as one argument:
+    /// wrap in single quotes and close/escape/reopen around any embedded single
+    /// quote (`'` → `'\''`). `static` and public so panes that assemble remote
+    /// command strings (e.g. a tmux session name) can quote arguments the same way.
+    static func shellEscaped(_ token: String) -> String {
         "'" + token.replacingOccurrences(of: "'", with: "'\\''") + "'"
     }
 
@@ -123,7 +124,7 @@ final class SSHManager {
     func run(_ remoteCommand: [String], on host: Host) async throws -> CommandResult {
         let remote = remoteCommand.isEmpty
             ? nil
-            : [remoteCommand.map(shellQuote).joined(separator: " ")]
+            : [remoteCommand.map(Self.shellEscaped).joined(separator: " ")]
         let args = sshArguments(for: host, interactive: false, remoteCommand: remote)
         return try await launch(arguments: args)
     }
@@ -140,6 +141,23 @@ final class SSHManager {
     func isReachable(_ host: Host) async -> Bool {
         (try? await run(["true"], on: host).ok) ?? false
     }
+
+    // MARK: - Interactive sessions
+
+    /// Argument vector to open an interactive PTY on `host` that runs `command`
+    /// inside the remote **login** shell. The login shell matters because tmux,
+    /// claude, and codex live in `~/.local/bin` / Homebrew, which a non-login SSH
+    /// shell does not have on its PATH. `exec` replaces the wrapper so the target
+    /// process is ssh's direct child (its exit drives `processTerminated`).
+    /// Used by the terminal and agent panes with SwiftTerm's `startProcess`.
+    func loginShellArguments(for host: Host, running command: String) -> [String] {
+        let remote = "exec zsh -lc \(Self.shellEscaped(command))"
+        return sshArguments(for: host, interactive: true, remoteCommand: [remote])
+    }
+
+    /// Path to the system ssh client, for callers that spawn it themselves
+    /// (e.g. SwiftTerm's `LocalProcessTerminalView.startProcess`).
+    var sshExecutable: String { sshPath }
 
     // MARK: - Connection lifecycle
 

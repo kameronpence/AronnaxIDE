@@ -16,9 +16,11 @@ struct Host: Identifiable, Codable, Hashable {
     var reach: HostReach
     var isHub: Bool          // true for the mini
 
-    static let placeholderMini = Host(
-        id: "mini", displayName: "Mac mini", sshAlias: "mini",
-        user: nil, reach: .direct, isHub: true
+    /// The hub: Kameron's Mac mini, reached directly over LAN via the `kepler`
+    /// alias in `~/.ssh/config` (HostName 10.63.1.233, User kepler).
+    static let kepler = Host(
+        id: "kepler", displayName: "Kepler (Mac mini)", sshAlias: "kepler",
+        user: "kepler", reach: .direct, isHub: true
     )
 }
 

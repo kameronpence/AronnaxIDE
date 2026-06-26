@@ -12,7 +12,7 @@ final class AppSettings: ObservableObject {
     @Published var primaryTmuxSession: String = "main"
 
     init() {
-        self.hosts = [Host.placeholderMini]
+        self.hosts = [Host.kepler]
         self.accounts = [
             GitHubAccount(id: "personal", displayName: "Personal",
                           sshHostAlias: "github.com", email: "kameronpence@gmail.com")
