@@ -1,0 +1,41 @@
+name: MiniIDE
+options:
+  bundleIdPrefix: com.kameronpence
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+settings:
+  base:
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "5.0"
+    DEVELOPMENT_LANGUAGE: en
+
+packages:
+  SwiftTerm:
+    url: https://github.com/migueldeicaza/SwiftTerm
+    from: "1.13.0"
+
+targets:
+  MiniIDE:
+    type: application
+    platform: macOS
+    sources:
+      - path: MiniIDE
+    dependencies:
+      - package: SwiftTerm
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.kameronpence.MiniIDE
+        PRODUCT_NAME: MiniIDE
+        GENERATE_INFOPLIST_FILE: "YES"
+        INFOPLIST_KEY_LSMinimumSystemVersion: "14.0"
+        INFOPLIST_KEY_NSHumanReadableCopyright: ""
+        # Personal tool, run locally: no App Sandbox (we shell out to /usr/bin/ssh)
+        # and no Hardened Runtime so WKWebView + Process work without extra setup.
+        ENABLE_HARDENED_RUNTIME: "NO"
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: "-"
+        SWIFT_VERSION: "5.0"
