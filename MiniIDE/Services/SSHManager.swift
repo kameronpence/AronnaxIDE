@@ -35,6 +35,12 @@ final class SSHManager {
     /// multiplexing).
     private let controlDir: URL
 
+    /// Last reconnect "generation" the master was reset for, per host id, so that
+    /// multiple panes reacting to one wake/network signal reset it only once
+    /// (a later pane must not close the master an earlier pane just rebuilt).
+    private var lastResetGeneration: [String: Int] = [:]
+    private let resetLock = NSLock()
+
     init() {
         let base = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
             .appendingPathComponent("miniide-cm", isDirectory: true)
@@ -175,6 +181,22 @@ final class SSHManager {
         process.standardError = FileHandle.nullDevice
         try? process.run()
         process.waitUntilExit()
+    }
+
+    /// Closes the shared master for `host` at most once per reconnect `generation`.
+    /// Panes pass the `WakeObserver` signal as the generation, so the first pane to
+    /// react drops the stale master and the rest reuse the one it rebuilds — no
+    /// pane tears down another's fresh master. Returns whether it reset this call.
+    @discardableResult
+    func resetMasterOnce(for host: Host, generation: Int) -> Bool {
+        resetLock.lock()
+        let alreadyReset = lastResetGeneration[host.id] == generation
+        if !alreadyReset { lastResetGeneration[host.id] = generation }
+        resetLock.unlock()
+
+        guard !alreadyReset else { return false }
+        closeMaster(for: host)
+        return true
     }
 
     // MARK: - Process plumbing

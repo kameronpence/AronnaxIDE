@@ -6,6 +6,7 @@
 *.xcworkspace/
 DerivedData/
 build/
+build-*/
 .build/
 *.xcuserstate
 xcuserdata/

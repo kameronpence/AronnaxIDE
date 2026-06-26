@@ -141,5 +141,7 @@ private struct StatusBar: View {
 }
 
 #Preview {
-    ContentView().environmentObject(AppSettings())
+    ContentView()
+        .environmentObject(AppSettings())
+        .environmentObject(WakeObserver())
 }
