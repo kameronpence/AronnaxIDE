@@ -73,6 +73,7 @@ struct ContentView: View {
             }
         }
         .navigationTitle("MiniIDE")
+        .preferredColorScheme(.light)   // keep the whole app light regardless of system appearance
     }
 
     private var workspace: some View {

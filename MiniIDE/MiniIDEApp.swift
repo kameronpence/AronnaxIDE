@@ -23,6 +23,7 @@ struct MiniIDEApp: App {
         Settings {
             SettingsView()
                 .environmentObject(settings)
+                .preferredColorScheme(.light)   // keep Settings light too
         }
     }
 }
