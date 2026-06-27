@@ -30,18 +30,6 @@ struct ComingSoon: View {
     }
 }
 
-struct VaultPane: View {
-    var body: some View {
-        ComingSoon(
-            title: "Obsidian Vault",
-            systemImage: "doc.text",
-            milestone: "M6",
-            detail: "Edit the mini-resident vault over SSH (SFTP), with live "
-                + "preview, wikilinks, and a watcher for agent edits."
-        )
-    }
-}
-
 struct BeadsPanel: View {
     var body: some View {
         ComingSoon(
