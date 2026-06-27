@@ -16,7 +16,7 @@ struct TerminalPane: NSViewRepresentable {
     func makeCoordinator() -> Coordinator { Coordinator() }
 
     func makeNSView(context: Context) -> LocalProcessTerminalView {
-        let view = LocalProcessTerminalView(frame: .zero)
+        let view = ClipboardTerminalView(frame: .zero)
         view.processDelegate = context.coordinator
         context.coordinator.start(view, host: settings.hub,
                                   session: settings.primaryTmuxSession,
