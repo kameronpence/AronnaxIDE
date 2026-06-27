@@ -30,18 +30,6 @@ struct ComingSoon: View {
     }
 }
 
-struct BrowserPane: View {
-    var body: some View {
-        ComingSoon(
-            title: "Browser",
-            systemImage: "globe",
-            milestone: "M4",
-            detail: "WKWebView + URL bar. Auto SSH port-forwards expose the mini's "
-                + "localhost dev servers so you can see what the agents build."
-        )
-    }
-}
-
 struct VaultPane: View {
     var body: some View {
         ComingSoon(
