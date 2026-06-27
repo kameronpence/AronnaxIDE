@@ -73,14 +73,16 @@ struct ContentView: View {
     }
 
     private var workspace: some View {
-        // The left surface stays the unconditional first child of one persistent
-        // HSplitView, so toggling the split only adds/removes the right pane and
-        // never tears down (and disconnects) the live left terminal/chat session.
+        // The left surface is the unconditional first child of one persistent
+        // HSplitView, so toggling the split keeps the live left session (only the
+        // right pane is added/removed). The close is deferred to the next runloop so
+        // the right pane isn't torn down mid-click — removing it synchronously inside
+        // the button action was freezing the split.
         HSplitView {
             WorkspaceSurface(tab: leftTab)
                 .frame(minWidth: 320, maxWidth: .infinity, maxHeight: .infinity)
             if let right = Binding($rightTab) {
-                SecondaryPane(tab: right, onClose: { rightTab = nil })
+                SecondaryPane(tab: right, onClose: { DispatchQueue.main.async { rightTab = nil } })
                     .frame(minWidth: 320, maxWidth: .infinity, maxHeight: .infinity)
             }
         }
