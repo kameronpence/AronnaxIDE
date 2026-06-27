@@ -120,14 +120,19 @@ private struct SidebarView: View {
 
 private struct StatusBar: View {
     @EnvironmentObject private var settings: AppSettings
+    @EnvironmentObject private var wakeObserver: WakeObserver
+    @StateObject private var monitor = ConnectionMonitor()
 
     var body: some View {
         HStack(spacing: 8) {
             Circle()
-                .fill(Color.secondary)
+                .fill(dotColor)
                 .frame(width: 8, height: 8)
-            Text("Disconnected")
+            Text(statusText)
                 .foregroundStyle(.secondary)
+            Button("Reconnect", action: reconnect)
+                .buttonStyle(.link)
+                .font(.caption)
             Spacer()
             if let hub = settings.hub {
                 Text("hub: \(hub.sshAlias)")
@@ -137,6 +142,37 @@ private struct StatusBar: View {
         .font(.caption)
         .padding(.horizontal, 12)
         .padding(.vertical, 5)
+        .onAppear { monitor.start(host: settings.hub) }
+        .onDisappear { monitor.stop() }
+    }
+
+    private var dotColor: Color {
+        switch monitor.status {
+        case .connected:    return .green
+        case .disconnected: return .red
+        case .checking:     return .yellow
+        }
+    }
+
+    private var statusText: String {
+        switch monitor.status {
+        case .connected:    return "Connected"
+        case .disconnected: return "Disconnected"
+        case .checking:     return "Connecting…"
+        }
+    }
+
+    private func reconnect() {
+        wakeObserver.triggerReconnect()
+        // Drop the (possibly stale) hub master directly so Reconnect works even on
+        // a tab with no reconnect-aware pane mounted to do it. resetMasterOnce is
+        // idempotent per signal, so this coordinates with any active pane rather
+        // than double-closing.
+        if let hub = settings.hub {
+            SSHManager.shared.resetMasterOnce(for: hub,
+                                              generation: wakeObserver.reconnectSignal)
+        }
+        monitor.recheck(host: settings.hub)
     }
 }
 
