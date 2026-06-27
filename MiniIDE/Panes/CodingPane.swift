@@ -9,7 +9,7 @@ import SwiftTerm
 /// Because each agent lives in its own persistent tmux session on the mini,
 /// switching layout (or a sleep/wake reconnect) just re-attaches — the agents and
 /// any work they're doing keep running.
-struct ChatPane: View {
+struct CodingPane: View {
     @State private var layout: AgentLayout = .claude
 
     var body: some View {
