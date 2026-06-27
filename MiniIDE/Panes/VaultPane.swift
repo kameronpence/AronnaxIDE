@@ -30,14 +30,17 @@ struct VaultPane: View {
             }
             .padding(.horizontal, 8).padding(.vertical, 6)
             Divider()
-            List(model.files, id: \.self, selection: Binding(
+            List(model.tree, children: \.children, selection: Binding(
                 get: { model.selected },
-                set: { if let path = $0 { model.select(path) } }
-            )) { path in
-                Text(model.displayName(path))
+                set: { id in
+                    // Folder ids are prefixed "dir:"; only file nodes open a note.
+                    if let id, !id.hasPrefix("dir:") { model.select(id) }
+                }
+            )) { node in
+                Label(node.name, systemImage: node.filePath != nil ? "doc.text" : "folder")
                     .font(.callout)
                     .lineLimit(1)
-                    .tag(path)
+                    .tag(node.id)
             }
             .listStyle(.sidebar)
         }
@@ -89,10 +92,20 @@ struct VaultPane: View {
     }
 }
 
+/// A node in the vault file tree: a folder (has `children`) or a markdown file
+/// (has `filePath`). `id` is the file path for files, `"dir:<rel path>"` for folders.
+struct VaultNode: Identifiable {
+    let id: String
+    let name: String
+    let filePath: String?
+    let children: [VaultNode]?
+}
+
 /// Loads/saves vault notes over `RemoteFS` and tracks the dirty state.
 @MainActor
 final class VaultModel: ObservableObject {
     @Published var files: [String] = []
+    @Published var tree: [VaultNode] = []
     @Published var selected: String?
     @Published var content: String = ""
     @Published var status: String?
@@ -119,12 +132,57 @@ final class VaultModel: ObservableObject {
         let vault = self.vault
         Task {
             do {
-                files = try await RemoteFS(host: host).listMarkdown(in: vault)
+                let listed = try await RemoteFS(host: host).listMarkdown(in: vault)
+                files = listed
+                tree = Self.buildTree(from: listed, vault: vault)
                 status = nil
             } catch {
                 status = "Couldn't list vault: \(error.localizedDescription)"
             }
         }
+    }
+
+    /// Builds a folder/file tree from the flat list of absolute file paths.
+    private static func buildTree(from files: [String], vault: String) -> [VaultNode] {
+        let prefix = vault.hasSuffix("/") ? vault : vault + "/"
+
+        final class Builder {
+            var children: [String: Builder] = [:]
+            var filePath: String?
+        }
+        let root = Builder()
+        for file in files {
+            let rel = file.hasPrefix(prefix) ? String(file.dropFirst(prefix.count)) : file
+            let parts = rel.split(separator: "/").map(String.init)
+            guard !parts.isEmpty else { continue }
+            var node = root
+            for (i, part) in parts.enumerated() {
+                let child = node.children[part] ?? Builder()
+                node.children[part] = child
+                if i == parts.count - 1 { child.filePath = file }
+                node = child
+            }
+        }
+
+        func convert(name: String, builder: Builder, relPath: String) -> VaultNode {
+            if let path = builder.filePath, builder.children.isEmpty {
+                return VaultNode(id: path, name: name, filePath: path, children: nil)
+            }
+            let kids = builder.children
+                .map { convert(name: $0.key, builder: $0.value, relPath: relPath + "/" + $0.key) }
+                .sorted(by: nodeOrder)
+            return VaultNode(id: "dir:" + relPath, name: name, filePath: nil, children: kids)
+        }
+        return root.children
+            .map { convert(name: $0.key, builder: $0.value, relPath: $0.key) }
+            .sorted(by: nodeOrder)
+    }
+
+    /// Folders before files, alphabetical within each.
+    private static func nodeOrder(_ lhs: VaultNode, _ rhs: VaultNode) -> Bool {
+        let lFolder = lhs.children != nil, rFolder = rhs.children != nil
+        if lFolder != rFolder { return lFolder }
+        return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
     }
 
     func select(_ path: String) {
