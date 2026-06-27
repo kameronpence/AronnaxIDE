@@ -11,6 +11,11 @@ struct MiniIDEApp: App {
                 .environmentObject(settings)
                 .environmentObject(wakeObserver)
                 .frame(minWidth: 1100, minHeight: 700)
+                .onAppear {
+                    // Re-establish port-forwards on the same reconnect signal the
+                    // panes use (wake / network change / manual Reconnect).
+                    PortForwardManager.shared.bind(to: wakeObserver)
+                }
         }
         .windowStyle(.titleBar)
         .windowToolbarStyle(.unified)

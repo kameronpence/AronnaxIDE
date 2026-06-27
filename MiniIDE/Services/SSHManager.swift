@@ -168,6 +168,37 @@ final class SSHManager {
     /// (e.g. SwiftTerm's `LocalProcessTerminalView.startProcess`).
     var sshExecutable: String { sshPath }
 
+    // MARK: - Port forwarding
+
+    /// Argument vector for a backgrounded **local port-forward**: binds `localPort`
+    /// on this Mac and tunnels it to `remoteHost:remotePort` as resolved from
+    /// `host` — so `localhost:remotePort` is the *mini's* localhost. `-N` runs no
+    /// remote command (forward only); the connection reuses the shared
+    /// ControlMaster and any ProxyJump. Spawn with `sshExecutable`; terminate the
+    /// process to drop the forward.
+    func portForwardArguments(for host: Host,
+                              localPort: Int,
+                              remoteHost: String = "localhost",
+                              remotePort: Int) -> [String] {
+        var args = sharedOptions(for: host)
+        if case let .proxyJump(via) = host.reach {
+            args += ["-J", via]
+        }
+        args += [
+            "-o", "BatchMode=yes",
+            // Exit (rather than log-and-linger) if the local bind fails, so a failed
+            // forward is detectable instead of masquerading as a live tunnel.
+            "-o", "ExitOnForwardFailure=yes",
+            "-N",
+            // Bind the local listener to loopback explicitly so a `GatewayPorts yes`
+            // in ~/.ssh/config can't expose the mini's dev server to the LAN.
+            "-L", "127.0.0.1:\(localPort):\(remoteHost):\(remotePort)",
+        ]
+        let target = host.user.map { "\($0)@\(host.sshAlias)" } ?? host.sshAlias
+        args.append(target)
+        return args
+    }
+
     // MARK: - Connection lifecycle
 
     /// Tears down the shared master connection for `host` (e.g. on quit or before

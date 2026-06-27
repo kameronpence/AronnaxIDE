@@ -26,13 +26,21 @@ targets:
       - path: MiniIDE
     dependencies:
       - package: SwiftTerm
+    info:
+      path: MiniIDE/Info.plist
+      properties:
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        NSHumanReadableCopyright: ""
+        # The Browser pane loads the mini's localhost dev servers over http. ATS
+        # blocks local http by default, so allow local networking — loopback /
+        # .local / link-local only, NOT arbitrary insecure loads.
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.kameronpence.MiniIDE
         PRODUCT_NAME: MiniIDE
-        GENERATE_INFOPLIST_FILE: "YES"
-        INFOPLIST_KEY_LSMinimumSystemVersion: "14.0"
-        INFOPLIST_KEY_NSHumanReadableCopyright: ""
         # Personal tool, run locally: no App Sandbox (we shell out to /usr/bin/ssh)
         # and no Hardened Runtime so WKWebView + Process work without extra setup.
         ENABLE_HARDENED_RUNTIME: "NO"
