@@ -1,21 +1,22 @@
 import SwiftUI
 import SwiftTerm
 
-/// Drives the CLI coding agents (Claude Code + Codex). A segmented switcher picks
-/// the active agent; the live terminal shows that agent's TUI attached to its tmux
-/// session on the hub, and you type prompts straight into it.
+/// Drives the CLI coding agents (Claude Code + Codex). The switcher picks Claude,
+/// Codex, or Both; the live terminal(s) show the agent TUI(s) attached to their
+/// tmux session(s) on the hub, and you type prompts straight into them. "Both"
+/// shows the two agents side by side, each attached to its own session.
 ///
 /// Because each agent lives in its own persistent tmux session on the mini,
-/// switching agents (or a sleep/wake reconnect) just re-attaches — the agents and
+/// switching layout (or a sleep/wake reconnect) just re-attaches — the agents and
 /// any work they're doing keep running.
 struct ChatPane: View {
-    @State private var selectedAgent: Agent = .claude
+    @State private var layout: AgentLayout = .claude
 
     var body: some View {
         VStack(spacing: 0) {
-            Picker("Agent", selection: $selectedAgent) {
-                ForEach(Agent.allCases) { agent in
-                    Text(agent.displayName).tag(agent)
+            Picker("Layout", selection: $layout) {
+                ForEach(AgentLayout.allCases) { option in
+                    Text(option.label).tag(option)
                 }
             }
             .pickerStyle(.segmented)
@@ -24,16 +25,66 @@ struct ChatPane: View {
 
             Divider()
 
-            AgentTerminalView(agent: selectedAgent)
+            content
+        }
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        switch layout {
+        case .claude:
+            AgentTerminalView(agent: .claude)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+        case .codex:
+            AgentTerminalView(agent: .codex)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        case .both:
+            HSplitView {
+                labeledAgent(.claude)
+                labeledAgent(.codex)
+            }
+        }
+    }
+
+    /// One agent column in the side-by-side layout: a small title over its terminal
+    /// so it's clear which agent is which.
+    private func labeledAgent(_ agent: Agent) -> some View {
+        VStack(spacing: 0) {
+            Text(agent.displayName)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+            Divider()
+            AgentTerminalView(agent: agent)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .frame(minWidth: 300, maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+/// How the Chat pane lays out the agents.
+enum AgentLayout: String, CaseIterable, Identifiable {
+    case claude
+    case codex
+    case both
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .claude: return "Claude Code"
+        case .codex:  return "Codex"
+        case .both:   return "Both"
         }
     }
 }
 
-/// A live terminal attached to the selected agent's persistent tmux session on the
-/// hub. Mirrors `TerminalPane`, but the attached session is chosen by `agent` and
-/// switching agents re-attaches to the other session (the previous one keeps
-/// running, detached).
+/// A live terminal attached to an agent's persistent tmux session on the hub.
+/// Mirrors `TerminalPane`, but the attached session is chosen by `agent`; changing
+/// `agent` re-attaches to the other session (the previous one keeps running,
+/// detached).
 private struct AgentTerminalView: NSViewRepresentable {
     let agent: Agent
     @EnvironmentObject private var settings: AppSettings
@@ -79,8 +130,8 @@ private struct AgentTerminalView: NSViewRepresentable {
                    reconnecting: false, generation: baselineSignal)
         }
 
-        /// Called from `updateNSView`; re-attaches when the user switches agents or
-        /// a wake/network reconnect signal advances.
+        /// Called from `updateNSView`; re-attaches when the agent changes or a
+        /// wake/network reconnect signal advances.
         func sync(view: LocalProcessTerminalView, host: Host?, agent: Agent,
                   workdir: String, signal: Int) {
             guard started else { return }
