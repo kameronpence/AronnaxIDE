@@ -30,18 +30,6 @@ struct ComingSoon: View {
     }
 }
 
-struct ChatPane: View {
-    var body: some View {
-        ComingSoon(
-            title: "Chat",
-            systemImage: "bubble.left.and.bubble.right",
-            milestone: "M3",
-            detail: "Drives Claude Code & Codex CLIs in tmux on the mini, plus "
-                + "claude.ai / chatgpt.com web chats. Subscription-only, no API."
-        )
-    }
-}
-
 struct BrowserPane: View {
     var body: some View {
         ComingSoon(
