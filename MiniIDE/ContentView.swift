@@ -3,6 +3,7 @@ import SwiftUI
 /// The surfaces available in the main workspace.
 enum WorkspaceTab: String, CaseIterable, Identifiable {
     case terminal = "Terminal"
+    case coding = "Coding"
     case chat = "Chat"
     case browser = "Browser"
     case vault = "Vault"
@@ -15,6 +16,7 @@ enum WorkspaceTab: String, CaseIterable, Identifiable {
     var systemImage: String {
         switch self {
         case .terminal: return "terminal"
+        case .coding:   return "chevron.left.forwardslash.chevron.right"
         case .chat:     return "bubble.left.and.bubble.right"
         case .browser:  return "globe"
         case .vault:    return "doc.text"
@@ -34,7 +36,8 @@ struct WorkspaceSurface: View {
     var body: some View {
         switch tab {
         case .terminal: TerminalPane()
-        case .chat:     ChatPane()
+        case .coding:   CodingPane()
+        case .chat:     WebChatPane()
         case .browser:  BrowserPane()
         case .vault:    VaultPane()
         case .beads:    BeadsPanel()
@@ -87,7 +90,7 @@ struct ContentView: View {
     /// close it if already open.
     private func toggleSplit() {
         if rightTab == nil {
-            rightTab = (leftTab == .chat) ? .terminal : .chat
+            rightTab = (leftTab == .terminal) ? .coding : .terminal
         } else {
             rightTab = nil
         }
