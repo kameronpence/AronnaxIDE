@@ -51,11 +51,36 @@ final class ClipboardTerminalView: LocalProcessTerminalView {
         super.viewDidMoveToWindow()
         if window == nil {
             removeScrollMonitor()
-        } else if scrollMonitor == nil {
-            scrollMonitor = NSEvent.addLocalMonitorForEvents(matching: .scrollWheel) { [weak self] event in
-                self?.handleScroll(event) ?? event
+        } else {
+            applySetupIfNeeded()
+            if scrollMonitor == nil {
+                scrollMonitor = NSEvent.addLocalMonitorForEvents(matching: .scrollWheel) { [weak self] event in
+                    self?.handleScroll(event) ?? event
+                }
             }
         }
+    }
+
+    private var configured = false
+    /// One-time setup once the view has a window:
+    /// - A light color scheme (light background, dark text). The plain shell honors
+    ///   this; full-screen TUIs like Claude/Codex paint their own colors and may stay
+    ///   dark unless their own theme is set to light.
+    /// - Disable mouse *reporting* to the app. SwiftTerm's `mouseDown` sends drags to
+    ///   the app (and skips local selection) whenever an app has mouse mode on — and
+    ///   under tmux that's most of the time, so drag-select only ever filled tmux's
+    ///   own buffer, never the system clipboard. With reporting off, drags become a
+    ///   *local* SwiftTerm selection that Cmd-C copies to the clipboard — for both
+    ///   Claude and Codex, even when the agent grabs the mouse. Scrolling still works
+    ///   because `handleScroll` forwards the wheel directly via `terminal.sendEvent`,
+    ///   which doesn't go through `allowMouseReporting`.
+    private func applySetupIfNeeded() {
+        guard !configured else { return }
+        configured = true
+        nativeBackgroundColor = NSColor(calibratedWhite: 0.99, alpha: 1)
+        nativeForegroundColor = NSColor(calibratedWhite: 0.15, alpha: 1)
+        caretColor = NSColor.systemBlue
+        allowMouseReporting = false
     }
 
     deinit {

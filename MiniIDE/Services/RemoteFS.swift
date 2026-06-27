@@ -1,0 +1,50 @@
+import Foundation
+
+enum RemoteFSError: Error, LocalizedError {
+    case command(String)
+
+    var errorDescription: String? {
+        switch self {
+        case .command(let why):
+            let trimmed = why.trimmingCharacters(in: .whitespacesAndNewlines)
+            return trimmed.isEmpty ? "Remote file operation failed." : trimmed
+        }
+    }
+}
+
+/// File access to a host's vault over the shared SSH connection (`ssh` + `find` /
+/// `cat`). Writes are atomic: content is streamed to a temp file in the same
+/// directory and then renamed over the target, so an agent reading the file never
+/// sees a half-written version.
+struct RemoteFS {
+    let host: Host
+
+    /// Absolute paths of every `*.md` file under `vaultPath`, sorted.
+    func listMarkdown(in vaultPath: String) async throws -> [String] {
+        let result = try await SSHManager.shared.run(
+            ["find", vaultPath, "-name", "*.md", "-type", "f"], on: host)
+        guard result.ok else { throw RemoteFSError.command(result.stderr) }
+        return result.stdout
+            .split(separator: "\n", omittingEmptySubsequences: true)
+            .map(String.init)
+            .sorted()
+    }
+
+    /// Reads the file at `path`.
+    func read(_ path: String) async throws -> String {
+        let result = try await SSHManager.shared.run(["cat", path], on: host)
+        guard result.ok else { throw RemoteFSError.command(result.stderr) }
+        return result.stdout
+    }
+
+    /// Atomically writes `content` to `path`: write a sibling temp file, then `mv`
+    /// it over the target (a rename within one directory is atomic).
+    func write(_ content: String, to path: String) async throws {
+        // Unique temp name so concurrent/overlapping saves can't clobber each other.
+        let tmp = path + ".miniide-\(UUID().uuidString).tmp"
+        let cmd = "cat > \(SSHManager.shellEscaped(tmp))"
+            + " && mv -f \(SSHManager.shellEscaped(tmp)) \(SSHManager.shellEscaped(path))"
+        let result = try await SSHManager.shared.runShell(cmd, input: content, on: host)
+        guard result.ok else { throw RemoteFSError.command(result.stderr) }
+    }
+}

@@ -4,7 +4,6 @@ import SwiftUI
 enum WorkspaceTab: String, CaseIterable, Identifiable {
     case terminal = "Terminal"
     case coding = "Coding"
-    case chat = "Chat"
     case browser = "Browser"
     case vault = "Vault"
     case beads = "Beads"
@@ -17,7 +16,6 @@ enum WorkspaceTab: String, CaseIterable, Identifiable {
         switch self {
         case .terminal: return "terminal"
         case .coding:   return "chevron.left.forwardslash.chevron.right"
-        case .chat:     return "bubble.left.and.bubble.right"
         case .browser:  return "globe"
         case .vault:    return "doc.text"
         case .beads:    return "point.3.connected.trianglepath.dotted"
@@ -32,12 +30,21 @@ enum WorkspaceTab: String, CaseIterable, Identifiable {
 struct WorkspaceSurface: View {
     let tab: WorkspaceTab
 
-    @ViewBuilder
     var body: some View {
+        surface
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .overlay(   // a thin frame so pane content (incl. the tmux status bar) reads as inset, not flush
+                Rectangle()
+                    .strokeBorder(Color(nsColor: .separatorColor), lineWidth: 1)
+            )
+            .padding(10)   // breathing room around each pane
+    }
+
+    @ViewBuilder
+    private var surface: some View {
         switch tab {
         case .terminal: TerminalPane()
         case .coding:   CodingPane()
-        case .chat:     WebChatPane()
         case .browser:  BrowserPane()
         case .vault:    VaultPane()
         case .beads:    BeadsPanel()
@@ -50,8 +57,9 @@ struct WorkspaceSurface: View {
 struct ContentView: View {
     @EnvironmentObject private var settings: AppSettings
     @State private var leftTab: WorkspaceTab = .terminal
-    /// `nil` = single pane; non-nil = a second pane shown to the right.
+    /// `nil` = single pane; non-nil = a second pane (right or bottom).
     @State private var rightTab: WorkspaceTab?
+    @State private var splitAxis: SplitAxis = .horizontal
 
     var body: some View {
         NavigationSplitView {
@@ -61,6 +69,7 @@ struct ContentView: View {
             VStack(spacing: 0) {
                 WorkspaceTabBar(selection: $leftTab,
                                 isSplit: rightTab != nil,
+                                splitAxis: splitAxis,
                                 onToggleSplit: toggleSplit)
                 Divider()
                 workspace
@@ -70,29 +79,35 @@ struct ContentView: View {
             }
         }
         .navigationTitle("MiniIDE")
+        .preferredColorScheme(.light)   // keep the whole app light regardless of system appearance
     }
 
     private var workspace: some View {
-        // The left surface stays the unconditional first child of one persistent
-        // HSplitView, so toggling the split only adds/removes the right pane and
-        // never tears down (and disconnects) the live left terminal/chat session.
-        HSplitView {
-            WorkspaceSurface(tab: leftTab)
-                .frame(minWidth: 320, maxWidth: .infinity, maxHeight: .infinity)
-            if let right = Binding($rightTab) {
-                SecondaryPane(tab: right, onClose: { rightTab = nil })
-                    .frame(minWidth: 320, maxWidth: .infinity, maxHeight: .infinity)
+        // Pure-SwiftUI split (see SplitContainer) — no NSSplitView, so closing the
+        // split no longer freezes. The left surface is always the primary pane and
+        // keeps its live session whether or not the split is open.
+        SplitContainer(
+            axis: splitAxis,
+            showsSecondary: rightTab != nil,
+            primary: { WorkspaceSurface(tab: leftTab) },
+            secondary: {
+                if let right = Binding($rightTab) {
+                    SecondaryPane(tab: right, onClose: { rightTab = nil })
+                }
             }
-        }
+        )
     }
 
-    /// Open the right pane (defaulting to a surface different from the left) or
-    /// close it if already open.
-    private func toggleSplit() {
-        if rightTab == nil {
-            rightTab = (leftTab == .terminal) ? .coding : .terminal
-        } else {
+    /// Toggle the second pane in the given orientation. Clicking the same orientation
+    /// again closes the split; clicking the other orientation switches it.
+    private func toggleSplit(_ axis: SplitAxis) {
+        if rightTab != nil && splitAxis == axis {
             rightTab = nil
+        } else {
+            splitAxis = axis
+            if rightTab == nil {
+                rightTab = (leftTab == .terminal) ? .coding : .terminal
+            }
         }
     }
 }
@@ -144,7 +159,8 @@ private struct SecondaryPane: View {
 private struct WorkspaceTabBar: View {
     @Binding var selection: WorkspaceTab
     let isSplit: Bool
-    let onToggleSplit: () -> Void
+    let splitAxis: SplitAxis
+    let onToggleSplit: (SplitAxis) -> Void
 
     var body: some View {
         HStack(spacing: 4) {
@@ -167,18 +183,24 @@ private struct WorkspaceTabBar: View {
                 .foregroundStyle(selection == tab ? Color.accentColor : .secondary)
             }
             Spacer()
-            Button(action: onToggleSplit) {
-                Image(systemName: isSplit ? "rectangle" : "rectangle.split.2x1")
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 5)
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(isSplit ? Color.accentColor : .secondary)
-            .help(isSplit ? "Close split view" : "Split view (open a second pane)")
+            splitButton(.horizontal, icon: "rectangle.split.2x1", label: "Split right")
+            splitButton(.vertical, icon: "rectangle.split.1x2", label: "Split bottom")
         }
         .font(.callout)
         .padding(.horizontal, 8)
         .padding(.vertical, 6)
+    }
+
+    private func splitButton(_ axis: SplitAxis, icon: String, label: String) -> some View {
+        let active = isSplit && splitAxis == axis
+        return Button(action: { onToggleSplit(axis) }) {
+            Image(systemName: icon)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 5)
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(active ? Color.accentColor : .secondary)
+        .help(active ? "Close split" : label)
     }
 }
 

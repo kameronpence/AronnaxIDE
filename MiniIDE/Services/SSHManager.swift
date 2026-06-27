@@ -140,10 +140,12 @@ final class SSHManager {
 
     /// Runs a raw shell command string on `host` (pipes, globs, redirection are
     /// honored). The caller owns quoting — use `run(_:on:)` for untrusted args.
+    /// `input`, if given, is written to the command's stdin and then closed — e.g.
+    /// for `cat > file` atomic writes.
     @discardableResult
-    func runShell(_ command: String, on host: Host) async throws -> CommandResult {
+    func runShell(_ command: String, input: String? = nil, on host: Host) async throws -> CommandResult {
         let args = sshArguments(for: host, interactive: false, remoteCommand: [command])
-        return try await launch(arguments: args)
+        return try await launch(arguments: args, input: input)
     }
 
     /// Lightweight reachability probe used by status/health views.
@@ -235,7 +237,7 @@ final class SSHManager {
 
     // MARK: - Process plumbing
 
-    private func launch(arguments: [String]) async throws -> CommandResult {
+    private func launch(arguments: [String], input: String? = nil) async throws -> CommandResult {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: sshPath)
         process.arguments = arguments
@@ -244,11 +246,26 @@ final class SSHManager {
         let errPipe = Pipe()
         process.standardOutput = outPipe
         process.standardError = errPipe
+        let inPipe: Pipe? = input != nil ? Pipe() : nil
+        if let inPipe { process.standardInput = inPipe }
 
         do {
             try process.run()
         } catch {
             throw SSHError.launchFailed(error.localizedDescription)
+        }
+
+        // Feed stdin (if any) off the calling thread, then close so the remote
+        // command sees EOF. stdout/stderr are drained concurrently below, so a large
+        // write can't deadlock against unread output.
+        if let inPipe, let input {
+            let handle = inPipe.fileHandleForWriting
+            DispatchQueue.global(qos: .userInitiated).async {
+                // `write(contentsOf:)` throws rather than raising an ObjC exception on
+                // a broken pipe (e.g. the remote command exits before reading stdin).
+                if !input.isEmpty { try? handle.write(contentsOf: Data(input.utf8)) }
+                try? handle.close()
+            }
         }
 
         return try await withTaskCancellationHandler {
