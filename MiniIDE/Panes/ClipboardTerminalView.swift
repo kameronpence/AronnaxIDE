@@ -51,11 +51,26 @@ final class ClipboardTerminalView: LocalProcessTerminalView {
         super.viewDidMoveToWindow()
         if window == nil {
             removeScrollMonitor()
-        } else if scrollMonitor == nil {
-            scrollMonitor = NSEvent.addLocalMonitorForEvents(matching: .scrollWheel) { [weak self] event in
-                self?.handleScroll(event) ?? event
+        } else {
+            applyLightThemeIfNeeded()
+            if scrollMonitor == nil {
+                scrollMonitor = NSEvent.addLocalMonitorForEvents(matching: .scrollWheel) { [weak self] event in
+                    self?.handleScroll(event) ?? event
+                }
             }
         }
+    }
+
+    private var themed = false
+    /// A light color scheme (light background, dark text). The plain shell honors
+    /// this; full-screen TUIs like Claude/Codex paint their own colors and may stay
+    /// dark unless their own theme is set to light.
+    private func applyLightThemeIfNeeded() {
+        guard !themed else { return }
+        themed = true
+        nativeBackgroundColor = NSColor(calibratedWhite: 0.99, alpha: 1)
+        nativeForegroundColor = NSColor(calibratedWhite: 0.15, alpha: 1)
+        caretColor = NSColor.systemBlue
     }
 
     deinit {

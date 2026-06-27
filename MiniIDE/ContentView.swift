@@ -4,7 +4,6 @@ import SwiftUI
 enum WorkspaceTab: String, CaseIterable, Identifiable {
     case terminal = "Terminal"
     case coding = "Coding"
-    case chat = "Chat"
     case browser = "Browser"
     case vault = "Vault"
     case beads = "Beads"
@@ -17,7 +16,6 @@ enum WorkspaceTab: String, CaseIterable, Identifiable {
         switch self {
         case .terminal: return "terminal"
         case .coding:   return "chevron.left.forwardslash.chevron.right"
-        case .chat:     return "bubble.left.and.bubble.right"
         case .browser:  return "globe"
         case .vault:    return "doc.text"
         case .beads:    return "point.3.connected.trianglepath.dotted"
@@ -32,12 +30,17 @@ enum WorkspaceTab: String, CaseIterable, Identifiable {
 struct WorkspaceSurface: View {
     let tab: WorkspaceTab
 
-    @ViewBuilder
     var body: some View {
+        surface
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(10)   // breathing room so pane content isn't flush to the edges
+    }
+
+    @ViewBuilder
+    private var surface: some View {
         switch tab {
         case .terminal: TerminalPane()
         case .coding:   CodingPane()
-        case .chat:     WebChatPane()
         case .browser:  BrowserPane()
         case .vault:    VaultPane()
         case .beads:    BeadsPanel()
