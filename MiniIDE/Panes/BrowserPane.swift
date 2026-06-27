@@ -5,8 +5,12 @@ import WebKit
 /// over a `WKWebView`. Used to view what the agents build — manual URLs now, and
 /// the mini's forwarded localhost dev servers once the port-forward manager lands.
 struct BrowserPane: View {
+    @EnvironmentObject private var settings: AppSettings
     @StateObject private var model = BrowserModel()
+    @ObservedObject private var forwards = PortForwardManager.shared
     @State private var urlField = ""
+    @State private var showForwards = false
+    @State private var miniPort = ""
 
     var body: some View {
         VStack(spacing: 0) {
@@ -37,9 +41,64 @@ struct BrowserPane: View {
 
             Button("Go") { model.load(urlField) }
                 .disabled(urlField.trimmingCharacters(in: .whitespaces).isEmpty)
+
+            Button { showForwards.toggle() } label: { Image(systemName: "network") }
+                .help("Forward a mini localhost port")
+                .popover(isPresented: $showForwards, arrowEdge: .bottom) { forwardPanel }
         }
         .buttonStyle(.borderless)
         .padding(8)
+    }
+
+    /// Popover to forward a mini localhost port and list/open/close active forwards.
+    private var forwardPanel: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Mini dev servers").font(.headline)
+            HStack {
+                TextField("Mini port (e.g. 5173)", text: $miniPort)
+                    .textFieldStyle(.roundedBorder)
+                    .frame(width: 150)
+                    .onSubmit(openForward)
+                Button("Open", action: openForward)
+                    .disabled(Int(miniPort) == nil)
+            }
+            if let error = forwards.lastError {
+                Text(error).font(.caption).foregroundStyle(.red)
+            }
+            if !forwards.forwards.isEmpty {
+                Divider()
+                ForEach(forwards.forwards) { forward in
+                    HStack(spacing: 6) {
+                        Button("127.0.0.1:\(forward.localPort)") {
+                            model.load("http://127.0.0.1:\(forward.localPort)")
+                            showForwards = false
+                        }
+                        .buttonStyle(.link)
+                        Text("→ mini:\(forward.remotePort)")
+                            .font(.caption).foregroundStyle(.secondary)
+                        Spacer()
+                        Button { forwards.close(forward) } label: {
+                            Image(systemName: "xmark.circle.fill")
+                        }
+                        .buttonStyle(.plain).foregroundStyle(.secondary)
+                    }
+                }
+            }
+        }
+        .padding(14)
+        .frame(width: 280)
+    }
+
+    /// Forward the mini's localhost:<miniPort> to the same local port and load it.
+    private func openForward() {
+        guard let port = Int(miniPort), let hub = settings.hub else { return }
+        Task {
+            if await forwards.open(localPort: port, remotePort: port, on: hub) != nil {
+                model.load("http://127.0.0.1:\(port)")
+                miniPort = ""
+                showForwards = false
+            }
+        }
     }
 }
 
