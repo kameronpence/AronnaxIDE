@@ -33,12 +33,10 @@ enum Agent: String, CaseIterable, Identifiable {
     }
 }
 
-/// Drives the CLI agents over the hub's tmux: attach-or-create each agent's
-/// session in the vault, and forward chat input to it via `tmux send-keys`.
-///
-/// Stateless on purpose — the durable state is the tmux session on the hub. The
-/// Chat pane attaches to the session (via SwiftTerm) and routes typed prompts
-/// through `sendKeys`.
+/// Builds the remote command that attaches the Chat pane's terminal to an agent's
+/// persistent tmux session on the hub. The user types directly into that attached
+/// terminal, so there's nothing else to route — the durable state is the tmux
+/// session on the mini.
 enum AgentController {
 
     /// Remote command that attaches to `agent`'s tmux session — creating it, with
@@ -52,27 +50,5 @@ enum AgentController {
         let dir = SSHManager.shellEscaped(workdir)
         let cmd = SSHManager.shellEscaped(agent.launchCommand)
         return "tmux new-session -A -s \(session) -c \(dir) \(cmd)"
-    }
-
-    /// Sends one line of input to `agent`'s tmux session: the literal prompt text,
-    /// then a separate Enter to submit it.
-    ///
-    /// - `-l` keeps the text literal so characters like `;` or `$` are typed, not
-    ///   interpreted as tmux key names.
-    /// - The whole thing runs through a **login** shell (`zsh -lc`) so `tmux` is on
-    ///   PATH — a plain non-interactive ssh command shell would not find it
-    ///   (it lives in `~/.local/bin` / Homebrew), the same reason the terminal
-    ///   panes wrap their commands in a login shell.
-    static func sendKeys(_ text: String, to agent: Agent, on host: Host) async throws {
-        let session = SSHManager.shellEscaped(agent.tmuxSession)
-        let literal = SSHManager.shellEscaped(text)
-        let inner = "tmux send-keys -t \(session) -l \(literal)"
-            + " && tmux send-keys -t \(session) Enter"
-        let remote = "zsh -lc \(SSHManager.shellEscaped(inner))"
-        let result = try await SSHManager.shared.runShell(remote, on: host)
-        guard result.ok else {
-            let why = result.stderr.trimmingCharacters(in: .whitespacesAndNewlines)
-            throw SSHError.launchFailed(why.isEmpty ? "tmux send-keys failed" : why)
-        }
     }
 }

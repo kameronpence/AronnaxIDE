@@ -3,16 +3,13 @@ import SwiftTerm
 
 /// Drives the CLI coding agents (Claude Code + Codex). A segmented switcher picks
 /// the active agent; the live terminal shows that agent's TUI attached to its tmux
-/// session on the hub; the input bar sends typed prompts via `tmux send-keys`.
+/// session on the hub, and you type prompts straight into it.
 ///
 /// Because each agent lives in its own persistent tmux session on the mini,
 /// switching agents (or a sleep/wake reconnect) just re-attaches — the agents and
 /// any work they're doing keep running.
 struct ChatPane: View {
-    @EnvironmentObject private var settings: AppSettings
     @State private var selectedAgent: Agent = .claude
-    @State private var input: String = ""
-    @State private var sendError: String?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -29,56 +26,6 @@ struct ChatPane: View {
 
             AgentTerminalView(agent: selectedAgent)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-            Divider()
-
-            inputBar
-        }
-    }
-
-    private var inputBar: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            if let sendError {
-                Text(sendError)
-                    .font(.caption)
-                    .foregroundStyle(.red)
-                    .lineLimit(2)
-            }
-            HStack(spacing: 8) {
-                TextField("Message \(selectedAgent.displayName)…", text: $input)
-                    .textFieldStyle(.roundedBorder)
-                    .onSubmit(send)
-                Button("Send", action: send)
-                    .keyboardShortcut(.return, modifiers: [])
-                    .disabled(trimmedInput.isEmpty)
-            }
-        }
-        .padding(8)
-    }
-
-    private var trimmedInput: String {
-        input.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
-    private func send() {
-        let text = trimmedInput
-        guard !text.isEmpty else { return }
-        guard let host = settings.hub else {
-            sendError = "No hub host configured."
-            return
-        }
-        let agent = selectedAgent
-        input = ""
-        sendError = nil
-        Task {
-            do {
-                try await AgentController.sendKeys(text, to: agent, on: host)
-            } catch {
-                await MainActor.run {
-                    sendError = "Couldn't send to \(agent.displayName): "
-                        + error.localizedDescription
-                }
-            }
         }
     }
 }
