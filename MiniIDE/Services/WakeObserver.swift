@@ -73,6 +73,13 @@ final class WakeObserver: ObservableObject {
         }
     }
 
+    /// Manually request a reconnect — e.g. the status bar's Reconnect button.
+    /// Drives the same path as a wake / network-recovery event, so panes re-attach
+    /// their existing tmux sessions rather than restarting any work.
+    func triggerReconnect() {
+        bump()
+    }
+
     private func bump() {
         reconnectSignal &+= 1
     }

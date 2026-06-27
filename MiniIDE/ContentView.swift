@@ -25,30 +25,14 @@ enum WorkspaceTab: String, CaseIterable, Identifiable {
     }
 }
 
-struct ContentView: View {
-    @EnvironmentObject private var settings: AppSettings
-    @State private var selectedTab: WorkspaceTab = .terminal
-
-    var body: some View {
-        NavigationSplitView {
-            SidebarView()
-                .navigationSplitViewColumnWidth(min: 200, ideal: 240, max: 340)
-        } detail: {
-            VStack(spacing: 0) {
-                WorkspaceTabBar(selection: $selectedTab)
-                Divider()
-                workspaceContent
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                Divider()
-                StatusBar()
-            }
-        }
-        .navigationTitle("MiniIDE")
-    }
+/// Renders the surface for a workspace tab. Shared by the single-pane view and each
+/// column of a split, so a given tab always maps to the same pane.
+struct WorkspaceSurface: View {
+    let tab: WorkspaceTab
 
     @ViewBuilder
-    private var workspaceContent: some View {
-        switch selectedTab {
+    var body: some View {
+        switch tab {
         case .terminal: TerminalPane()
         case .chat:     ChatPane()
         case .browser:  BrowserPane()
@@ -60,8 +44,104 @@ struct ContentView: View {
     }
 }
 
+struct ContentView: View {
+    @EnvironmentObject private var settings: AppSettings
+    @State private var leftTab: WorkspaceTab = .terminal
+    /// `nil` = single pane; non-nil = a second pane shown to the right.
+    @State private var rightTab: WorkspaceTab?
+
+    var body: some View {
+        NavigationSplitView {
+            SidebarView()
+                .navigationSplitViewColumnWidth(min: 200, ideal: 240, max: 340)
+        } detail: {
+            VStack(spacing: 0) {
+                WorkspaceTabBar(selection: $leftTab,
+                                isSplit: rightTab != nil,
+                                onToggleSplit: toggleSplit)
+                Divider()
+                workspace
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                Divider()
+                StatusBar()
+            }
+        }
+        .navigationTitle("MiniIDE")
+    }
+
+    private var workspace: some View {
+        // The left surface stays the unconditional first child of one persistent
+        // HSplitView, so toggling the split only adds/removes the right pane and
+        // never tears down (and disconnects) the live left terminal/chat session.
+        HSplitView {
+            WorkspaceSurface(tab: leftTab)
+                .frame(minWidth: 320, maxWidth: .infinity, maxHeight: .infinity)
+            if let right = Binding($rightTab) {
+                SecondaryPane(tab: right, onClose: { rightTab = nil })
+                    .frame(minWidth: 320, maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+    }
+
+    /// Open the right pane (defaulting to a surface different from the left) or
+    /// close it if already open.
+    private func toggleSplit() {
+        if rightTab == nil {
+            rightTab = (leftTab == .chat) ? .terminal : .chat
+        } else {
+            rightTab = nil
+        }
+    }
+}
+
+/// The right column of a split workspace: its own surface picker + a close button
+/// above the surface.
+private struct SecondaryPane: View {
+    @Binding var tab: WorkspaceTab
+    let onClose: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 6) {
+                Menu {
+                    ForEach(WorkspaceTab.allCases) { t in
+                        Button {
+                            tab = t
+                        } label: {
+                            Label(t.rawValue, systemImage: t.systemImage)
+                        }
+                    }
+                } label: {
+                    Label(tab.rawValue, systemImage: tab.systemImage)
+                }
+                .menuStyle(.borderlessButton)
+                .fixedSize()
+
+                Spacer()
+
+                Button(action: onClose) {
+                    Image(systemName: "xmark")
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
+                .help("Close this pane")
+            }
+            .font(.callout)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
+
+            Divider()
+
+            WorkspaceSurface(tab: tab)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+}
+
 private struct WorkspaceTabBar: View {
     @Binding var selection: WorkspaceTab
+    let isSplit: Bool
+    let onToggleSplit: () -> Void
 
     var body: some View {
         HStack(spacing: 4) {
@@ -84,6 +164,14 @@ private struct WorkspaceTabBar: View {
                 .foregroundStyle(selection == tab ? Color.accentColor : .secondary)
             }
             Spacer()
+            Button(action: onToggleSplit) {
+                Image(systemName: isSplit ? "rectangle" : "rectangle.split.2x1")
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 5)
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(isSplit ? Color.accentColor : .secondary)
+            .help(isSplit ? "Close split view" : "Split view (open a second pane)")
         }
         .font(.callout)
         .padding(.horizontal, 8)
@@ -120,14 +208,19 @@ private struct SidebarView: View {
 
 private struct StatusBar: View {
     @EnvironmentObject private var settings: AppSettings
+    @EnvironmentObject private var wakeObserver: WakeObserver
+    @StateObject private var monitor = ConnectionMonitor()
 
     var body: some View {
         HStack(spacing: 8) {
             Circle()
-                .fill(Color.secondary)
+                .fill(dotColor)
                 .frame(width: 8, height: 8)
-            Text("Disconnected")
+            Text(statusText)
                 .foregroundStyle(.secondary)
+            Button("Reconnect", action: reconnect)
+                .buttonStyle(.link)
+                .font(.caption)
             Spacer()
             if let hub = settings.hub {
                 Text("hub: \(hub.sshAlias)")
@@ -137,6 +230,37 @@ private struct StatusBar: View {
         .font(.caption)
         .padding(.horizontal, 12)
         .padding(.vertical, 5)
+        .onAppear { monitor.start(host: settings.hub) }
+        .onDisappear { monitor.stop() }
+    }
+
+    private var dotColor: Color {
+        switch monitor.status {
+        case .connected:    return .green
+        case .disconnected: return .red
+        case .checking:     return .yellow
+        }
+    }
+
+    private var statusText: String {
+        switch monitor.status {
+        case .connected:    return "Connected"
+        case .disconnected: return "Disconnected"
+        case .checking:     return "Connecting…"
+        }
+    }
+
+    private func reconnect() {
+        wakeObserver.triggerReconnect()
+        // Drop the (possibly stale) hub master directly so Reconnect works even on
+        // a tab with no reconnect-aware pane mounted to do it. resetMasterOnce is
+        // idempotent per signal, so this coordinates with any active pane rather
+        // than double-closing.
+        if let hub = settings.hub {
+            SSHManager.shared.resetMasterOnce(for: hub,
+                                              generation: wakeObserver.reconnectSignal)
+        }
+        monitor.recheck(host: settings.hub)
     }
 }
 

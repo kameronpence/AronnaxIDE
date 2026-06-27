@@ -11,6 +11,11 @@ final class AppSettings: ObservableObject {
     /// tmux session name used for the primary shell on a host.
     @Published var primaryTmuxSession: String = "main"
 
+    /// Working directory on the hub where the CLI agents launch — the Obsidian
+    /// vault that is their shared "memory", so Claude Code and Codex read and write
+    /// the same notes. (Per-project launch dirs arrive with the M8 projects work.)
+    @Published var agentWorkdir: String = "/Users/kepler/Documents/Projects/AI_OS"
+
     /// Alias of the hub in `~/.ssh/config`.
     static let hubAlias = "kepler"
 

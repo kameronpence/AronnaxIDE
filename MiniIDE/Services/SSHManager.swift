@@ -74,6 +74,9 @@ final class SSHManager {
             "-o", "ControlMaster=auto",
             "-o", "ControlPath=\(controlPath(for: host))",
             "-o", "ControlPersist=300",
+            // Fail a stalled TCP/auth connect in ~10s instead of hanging on ssh's
+            // long default — so a down hub surfaces as "Disconnected" promptly.
+            "-o", "ConnectTimeout=10",
             "-o", "ServerAliveInterval=15",
             "-o", "ServerAliveCountMax=3",
         ]
