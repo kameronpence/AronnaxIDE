@@ -134,7 +134,8 @@ final class UsageService: ObservableObject {
         sleep 2
         tmux send-keys -t $SES Enter
         sleep \(firstWait)
-        \(secondRun)tmux capture-pane -t $SES -p -S -200
+        \(secondRun)
+        tmux capture-pane -t $SES -p -S -200
         tmux kill-session -t $SES 2>/dev/null || true
         """
     }
