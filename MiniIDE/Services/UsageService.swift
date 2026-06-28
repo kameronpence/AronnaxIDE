@@ -145,11 +145,9 @@ final class UsageService: ObservableObject {
     static func parseClaude(_ text: String) -> AgentUsage {
         var u = AgentUsage()
         u.sessionUsedPercent = match(#"Current session.*?(\d+)% used"#, text).flatMap { Int($0) }
-        u.sessionResets = match(#"Current session.*?Resets ([^\n]+)"#, text)?
-            .trimmingCharacters(in: .whitespaces)
+        u.sessionResets = normalizeReset(match(#"Current session.*?Resets ([^\n]+)"#, text))
         u.weeklyUsedPercent = match(#"Current week \(all models\).*?(\d+)% used"#, text).flatMap { Int($0) }
-        u.weeklyResets = match(#"Current week \(all models\).*?Resets ([^\n]+)"#, text)?
-            .trimmingCharacters(in: .whitespaces)
+        u.weeklyResets = normalizeReset(match(#"Current week \(all models\).*?Resets ([^\n]+)"#, text))
         return u
     }
 
@@ -160,14 +158,69 @@ final class UsageService: ObservableObject {
         if let left = match(#"5h limit:.*?(\d+)% left"#, text, last: true).flatMap({ Int($0) }) {
             u.sessionUsedPercent = 100 - left
         }
-        u.sessionResets = match(#"5h limit:.*?resets ([^)\n]+)"#, text, last: true)?
-            .trimmingCharacters(in: .whitespaces)
+        u.sessionResets = normalizeReset(match(#"5h limit:.*?resets ([^)\n]+)"#, text, last: true))
         if let left = match(#"Weekly limit:.*?(\d+)% left"#, text, last: true).flatMap({ Int($0) }) {
             u.weeklyUsedPercent = 100 - left
         }
-        u.weeklyResets = match(#"Weekly limit:.*?resets ([^)\n]+)"#, text, last: true)?
-            .trimmingCharacters(in: .whitespaces)
+        u.weeklyResets = normalizeReset(match(#"Weekly limit:.*?resets ([^)\n]+)"#, text, last: true))
         return u
+    }
+
+    /// Normalizes a raw reset string from either CLI into "MMM d · HH:mm" (24-hour,
+    /// always with a date). Handles "4:09am (America/New_York)", "Jul 3 at 12:59am",
+    /// "05:16", "17:28 on 2 Jul". A reset with no date (the 5h windows) gets the next
+    /// occurrence of that time (today or tomorrow). Falls back to the raw string.
+    static func normalizeReset(_ raw: String?) -> String? {
+        guard let raw, !raw.isEmpty else { return raw }
+        func grp(_ m: NSTextCheckingResult, _ i: Int) -> String? {
+            guard i < m.numberOfRanges, let r = Range(m.range(at: i), in: raw) else { return nil }
+            return String(raw[r])
+        }
+        guard let timeRe = try? NSRegularExpression(pattern: #"(\d{1,2}):(\d{2})\s*([AaPp][Mm])?"#),
+              let tm = timeRe.firstMatch(in: raw, range: NSRange(raw.startIndex..., in: raw)) else { return raw }
+        var hour = Int(grp(tm, 1) ?? "") ?? 0
+        let minute = Int(grp(tm, 2) ?? "") ?? 0
+        if let ap = grp(tm, 3)?.lowercased() {
+            if ap == "pm" && hour < 12 { hour += 12 }
+            if ap == "am" && hour == 12 { hour = 0 }
+        }
+        let months = ["jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
+                      "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12]
+        var month: Int?; var day: Int?
+        if let re = try? NSRegularExpression(pattern: #"([A-Za-z]{3,9})\s+(\d{1,2})"#),
+           let m = re.firstMatch(in: raw, range: NSRange(raw.startIndex..., in: raw)),
+           let nm = grp(m, 1).map({ String($0.lowercased().prefix(3)) }), let mo = months[nm] {
+            month = mo; day = Int(grp(m, 2) ?? "")
+        } else if let re = try? NSRegularExpression(pattern: #"(\d{1,2})\s+([A-Za-z]{3,9})"#),
+           let m = re.firstMatch(in: raw, range: NSRange(raw.startIndex..., in: raw)),
+           let nm = grp(m, 2).map({ String($0.lowercased().prefix(3)) }), let mo = months[nm] {
+            month = mo; day = Int(grp(m, 1) ?? "")
+        }
+        // Honor an explicit IANA timezone (Claude prints "(America/New_York)"); Codex
+        // omits one, so fall back to the device timezone.
+        var tz = TimeZone.current
+        if let re = try? NSRegularExpression(pattern: #"\(([A-Za-z]+/[A-Za-z_]+)\)"#),
+           let m = re.firstMatch(in: raw, range: NSRange(raw.startIndex..., in: raw)),
+           let name = grp(m, 1), let z = TimeZone(identifier: name) {
+            tz = z
+        }
+        var cal = Calendar.current
+        cal.timeZone = tz
+        let now = Date()
+        var comps = cal.dateComponents([.year, .month, .day], from: now)
+        comps.hour = hour; comps.minute = minute
+        if let month, let day { comps.month = month; comps.day = day }
+        guard var date = cal.date(from: comps) else { return raw }
+        if month == nil || day == nil {
+            if date < now { date = cal.date(byAdding: .day, value: 1, to: date) ?? date }
+        } else if date < now.addingTimeInterval(-86400) {
+            comps.year = (comps.year ?? 2026) + 1
+            date = cal.date(from: comps) ?? date
+        }
+        let f = DateFormatter()
+        f.timeZone = tz
+        f.dateFormat = "MMM d · HH:mm"
+        return f.string(from: date)
     }
 
     private static func match(_ pattern: String, _ text: String, group: Int = 1, last: Bool = false) -> String? {
