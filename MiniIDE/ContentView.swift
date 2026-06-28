@@ -63,8 +63,9 @@ struct ContentView: View {
                 Divider()
                 StatusBar()
             }
+            .background(Color("Cream"))   // warm brand chrome behind the tab bar, gaps, status bar
         }
-        .navigationTitle("MiniIDE")
+        .navigationTitle("AronnaxIDE")
         .preferredColorScheme(.light)   // keep the whole app light regardless of system appearance
     }
 }
