@@ -41,6 +41,7 @@ struct BeadsPanel: View {
     @StateObject private var model = BeadsModel()
     @State private var showingCreate = false
     @State private var selectedIssue: BdIssue?
+    @State private var viewMode: BeadsViewMode = .list
 
     var body: some View {
         VStack(spacing: 0) {
@@ -84,6 +85,14 @@ struct BeadsPanel: View {
             .pickerStyle(.menu)
             .fixedSize()
 
+            Picker("View", selection: $viewMode) {
+                Image(systemName: "list.bullet").tag(BeadsViewMode.list)
+                Image(systemName: "point.3.connected.trianglepath.dotted").tag(BeadsViewMode.graph)
+            }
+            .labelsHidden()
+            .pickerStyle(.segmented)
+            .fixedSize()
+
             Spacer()
 
             if model.isLoading { ProgressView().controlSize(.small) }
@@ -108,6 +117,13 @@ struct BeadsPanel: View {
                     system: "point.3.connected.trianglepath.dotted")
         } else if model.issues.isEmpty && !model.isLoading {
             message("No issues for this filter.", system: "checklist")
+        } else if viewMode == .graph {
+            if let source = MermaidGraph.source(from: model.issues) {
+                DependencyGraphView(source: source)
+            } else {
+                message("No dependencies among these issues — try the All filter.",
+                        system: "point.3.connected.trianglepath.dotted")
+            }
         } else {
             List(model.issues) { issue in
                 Button { selectedIssue = issue } label: { BdIssueRow(issue: issue) }

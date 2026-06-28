@@ -15,13 +15,29 @@ struct BdIssue: Identifiable, Decodable, Hashable {
     /// Present in `bd blocked --json` (absent in `bd list`): how many unmet
     /// dependencies are blocking this issue.
     let blockedByCount: Int?
+    /// Edges this issue participates in (present in `bd list --json` when it has any).
+    let dependencies: [BdDependency]?
 
     enum CodingKeys: String, CodingKey {
-        case id, title, description, status, priority, labels
+        case id, title, description, status, priority, labels, dependencies
         case issueType = "issue_type"
         case dependencyCount = "dependency_count"
         case dependentCount = "dependent_count"
         case blockedByCount = "blocked_by_count"
+    }
+}
+
+/// A dependency edge: `issueId` depends on `dependsOnId` (so `dependsOnId` blocks
+/// `issueId`).
+struct BdDependency: Decodable, Hashable {
+    let issueId: String
+    let dependsOnId: String
+    let type: String
+
+    enum CodingKeys: String, CodingKey {
+        case issueId = "issue_id"
+        case dependsOnId = "depends_on_id"
+        case type
     }
 }
 
