@@ -30,18 +30,6 @@ struct ComingSoon: View {
     }
 }
 
-struct BeadsPanel: View {
-    var body: some View {
-        ComingSoon(
-            title: "Beads",
-            systemImage: "point.3.connected.trianglepath.dotted",
-            milestone: "M7",
-            detail: "Issue list, ready/blocked status, and a dependency graph from "
-                + "the mini's bd database — shared with the agents."
-        )
-    }
-}
-
 struct LogViewer: View {
     var body: some View {
         ComingSoon(
