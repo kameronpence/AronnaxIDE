@@ -39,6 +39,8 @@ enum BeadsFilter: String, CaseIterable, Identifiable {
 struct BeadsPanel: View {
     @EnvironmentObject private var settings: AppSettings
     @StateObject private var model = BeadsModel()
+    @State private var showingCreate = false
+    @State private var selectedIssue: BdIssue?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -47,6 +49,20 @@ struct BeadsPanel: View {
             content
         }
         .onAppear { model.start(host: settings.hub, root: settings.agentWorkdir) }
+        .sheet(isPresented: $showingCreate) {
+            BdCreateSheet { title, type, priority, description in
+                model.create(title: title, type: type, priority: priority, description: description)
+            }
+        }
+        .sheet(item: $selectedIssue) { issue in
+            BdIssueDetailSheet(
+                issue: issue,
+                onUpdate: { fields in model.update(id: issue.id, fields: fields) },
+                onClose: { model.close(id: issue.id) },
+                onReopen: { model.reopen(id: issue.id) },
+                onAddNote: { text in model.addNote(id: issue.id, text: text) }
+            )
+        }
     }
 
     private var header: some View {
@@ -71,6 +87,10 @@ struct BeadsPanel: View {
             Spacer()
 
             if model.isLoading { ProgressView().controlSize(.small) }
+            Button { showingCreate = true } label: { Image(systemName: "plus") }
+                .buttonStyle(.borderless)
+                .disabled(model.selectedProjectPath == nil)
+                .help("New issue")
             Button { model.refresh() } label: { Image(systemName: "arrow.clockwise") }
                 .buttonStyle(.borderless)
                 .disabled(model.isLoading)
@@ -89,8 +109,12 @@ struct BeadsPanel: View {
         } else if model.issues.isEmpty && !model.isLoading {
             message("No issues for this filter.", system: "checklist")
         } else {
-            List(model.issues) { issue in BdIssueRow(issue: issue) }
-                .listStyle(.inset)
+            List(model.issues) { issue in
+                Button { selectedIssue = issue } label: { BdIssueRow(issue: issue) }
+                    .buttonStyle(.plain)
+                    .contentShape(Rectangle())
+            }
+            .listStyle(.inset)
         }
     }
 
@@ -155,6 +179,135 @@ private struct BdIssueRow: View {
     }
 }
 
+/// Sheet for creating a new bd issue.
+private struct BdCreateSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let onCreate: (_ title: String, _ type: String, _ priority: Int, _ description: String) -> Void
+
+    @State private var title = ""
+    @State private var type = "task"
+    @State private var priority = 2
+    @State private var description = ""
+
+    private let types = ["task", "bug", "feature", "epic", "chore"]
+
+    private var trimmedTitle: String {
+        title.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("New Issue").font(.headline)
+
+            TextField("Title", text: $title)
+                .textFieldStyle(.roundedBorder)
+
+            HStack(spacing: 16) {
+                Picker("Type", selection: $type) {
+                    ForEach(types, id: \.self) { Text($0.capitalized).tag($0) }
+                }
+                Picker("Priority", selection: $priority) {
+                    ForEach(0..<5) { Text("P\($0)").tag($0) }
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Description").font(.caption).foregroundStyle(.secondary)
+                TextEditor(text: $description)
+                    .frame(height: 90)
+                    .border(Color(nsColor: .separatorColor))
+            }
+
+            HStack {
+                Spacer()
+                Button("Cancel") { dismiss() }
+                Button("Create") {
+                    onCreate(trimmedTitle, type, priority,
+                             description.trimmingCharacters(in: .whitespacesAndNewlines))
+                    dismiss()
+                }
+                .keyboardShortcut(.defaultAction)
+                .disabled(trimmedTitle.isEmpty)
+            }
+        }
+        .padding(20)
+        .frame(width: 440)
+    }
+}
+
+/// Sheet showing an issue with quick status/priority actions.
+private struct BdIssueDetailSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let issue: BdIssue
+    let onUpdate: (_ fields: [String]) -> Void
+    let onClose: () -> Void
+    let onReopen: () -> Void
+    let onAddNote: (_ text: String) -> Void
+
+    @State private var note = ""
+
+    private var trimmedNote: String {
+        note.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Text(issue.id).font(.caption.monospaced()).foregroundStyle(.secondary)
+                Spacer()
+                Text(issue.status).font(.caption.weight(.semibold))
+                    .padding(.horizontal, 8).padding(.vertical, 3)
+                    .background(Color.accentColor.opacity(0.15), in: Capsule())
+            }
+
+            Text(issue.title).font(.headline)
+
+            HStack(spacing: 8) {
+                Text("P\(issue.priority)")
+                Text(issue.issueType)
+            }
+            .font(.caption).foregroundStyle(.secondary)
+
+            if let d = issue.description, !d.isEmpty {
+                ScrollView {
+                    Text(d).frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .frame(maxHeight: 160)
+            }
+
+            Divider()
+
+            HStack(spacing: 8) {
+                TextField("Add a note…", text: $note)
+                    .textFieldStyle(.roundedBorder)
+                Button("Add Note") { onAddNote(trimmedNote); dismiss() }
+                    .disabled(trimmedNote.isEmpty)
+            }
+
+            HStack(spacing: 10) {
+                if issue.status == "closed" {
+                    Button("Reopen") { onReopen(); dismiss() }
+                } else {
+                    if issue.status != "in_progress" {
+                        Button("Start") { onUpdate(["--status", "in_progress"]); dismiss() }
+                    }
+                    Button("Close") { onClose(); dismiss() }
+                }
+                Menu("Priority") {
+                    ForEach(0..<5) { p in
+                        Button("P\(p)") { onUpdate(["--priority", String(p)]); dismiss() }
+                    }
+                }
+                .fixedSize()
+                Spacer()
+                Button("Done") { dismiss() }.keyboardShortcut(.defaultAction)
+            }
+        }
+        .padding(20)
+        .frame(width: 460)
+    }
+}
+
 @MainActor
 final class BeadsModel: ObservableObject {
     @Published var projects: [BdProject] = []
@@ -211,6 +364,41 @@ final class BeadsModel: ObservableObject {
             guard token == reloadToken else { return }
             self.isLoading = false
         }
+    }
+
+    /// Run a bd mutation against the selected project, then refresh on success.
+    private func mutate(_ work: @escaping (BeadsController, String) async throws -> Void) {
+        guard let host, let path = selectedProjectPath else { return }
+        error = nil
+        Task {
+            do {
+                try await work(BeadsController(host: host), path)
+                reload()
+            } catch {
+                self.error = error.localizedDescription
+            }
+        }
+    }
+
+    func create(title: String, type: String, priority: Int, description: String) {
+        mutate { try await $0.create(in: $1, title: title, type: type,
+                                     priority: priority, description: description) }
+    }
+
+    func update(id: String, fields: [String]) {
+        mutate { try await $0.update(in: $1, id: id, fields: fields) }
+    }
+
+    func close(id: String) {
+        mutate { try await $0.close(in: $1, id: id) }
+    }
+
+    func reopen(id: String) {
+        mutate { try await $0.reopen(in: $1, id: id) }
+    }
+
+    func addNote(id: String, text: String) {
+        mutate { try await $0.addNote(in: $1, id: id, text: text) }
     }
 
     private func discover() async {

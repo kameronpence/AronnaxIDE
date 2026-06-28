@@ -66,11 +66,11 @@ struct BeadsController {
             .map { BdProject(path: $0) }
     }
 
-    /// Runs `bd <arguments> --json` in the project directory and decodes the issues.
-    /// The caller picks the query (e.g. `["list", "--all"]`, `["ready"]`,
-    /// `["blocked"]`, `["list", "--status", "closed"]`) so bd does the filtering.
-    func issues(in projectPath: String, arguments: [String]) async throws -> [BdIssue] {
-        let bd = (["bd"] + arguments + ["--json"]).map(SSHManager.shellEscaped).joined(separator: " ")
+    /// Runs `bd <arguments>` in the project directory, returning stdout. Args are
+    /// shell-escaped, so untrusted values (titles, descriptions) are safe.
+    @discardableResult
+    func runBd(_ arguments: [String], in projectPath: String) async throws -> String {
+        let bd = (["bd"] + arguments).map(SSHManager.shellEscaped).joined(separator: " ")
         let command = "cd \(SSHManager.shellEscaped(projectPath)) && \(Self.pathPrefix) \(bd)"
         let result = try await SSHManager.shared.runShell(command, on: host)
         guard result.ok else {
@@ -79,7 +79,14 @@ struct BeadsController {
                 ? result.stdout : result.stderr
             throw BeadsError.command(detail)
         }
-        let trimmed = result.stdout.trimmingCharacters(in: .whitespacesAndNewlines)
+        return result.stdout
+    }
+
+    /// Issues from a query (e.g. `["list", "--all"]`, `["ready"]`, `["blocked"]`,
+    /// `["list", "--status", "closed"]`) so bd does the filtering.
+    func issues(in projectPath: String, arguments: [String]) async throws -> [BdIssue] {
+        let output = try await runBd(arguments + ["--json"], in: projectPath)
+        let trimmed = output.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return [] }
         do {
             return try JSONDecoder().decode([BdIssue].self, from: Data(trimmed.utf8))
@@ -88,5 +95,37 @@ struct BeadsController {
             // error message) rather than a generic parse failure.
             throw BeadsError.command("Unexpected bd output: \(trimmed.prefix(200))")
         }
+    }
+
+    /// Creates a new issue.
+    func create(in projectPath: String, title: String, type: String,
+                priority: Int, description: String) async throws {
+        // `--flag=value` form so values starting with '-' aren't parsed as flags.
+        var args = ["create", "--title=\(title)", "--type=\(type)", "--priority=\(priority)"]
+        if !description.isEmpty { args.append("--description=\(description)") }
+        try await runBd(args, in: projectPath)
+    }
+
+    /// Updates an issue. The caller supplies bd update flags, e.g.
+    /// `["--status", "in_progress"]` or `["--priority", "1"]`.
+    func update(in projectPath: String, id: String, fields: [String]) async throws {
+        try await runBd(["update", id] + fields, in: projectPath)
+    }
+
+    /// Closes an issue.
+    func close(in projectPath: String, id: String) async throws {
+        try await runBd(["close", id], in: projectPath)
+    }
+
+    /// Reopens a closed issue (clears `closed_at` + emits a Reopened event — more
+    /// correct than `update --status open`).
+    func reopen(in projectPath: String, id: String) async throws {
+        try await runBd(["reopen", id], in: projectPath)
+    }
+
+    /// Appends a note to an issue (does not replace existing notes).
+    func addNote(in projectPath: String, id: String, text: String) async throws {
+        // `--` terminates flag parsing so a note starting with '-' isn't read as a flag.
+        try await runBd(["note", id, "--", text], in: projectPath)
     }
 }
