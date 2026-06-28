@@ -44,7 +44,6 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.kameronpence.MiniIDE
         PRODUCT_NAME: MiniIDE
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         # Personal tool, run locally: no App Sandbox (we shell out to /usr/bin/ssh)
         # and no Hardened Runtime so WKWebView + Process work without extra setup.
         ENABLE_HARDENED_RUNTIME: "NO"
