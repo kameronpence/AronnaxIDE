@@ -48,10 +48,11 @@ struct ContentView: View {
     @EnvironmentObject private var settings: AppSettings
     @StateObject private var workspace = WorkspaceModel()
     @StateObject private var usage = UsageService()
+    @StateObject private var projects = ProjectService()
 
     var body: some View {
         NavigationSplitView {
-            SidebarView(usage: usage)
+            SidebarView(usage: usage, projects: projects)
                 .navigationSplitViewColumnWidth(min: 200, ideal: 240, max: 340)
         } detail: {
             VStack(spacing: 0) {
@@ -111,6 +112,7 @@ private struct WorkspaceTabBar: View {
 private struct SidebarView: View {
     @EnvironmentObject private var settings: AppSettings
     @ObservedObject var usage: UsageService
+    @ObservedObject var projects: ProjectService
 
     var body: some View {
         VStack(spacing: 0) {
@@ -121,14 +123,35 @@ private struct SidebarView: View {
                               systemImage: host.isHub ? "server.rack" : "cloud")
                     }
                 }
-                Section("Projects") {
-                    if settings.projects.isEmpty {
-                        Text("No projects yet")
+                Section {
+                    if projects.projects.isEmpty {
+                        Text(projects.isLoading ? "Scanning…" : "No projects found")
                             .foregroundStyle(.secondary)
                             .font(.callout)
                     } else {
-                        ForEach(settings.projects) { project in
-                            Label(project.name, systemImage: "folder")
+                        ForEach(projects.projects) { project in
+                            VStack(alignment: .leading, spacing: 1) {
+                                Label(project.name, systemImage: "folder")
+                                if let branch = project.branch {
+                                    Text(branch + (project.owner.map { " · \($0)" } ?? ""))
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                        .padding(.leading, 24)
+                                }
+                            }
+                        }
+                    }
+                } header: {
+                    HStack {
+                        Text("Projects")
+                        Spacer()
+                        if projects.isLoading {
+                            ProgressView().controlSize(.mini)
+                        } else {
+                            Button { projects.refresh() } label: { Image(systemName: "arrow.clockwise") }
+                                .buttonStyle(.borderless)
+                                .controlSize(.small)
+                                .help("Rescan projects")
                         }
                     }
                 }
@@ -138,7 +161,10 @@ private struct SidebarView: View {
             Divider()
             SidebarUsageFooter(usage: usage)
         }
-        .onAppear { usage.start(host: settings.hub, workdir: settings.agentWorkdir) }
+        .onAppear {
+            usage.start(host: settings.hub, workdir: settings.agentWorkdir)
+            projects.start(host: settings.hub, root: settings.agentWorkdir)
+        }
     }
 }
 
