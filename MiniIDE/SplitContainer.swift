@@ -32,18 +32,26 @@ struct SplitContainer<Primary: View, Secondary: View>: View {
             let clamped = min(max(fraction, minFraction), maxFraction)
             let primaryExtent = showsSecondary ? usable * clamped : total
 
-            // AnyLayout swaps the H/V arrangement while keeping the SAME child views,
-            // so switching orientation doesn't tear down (and reconnect) the live panes.
-            let layout = isH ? AnyLayout(HStackLayout(spacing: 0))
-                             : AnyLayout(VStackLayout(spacing: 0))
-            layout {
-                primary()
-                    .frame(width: isH ? primaryExtent : nil,
-                           height: isH ? nil : primaryExtent)
-                if showsSecondary {
-                    divider(isHorizontal: isH, usable: usable)
-                    secondary()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+            // Plain SwiftUI stacks — deliberately NOT HSplitView/NSSplitView and NOT
+            // AnyLayout. Both of those froze the app when the secondary pane was
+            // removed on close; adding/removing a child of a plain HStack/VStack is
+            // the most basic SwiftUI operation and does not hang. (Switching axis
+            // re-creates the panes, but that's rare and tmux makes it a quick reattach.)
+            if isH {
+                HStack(spacing: 0) {
+                    primary().frame(width: primaryExtent)
+                    if showsSecondary {
+                        divider(isHorizontal: true, usable: usable)
+                        secondary().frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                }
+            } else {
+                VStack(spacing: 0) {
+                    primary().frame(height: primaryExtent)
+                    if showsSecondary {
+                        divider(isHorizontal: false, usable: usable)
+                        secondary().frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
                 }
             }
         }

@@ -121,18 +121,15 @@ private struct SecondaryPane: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 6) {
-                Menu {
+                // An obvious dropdown so it's clear THIS pane's content is selectable
+                // here (the top tab bar controls the other pane).
+                Picker("Pane content", selection: $tab) {
                     ForEach(WorkspaceTab.allCases) { t in
-                        Button {
-                            tab = t
-                        } label: {
-                            Label(t.rawValue, systemImage: t.systemImage)
-                        }
+                        Label(t.rawValue, systemImage: t.systemImage).tag(t)
                     }
-                } label: {
-                    Label(tab.rawValue, systemImage: tab.systemImage)
                 }
-                .menuStyle(.borderlessButton)
+                .pickerStyle(.menu)
+                .labelsHidden()
                 .fixedSize()
 
                 Spacer()
