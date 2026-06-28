@@ -117,11 +117,13 @@ final class UsageService: ObservableObject {
         tmux kill-session -t $SES 2>/dev/null || true
         tmux new-session -d -s $SES -x 220 -y 60
         tmux send-keys -t $SES \(cli) Enter
-        sleep 9
+        sleep 10
         tmux send-keys -t $SES Escape
         sleep 1
-        tmux send-keys -t $SES \(command) Enter
-        sleep 5
+        tmux send-keys -t $SES \(command)
+        sleep 2
+        tmux send-keys -t $SES Enter
+        sleep 6
         tmux capture-pane -t $SES -p -S -200
         tmux kill-session -t $SES 2>/dev/null || true
         """
