@@ -66,15 +66,6 @@ struct ContentView: View {
         }
         .navigationTitle("AronnaxIDE")
         .preferredColorScheme(.light)   // keep the whole app light regardless of system appearance
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                Image("Wordmark")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 16)
-                    .accessibilityLabel("AronnaxIDE")
-            }
-        }
     }
 }
 
