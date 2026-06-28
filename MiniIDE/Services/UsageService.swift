@@ -75,7 +75,8 @@ final class UsageService: ObservableObject {
         // Unique per probe so concurrent refreshes / multiple windows never kill each
         // other's throwaway session.
         let session = "miniide-usage-\(cli)-\(UUID().uuidString.prefix(8))"
-        let cmd = captureCommand(cli: cli, command: command, workdir: workdir, session: session)
+        let cmd = captureCommand(cli: cli, command: command, workdir: workdir,
+                                 session: session, repeatCommand: agent == .codex)
         return await withTimeout(seconds: 45) {
             guard let result = try? await SSHManager.shared.runShell(cmd, on: host) else { return nil }
             let text = result.stdout
@@ -103,9 +104,18 @@ final class UsageService: ObservableObject {
 
     /// The remote shell pipeline that opens the CLI, clears any startup prompt,
     /// runs the status command, and captures the rendered panel.
-    private static func captureCommand(cli: String, command: String,
-                                       workdir: String, session: String) -> String {
+    private static func captureCommand(cli: String, command: String, workdir: String,
+                                       session: String, repeatCommand: Bool) -> String {
         let wd = SSHManager.shellEscaped(workdir)
+        // Codex's first /status can show stale limits ("run /status again shortly"),
+        // so run it a second time for fresh numbers (shorter wait on the first pass).
+        let firstWait = repeatCommand ? 4 : 6
+        let secondRun = repeatCommand ? """
+        tmux send-keys -t $SES \(command)
+        sleep 2
+        tmux send-keys -t $SES Enter
+        sleep 6
+        """ : ""
         return """
         export PATH="$HOME/.local/bin:/opt/homebrew/bin:$PATH"
         cd \(wd) 2>/dev/null || true
@@ -123,8 +133,8 @@ final class UsageService: ObservableObject {
         tmux send-keys -t $SES \(command)
         sleep 2
         tmux send-keys -t $SES Enter
-        sleep 6
-        tmux capture-pane -t $SES -p -S -200
+        sleep \(firstWait)
+        \(secondRun)tmux capture-pane -t $SES -p -S -200
         tmux kill-session -t $SES 2>/dev/null || true
         """
     }
@@ -144,25 +154,27 @@ final class UsageService: ObservableObject {
 
     static func parseCodex(_ text: String) -> AgentUsage {
         var u = AgentUsage()
-        // Codex reports % *left* → normalize to % used.
-        if let left = match(#"5h limit:.*?(\d+)% left"#, text).flatMap({ Int($0) }) {
+        // Codex reports % *left* → normalize to % used. We run /status twice (the first
+        // can be stale), so both renders are in the capture — read the LAST one.
+        if let left = match(#"5h limit:.*?(\d+)% left"#, text, last: true).flatMap({ Int($0) }) {
             u.sessionUsedPercent = 100 - left
         }
-        u.sessionResets = match(#"5h limit:.*?resets ([^)\n]+)"#, text)?
+        u.sessionResets = match(#"5h limit:.*?resets ([^)\n]+)"#, text, last: true)?
             .trimmingCharacters(in: .whitespaces)
-        if let left = match(#"Weekly limit:.*?(\d+)% left"#, text).flatMap({ Int($0) }) {
+        if let left = match(#"Weekly limit:.*?(\d+)% left"#, text, last: true).flatMap({ Int($0) }) {
             u.weeklyUsedPercent = 100 - left
         }
-        u.weeklyResets = match(#"Weekly limit:.*?resets ([^)\n]+)"#, text)?
+        u.weeklyResets = match(#"Weekly limit:.*?resets ([^)\n]+)"#, text, last: true)?
             .trimmingCharacters(in: .whitespaces)
         return u
     }
 
-    private static func match(_ pattern: String, _ text: String, group: Int = 1) -> String? {
+    private static func match(_ pattern: String, _ text: String, group: Int = 1, last: Bool = false) -> String? {
         guard let re = try? NSRegularExpression(
             pattern: pattern, options: [.dotMatchesLineSeparators, .caseInsensitive]) else { return nil }
         let range = NSRange(text.startIndex..., in: text)
-        guard let m = re.firstMatch(in: text, range: range), m.numberOfRanges > group,
+        let all = re.matches(in: text, range: range)
+        guard let m = (last ? all.last : all.first), m.numberOfRanges > group,
               let r = Range(m.range(at: group), in: text) else { return nil }
         return String(text[r])
     }
@@ -175,38 +187,41 @@ struct SidebarUsageFooter: View {
     @ObservedObject var usage: UsageService
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 6) {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
                 Text("Usage")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                    .font(.headline)
+                    .foregroundStyle(.primary)
                 Spacer()
                 if usage.isRefreshing {
-                    ProgressView().controlSize(.mini)
+                    ProgressView().controlSize(.small)
                 } else {
-                    Button { usage.refresh() } label: { Image(systemName: "arrow.clockwise") }
-                        .buttonStyle(.borderless)
-                        .controlSize(.small)
-                        .help("Refresh usage")
+                    Button { usage.refresh() } label: {
+                        Image(systemName: "arrow.clockwise").font(.body)
+                    }
+                    .buttonStyle(.borderless)
+                    .help("Refresh usage")
                 }
             }
 
             agentBlock("Claude", usage.claude, usage.claudeUpdated)
             agentBlock("Codex", usage.codex, usage.codexUpdated)
         }
-        .padding(10)
+        .padding(12)
     }
 
     @ViewBuilder
     private func agentBlock(_ name: String, _ u: AgentUsage?, _ updated: Date?) -> some View {
-        VStack(alignment: .leading, spacing: 3) {
-            HStack(spacing: 4) {
-                Text(name).font(.caption.weight(.medium))
+        VStack(alignment: .leading, spacing: 7) {
+            HStack {
+                Text(name)
+                    .font(.callout.weight(.semibold))
+                    .foregroundStyle(.primary)
                 Spacer()
                 if let updated {
                     Text(updated.formatted(date: .omitted, time: .shortened))
-                        .font(.system(size: 9))
-                        .foregroundStyle(.tertiary)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
             }
             if let u, u.hasAny {
@@ -214,40 +229,45 @@ struct SidebarUsageFooter: View {
                 gauge("Week", u.weeklyUsedPercent, u.weeklyResets)
             } else {
                 Text(usage.isRefreshing ? "checking…" : "unavailable")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
             }
         }
     }
 
     @ViewBuilder
     private func gauge(_ label: String, _ usedPercent: Int?, _ resets: String?) -> some View {
-        VStack(alignment: .leading, spacing: 1) {
-            HStack(spacing: 4) {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
                 Text(label)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .frame(width: 30, alignment: .leading)
-                ProgressView(value: Double(usedPercent ?? 0), total: 100)
-                    .tint(barColor(usedPercent))
-                Text(usedPercent.map { "\($0)%" } ?? "—")
-                    .font(.caption2.monospacedDigit())
-                    .foregroundStyle(.secondary)
-                    .frame(width: 30, alignment: .trailing)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.primary)
+                Spacer()
+                Text(usedPercent.map { "\($0)% used" } ?? "—")
+                    .font(.subheadline.weight(.semibold).monospacedDigit())
+                    .foregroundStyle(.primary)
             }
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Color.secondary.opacity(0.25))
+                    Capsule()
+                        .fill(barColor(usedPercent))
+                        .frame(width: max(0, geo.size.width * CGFloat(usedPercent ?? 0) / 100))
+                }
+            }
+            .frame(height: 9)
             if let resets {
                 Text("resets \(resets)")
-                    .font(.system(size: 9))
-                    .foregroundStyle(.tertiary)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                     .lineLimit(1)
-                    .padding(.leading, 34)
             }
         }
     }
 
     private func barColor(_ usedPercent: Int?) -> Color {
         switch usedPercent ?? 0 {
-        case ..<70:  return .green
+        case ..<70:   return .green
         case 70..<90: return .yellow
         default:      return .red
         }
