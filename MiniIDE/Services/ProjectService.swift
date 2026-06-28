@@ -48,7 +48,7 @@ final class ProjectService: ObservableObject {
         }
     }
 
-    private static func discover(host: Host, root: String) async -> [DiscoveredProject]? {
+    static func discover(host: Host, root: String) async -> [DiscoveredProject]? {
         let dir = SSHManager.shellEscaped(root)
         let command = """
         find \(dir) -maxdepth 3 -name .git -type d 2>/dev/null | while IFS= read -r d; do

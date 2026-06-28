@@ -42,14 +42,3 @@ struct LogViewer: View {
     }
 }
 
-struct GitDeployPanel: View {
-    var body: some View {
-        ComingSoon(
-            title: "Git / Deploy",
-            systemImage: "arrow.triangle.branch",
-            milestone: "M10",
-            detail: "Per-project branch/state and the correct GitHub identity, with "
-                + "a mismatch warning before any push."
-        )
-    }
-}
