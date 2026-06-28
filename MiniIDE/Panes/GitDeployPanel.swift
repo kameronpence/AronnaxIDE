@@ -15,7 +15,13 @@ struct GitDeployPanel: View {
             Divider()
             content
         }
-        .onAppear { model.start(host: settings.hub, root: settings.agentWorkdir) }
+        .onAppear {
+            model.start(host: settings.hub)
+            model.selectedPath = settings.selectedProjectPath
+        }
+        .onChange(of: settings.selectedProjectPath) { _, new in
+            model.selectedPath = new
+        }
         .alert("Push to GitHub?", isPresented: $showPushConfirm) {
             Button("Cancel", role: .cancel) {}
             Button("Push") { model.push() }
@@ -37,12 +43,8 @@ struct GitDeployPanel: View {
 
     private var header: some View {
         HStack(spacing: 10) {
-            if !model.projects.isEmpty {
-                Picker("Project", selection: $model.selectedPath) {
-                    ForEach(model.projects) { p in Text(p.name).tag(p.path as String?) }
-                }
-                .labelsHidden()
-                .fixedSize()
+            if let name = settings.selectedProjectName {
+                Text(name).font(.callout.weight(.medium))
             }
             Spacer()
             if model.isLoading { ProgressView().controlSize(.small) }
@@ -56,10 +58,10 @@ struct GitDeployPanel: View {
     }
 
     @ViewBuilder private var content: some View {
-        if let error = model.error {
+        if model.selectedPath == nil {
+            message("Select a project in the sidebar.", system: "folder")
+        } else if let error = model.error {
             message(error, system: "exclamationmark.triangle")
-        } else if model.projects.isEmpty && !model.isLoading {
-            message("No git projects found.", system: "folder")
         } else if let status = model.status {
             statusView(status)
         } else {
@@ -203,7 +205,6 @@ struct GitDeployPanel: View {
 
 @MainActor
 final class GitPanelModel: ObservableObject {
-    @Published var projects: [DiscoveredProject] = []
     @Published var selectedPath: String? {
         didSet { if oldValue != selectedPath { status = nil; runs = []; actionMessage = nil; loadStatus() } }
     }
@@ -215,46 +216,17 @@ final class GitPanelModel: ObservableObject {
     @Published var actionMessage: String?
 
     private var host: Host?
-    private var root = ""
     private var started = false
     private var statusToken = 0
     private var runsToken = 0
 
-    func start(host: Host?, root: String) {
+    func start(host: Host?) {
         guard !started else { return }
         started = true
         self.host = host
-        self.root = root
-        Task { await loadProjects() }
     }
 
-    func refresh() {
-        Task {
-            await loadProjects()
-            loadStatus()   // reload status for the current selection (no-op if none)
-        }
-    }
-
-    private func loadProjects() async {
-        guard let host else { return }
-        isLoading = true
-        error = nil
-        guard let found = await ProjectService.discover(host: host, root: root) else {
-            error = "Couldn't list projects on the host."
-            isLoading = false
-            return
-        }
-        projects = found
-        if let sel = selectedPath, found.contains(where: { $0.path == sel }) {
-            isLoading = false   // selection still valid; caller reloads its status
-        } else if let first = found.first?.path {
-            selectedPath = first   // didSet → loadStatus, which keeps isLoading until it finishes
-        } else {
-            selectedPath = nil
-            status = nil
-            isLoading = false
-        }
-    }
+    func refresh() { loadStatus() }
 
     func loadStatus() {
         guard let host, let path = selectedPath else { return }

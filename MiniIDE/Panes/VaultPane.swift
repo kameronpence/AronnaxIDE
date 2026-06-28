@@ -16,7 +16,21 @@ struct VaultPane: View {
             editorArea
                 .frame(minWidth: 360, maxWidth: .infinity, maxHeight: .infinity)
         }
-        .onAppear { model.start(host: settings.hub, vault: settings.agentWorkdir) }
+        .onAppear {
+            Task { await model.switchVault(host: settings.hub, to: settings.activePath) }
+        }
+        .onChange(of: settings.selectedProjectPath) { oldValue, newValue in
+            let target = newValue ?? settings.agentWorkdir
+            Task {
+                // If the previous note couldn't be saved, the vault stays put — revert
+                // the sidebar so the selection and the vault don't diverge. Only revert
+                // when this is still the active selection, so a newer switch isn't undone.
+                let ok = await model.switchVault(host: settings.hub, to: target)
+                if !ok && settings.selectedProjectPath == newValue {
+                    settings.selectedProjectPath = oldValue
+                }
+            }
+        }
     }
 
     private var fileList: some View {
@@ -115,16 +129,50 @@ final class VaultModel: ObservableObject {
     private var vault: String = ""
     private var loadedContent: String = ""
     private var selectionToken = 0
+    private var vaultSwitchToken = 0
     private var writeChain: Task<String?, Never>?
 
     /// True when the editor differs from what was last loaded/saved.
     var isDirty: Bool { selected != nil && content != loadedContent }
 
-    func start(host: Host?, vault: String) {
+    /// Points the vault at a new project root. Saves the current note's unsaved edits
+    /// first (locking the editor so nothing is typed or lost mid-switch); if that save
+    /// fails it stays put and returns `false`, so the caller can keep the sidebar
+    /// selection in sync with the vault. Returns `true` on success or a no-op.
+    @discardableResult
+    func switchVault(host: Host?, to vault: String) async -> Bool {
         self.host = host
+        guard self.vault != vault else { return true }   // already here — no-op
+        vaultSwitchToken += 1
+        let token = vaultSwitchToken
+        // Snapshot + lock the editor synchronously so nothing typed between now and
+        // the async save below can be lost.
+        let dirtyPath = selected
+        let dirtyContent = content
+        let wasDirty = isDirty
+        isLoading = true
+        // Save the previous project's unsaved edits first. If the save fails, stay on
+        // the current vault so the edits aren't lost.
+        if let host, let dirtyPath, wasDirty {
+            if let err = await serializedWrite(dirtyContent, to: dirtyPath, host: host) {
+                guard token == vaultSwitchToken else { return false }
+                status = "Couldn't save \(displayName(dirtyPath)): \(err) — staying on this project."
+                isLoading = false
+                return false
+            }
+        }
+        guard token == vaultSwitchToken else { return false }   // superseded by a newer switch
         self.vault = vault
-        guard files.isEmpty else { return }   // don't reload on every re-appear
+        // Reset for the new project's vault.
+        selectionToken += 1   // invalidate any in-flight note load from the old vault
+        selected = nil
+        content = ""
+        loadedContent = ""
+        files = []
+        tree = []
+        isLoading = false
         refresh()
+        return true
     }
 
     func refresh() {
@@ -133,10 +181,12 @@ final class VaultModel: ObservableObject {
         Task {
             do {
                 let listed = try await RemoteFS(host: host).listMarkdown(in: vault)
+                guard vault == self.vault else { return }   // project switched — drop stale
                 files = listed
                 tree = Self.buildTree(from: listed, vault: vault)
                 status = nil
             } catch {
+                guard vault == self.vault else { return }
                 status = "Couldn't list vault: \(error.localizedDescription)"
             }
         }

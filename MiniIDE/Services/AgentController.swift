@@ -46,9 +46,22 @@ enum AgentController {
     /// `SSHManager.loginShellArguments`, which wraps it in `exec zsh -lc` so tmux
     /// and the agent binaries are on PATH.
     static func attachCommand(for agent: Agent, workdir: String) -> String {
-        let session = SSHManager.shellEscaped(agent.tmuxSession)
+        // Per-project session name so each project keeps its own running agent; the
+        // agent launches in (and its "memory" is) that project's directory.
+        let session = SSHManager.shellEscaped(agent.tmuxSession + sessionSuffix(for: workdir))
         let dir = SSHManager.shellEscaped(workdir)
         let cmd = SSHManager.shellEscaped(agent.launchCommand)
         return "tmux new-session -A -s \(session) -c \(dir) \(cmd)"
+    }
+
+    /// A short, stable, tmux-safe suffix derived from the project directory (FNV-1a),
+    /// so each project maps to its own agent session.
+    private static func sessionSuffix(for workdir: String) -> String {
+        var hash: UInt64 = 0xcbf29ce484222325
+        for byte in workdir.utf8 {
+            hash ^= UInt64(byte)
+            hash = hash &* 0x100000001b3
+        }
+        return String(format: "-%08x", UInt32(truncatingIfNeeded: hash))
     }
 }

@@ -16,6 +16,17 @@ final class AppSettings: ObservableObject {
     /// the same notes. (Per-project launch dirs arrive with the M8 projects work.)
     @Published var agentWorkdir: String = "/Users/kepler/Documents/Projects/AI_OS"
 
+    /// The project selected in the sidebar — the directory the Coding, Vault, Beads,
+    /// and Git panes all operate in. `nil` means "no project picked yet" (panes fall
+    /// back to the agent workdir).
+    @Published var selectedProjectPath: String?
+
+    /// The directory the panes should work in: the selected project, else the workdir.
+    var activePath: String { selectedProjectPath ?? agentWorkdir }
+    var selectedProjectName: String? {
+        selectedProjectPath.map { ($0 as NSString).lastPathComponent }
+    }
+
     /// Alias of the hub in `~/.ssh/config`.
     static let hubAlias = "kepler"
 

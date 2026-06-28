@@ -33,6 +33,7 @@ targets:
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         CFBundleDisplayName: AronnaxIDE
         CFBundleName: AronnaxIDE
+        CFBundleIconName: AppIcon
         NSHumanReadableCopyright: ""
         # The Browser pane loads the mini's localhost dev servers over http. ATS
         # blocks local http by default, so allow local networking — loopback /

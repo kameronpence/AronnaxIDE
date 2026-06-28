@@ -49,7 +49,13 @@ struct BeadsPanel: View {
             Divider()
             content
         }
-        .onAppear { model.start(host: settings.hub, root: settings.agentWorkdir) }
+        .onAppear {
+            model.start(host: settings.hub)
+            model.selectedProjectPath = settings.selectedProjectPath
+        }
+        .onChange(of: settings.selectedProjectPath) { _, new in
+            model.selectedProjectPath = new
+        }
         .sheet(isPresented: $showingCreate) {
             BdCreateSheet { title, type, priority, description in
                 model.create(title: title, type: type, priority: priority, description: description)
@@ -68,14 +74,8 @@ struct BeadsPanel: View {
 
     private var header: some View {
         HStack(spacing: 10) {
-            if model.projects.count > 1 {
-                Picker("Project", selection: $model.selectedProjectPath) {
-                    ForEach(model.projects) { p in Text(p.name).tag(p.path as String?) }
-                }
-                .labelsHidden()
-                .fixedSize()
-            } else if let only = model.projects.first {
-                Text(only.name).font(.callout.weight(.medium))
+            if let name = settings.selectedProjectName {
+                Text(name).font(.callout.weight(.medium))
             }
 
             Picker("Filter", selection: $model.filter) {
@@ -110,11 +110,10 @@ struct BeadsPanel: View {
     }
 
     @ViewBuilder private var content: some View {
-        if let error = model.error {
+        if model.selectedProjectPath == nil {
+            message("Select a project in the sidebar.", system: "folder")
+        } else if let error = model.error {
             message(error, system: "exclamationmark.triangle")
-        } else if model.projects.isEmpty && !model.isLoading {
-            message("No bd projects found under \(settings.agentWorkdir).",
-                    system: "point.3.connected.trianglepath.dotted")
         } else if model.issues.isEmpty && !model.isLoading {
             message("No issues for this filter.", system: "checklist")
         } else if viewMode == .graph {
@@ -326,9 +325,8 @@ private struct BdIssueDetailSheet: View {
 
 @MainActor
 final class BeadsModel: ObservableObject {
-    @Published var projects: [BdProject] = []
     @Published var selectedProjectPath: String? {
-        didSet { if oldValue != selectedProjectPath { reload() } }
+        didSet { if oldValue != selectedProjectPath { issues = []; error = nil; reload() } }
     }
     @Published var filter: BeadsFilter = .all {
         didSet { if oldValue != filter { reload() } }
@@ -338,27 +336,16 @@ final class BeadsModel: ObservableObject {
     @Published var error: String?
 
     private var host: Host?
-    private var root = ""
     private var started = false
     private var reloadToken = 0
 
-    func start(host: Host?, root: String) {
+    func start(host: Host?) {
         guard !started else { return }
         started = true
         self.host = host
-        self.root = root
-        Task { await discover() }
     }
 
-    /// The refresh button: re-run project discovery when there are none yet (e.g.
-    /// the hub was unreachable on first load), otherwise reload the current project.
-    func refresh() {
-        if projects.isEmpty {
-            Task { await discover() }
-        } else {
-            reload()
-        }
-    }
+    func refresh() { reload() }
 
     func reload() {
         guard let host, let path = selectedProjectPath else { return }
@@ -415,24 +402,5 @@ final class BeadsModel: ObservableObject {
 
     func addNote(id: String, text: String) {
         mutate { try await $0.addNote(in: $1, id: id, text: text) }
-    }
-
-    private func discover() async {
-        guard let host else {
-            error = "No hub host configured."
-            return
-        }
-        isLoading = true
-        error = nil
-        do {
-            let found = try await BeadsController(host: host).discoverProjects(under: root)
-            self.projects = found
-            // Setting this triggers reload() via didSet when non-nil.
-            self.selectedProjectPath = found.first?.path
-            if found.isEmpty { self.isLoading = false }
-        } catch {
-            self.error = error.localizedDescription
-            self.isLoading = false
-        }
     }
 }

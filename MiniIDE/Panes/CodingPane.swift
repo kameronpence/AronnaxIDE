@@ -10,6 +10,7 @@ import SwiftTerm
 /// switching layout (or a sleep/wake reconnect) just re-attaches — the agents and
 /// any work they're doing keep running.
 struct CodingPane: View {
+    @EnvironmentObject private var settings: AppSettings
     @State private var layout: AgentLayout = .claude
 
     var body: some View {
@@ -33,10 +34,10 @@ struct CodingPane: View {
     private var content: some View {
         switch layout {
         case .claude:
-            AgentTerminalView(agent: .claude)
+            AgentTerminalView(agent: .claude, workdir: settings.activePath)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         case .codex:
-            AgentTerminalView(agent: .codex)
+            AgentTerminalView(agent: .codex, workdir: settings.activePath)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         case .both:
             HSplitView {
@@ -57,7 +58,7 @@ struct CodingPane: View {
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
             Divider()
-            AgentTerminalView(agent: agent)
+            AgentTerminalView(agent: agent, workdir: settings.activePath)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(minWidth: 300, maxWidth: .infinity, maxHeight: .infinity)
@@ -87,6 +88,7 @@ enum AgentLayout: String, CaseIterable, Identifiable {
 /// detached).
 private struct AgentTerminalView: NSViewRepresentable {
     let agent: Agent
+    let workdir: String   // explicit so a project switch re-renders + re-attaches
     @EnvironmentObject private var settings: AppSettings
     @EnvironmentObject private var wakeObserver: WakeObserver
 
@@ -96,14 +98,14 @@ private struct AgentTerminalView: NSViewRepresentable {
         let view = ClipboardTerminalView(frame: .zero)
         view.processDelegate = context.coordinator
         context.coordinator.start(view, host: settings.hub, agent: agent,
-                                  workdir: settings.agentWorkdir,
+                                  workdir: workdir,
                                   baselineSignal: wakeObserver.reconnectSignal)
         return view
     }
 
     func updateNSView(_ nsView: LocalProcessTerminalView, context: Context) {
         context.coordinator.sync(view: nsView, host: settings.hub, agent: agent,
-                                 workdir: settings.agentWorkdir,
+                                 workdir: workdir,
                                  signal: wakeObserver.reconnectSignal)
     }
 
@@ -118,6 +120,7 @@ private struct AgentTerminalView: NSViewRepresentable {
     final class Coordinator: NSObject, LocalProcessTerminalViewDelegate {
         private var started = false
         private var currentAgent: Agent?
+        private var currentWorkdir: String?
         private var lastReconnectSignal = 0
 
         func start(_ view: LocalProcessTerminalView, host: Host?, agent: Agent,
@@ -126,6 +129,7 @@ private struct AgentTerminalView: NSViewRepresentable {
             started = true
             lastReconnectSignal = baselineSignal
             currentAgent = agent
+            currentWorkdir = workdir
             launch(view, host: host, agent: agent, workdir: workdir,
                    reconnecting: false, generation: baselineSignal)
         }
@@ -136,10 +140,12 @@ private struct AgentTerminalView: NSViewRepresentable {
                   workdir: String, signal: Int) {
             guard started else { return }
             let agentChanged = agent != currentAgent
+            let workdirChanged = workdir != currentWorkdir
             let reconnect = signal != lastReconnectSignal
-            guard agentChanged || reconnect else { return }
+            guard agentChanged || workdirChanged || reconnect else { return }
             lastReconnectSignal = signal
             currentAgent = agent
+            currentWorkdir = workdir
             launch(view, host: host, agent: agent, workdir: workdir,
                    reconnecting: reconnect, generation: signal)
         }

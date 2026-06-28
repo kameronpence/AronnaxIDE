@@ -41,13 +41,6 @@ struct BdDependency: Decodable, Hashable {
     }
 }
 
-/// A bd project on a host: a directory containing a `.beads` database.
-struct BdProject: Identifiable, Hashable {
-    let path: String
-    var id: String { path }
-    var name: String { (path as NSString).lastPathComponent }
-}
-
 enum BeadsError: Error, LocalizedError {
     case command(String)
 
@@ -68,19 +61,6 @@ struct BeadsController {
 
     /// Prepended to every bd invocation so `bd` resolves on the non-login PATH.
     private static let pathPrefix = #"PATH="$HOME/.local/bin:/opt/homebrew/bin:$PATH""#
-
-    /// Project directories (those containing a `.beads`) under `root`.
-    func discoverProjects(under root: String) async throws -> [BdProject] {
-        let result = try await SSHManager.shared.run(
-            ["find", root, "-maxdepth", "3", "-name", ".beads", "-type", "d"], on: host)
-        guard result.ok else { throw BeadsError.command(result.stderr) }
-        return result.stdout
-            .split(separator: "\n", omittingEmptySubsequences: true)
-            .map(String.init)
-            .map { $0.hasSuffix("/.beads") ? String($0.dropLast("/.beads".count)) : $0 }
-            .sorted()
-            .map { BdProject(path: $0) }
-    }
 
     /// Runs `bd <arguments>` in the project directory, returning stdout. Args are
     /// shell-escaped, so untrusted values (titles, descriptions) are safe.

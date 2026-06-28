@@ -130,15 +130,29 @@ private struct SidebarView: View {
                             .font(.callout)
                     } else {
                         ForEach(projects.projects) { project in
-                            VStack(alignment: .leading, spacing: 1) {
-                                Label(project.name, systemImage: "folder")
-                                if let branch = project.branch {
-                                    Text(branch + (project.owner.map { " · \($0)" } ?? ""))
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                        .padding(.leading, 24)
+                            Button {
+                                settings.selectedProjectPath = project.path
+                            } label: {
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 1) {
+                                        Label(project.name, systemImage: "folder")
+                                        if let branch = project.branch {
+                                            Text(branch + (project.owner.map { " · \($0)" } ?? ""))
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                                .padding(.leading, 24)
+                                        }
+                                    }
+                                    Spacer()
+                                    if settings.selectedProjectPath == project.path {
+                                        Image(systemName: "checkmark")
+                                            .font(.caption.weight(.semibold))
+                                            .foregroundStyle(.tint)
+                                    }
                                 }
+                                .contentShape(Rectangle())
                             }
+                            .buttonStyle(.plain)
                         }
                     }
                 } header: {
@@ -164,6 +178,13 @@ private struct SidebarView: View {
         .onAppear {
             usage.start(host: settings.hub, workdir: settings.agentWorkdir)
             projects.start(host: settings.hub, root: settings.agentWorkdir)
+        }
+        .onChange(of: projects.projects) { _, list in
+            // Auto-select the first project (and recover if the selection vanished).
+            if settings.selectedProjectPath == nil
+                || !list.contains(where: { $0.path == settings.selectedProjectPath }) {
+                settings.selectedProjectPath = list.first?.path
+            }
         }
     }
 }
