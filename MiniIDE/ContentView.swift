@@ -47,10 +47,11 @@ struct WorkspaceSurface: View {
 struct ContentView: View {
     @EnvironmentObject private var settings: AppSettings
     @StateObject private var workspace = WorkspaceModel()
+    @StateObject private var usage = UsageService()
 
     var body: some View {
         NavigationSplitView {
-            SidebarView()
+            SidebarView(usage: usage)
                 .navigationSplitViewColumnWidth(min: 200, ideal: 240, max: 340)
         } detail: {
             VStack(spacing: 0) {
@@ -109,28 +110,35 @@ private struct WorkspaceTabBar: View {
 
 private struct SidebarView: View {
     @EnvironmentObject private var settings: AppSettings
+    @ObservedObject var usage: UsageService
 
     var body: some View {
-        List {
-            Section("Hosts") {
-                ForEach(settings.hosts) { host in
-                    Label(host.displayName,
-                          systemImage: host.isHub ? "server.rack" : "cloud")
+        VStack(spacing: 0) {
+            List {
+                Section("Hosts") {
+                    ForEach(settings.hosts) { host in
+                        Label(host.displayName,
+                              systemImage: host.isHub ? "server.rack" : "cloud")
+                    }
                 }
-            }
-            Section("Projects") {
-                if settings.projects.isEmpty {
-                    Text("No projects yet")
-                        .foregroundStyle(.secondary)
-                        .font(.callout)
-                } else {
-                    ForEach(settings.projects) { project in
-                        Label(project.name, systemImage: "folder")
+                Section("Projects") {
+                    if settings.projects.isEmpty {
+                        Text("No projects yet")
+                            .foregroundStyle(.secondary)
+                            .font(.callout)
+                    } else {
+                        ForEach(settings.projects) { project in
+                            Label(project.name, systemImage: "folder")
+                        }
                     }
                 }
             }
+            .listStyle(.sidebar)
+
+            Divider()
+            SidebarUsageFooter(usage: usage)
         }
-        .listStyle(.sidebar)
+        .onAppear { usage.start(host: settings.hub, workdir: settings.agentWorkdir) }
     }
 }
 
