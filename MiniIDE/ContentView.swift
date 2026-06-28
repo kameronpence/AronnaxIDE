@@ -30,18 +30,8 @@ enum WorkspaceTab: String, CaseIterable, Identifiable {
 struct WorkspaceSurface: View {
     let tab: WorkspaceTab
 
-    var body: some View {
-        surface
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .overlay(   // a thin frame so pane content (incl. the tmux status bar) reads as inset, not flush
-                Rectangle()
-                    .strokeBorder(Color(nsColor: .separatorColor), lineWidth: 1)
-            )
-            .padding(10)   // breathing room around each pane
-    }
-
     @ViewBuilder
-    private var surface: some View {
+    var body: some View {
         switch tab {
         case .terminal: TerminalPane()
         case .coding:   CodingPane()
@@ -56,23 +46,18 @@ struct WorkspaceSurface: View {
 
 struct ContentView: View {
     @EnvironmentObject private var settings: AppSettings
-    @State private var leftTab: WorkspaceTab = .terminal
-    /// `nil` = single pane; non-nil = a second pane (right or bottom).
-    @State private var rightTab: WorkspaceTab?
-    @State private var splitAxis: SplitAxis = .horizontal
+    @StateObject private var workspace = WorkspaceModel()
+    @StateObject private var usage = UsageService()
 
     var body: some View {
         NavigationSplitView {
-            SidebarView()
+            SidebarView(usage: usage)
                 .navigationSplitViewColumnWidth(min: 200, ideal: 240, max: 340)
         } detail: {
             VStack(spacing: 0) {
-                WorkspaceTabBar(selection: $leftTab,
-                                isSplit: rightTab != nil,
-                                splitAxis: splitAxis,
-                                onToggleSplit: toggleSplit)
+                WorkspaceTabBar(workspace: workspace)
                 Divider()
-                workspace
+                WorkspaceView(model: workspace)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 Divider()
                 StatusBar()
@@ -81,153 +66,79 @@ struct ContentView: View {
         .navigationTitle("MiniIDE")
         .preferredColorScheme(.light)   // keep the whole app light regardless of system appearance
     }
-
-    private var workspace: some View {
-        // Pure-SwiftUI split (see SplitContainer) — no NSSplitView, so closing the
-        // split no longer freezes. The left surface is always the primary pane and
-        // keeps its live session whether or not the split is open.
-        SplitContainer(
-            axis: splitAxis,
-            showsSecondary: rightTab != nil,
-            primary: { WorkspaceSurface(tab: leftTab) },
-            secondary: {
-                if let right = Binding($rightTab) {
-                    SecondaryPane(tab: right, onClose: { rightTab = nil })
-                }
-            }
-        )
-    }
-
-    /// Toggle the second pane in the given orientation. Clicking the same orientation
-    /// again closes the split; clicking the other orientation switches it.
-    private func toggleSplit(_ axis: SplitAxis) {
-        if rightTab != nil && splitAxis == axis {
-            rightTab = nil
-        } else {
-            splitAxis = axis
-            if rightTab == nil {
-                rightTab = (leftTab == .terminal) ? .coding : .terminal
-            }
-        }
-    }
 }
 
-/// The right column of a split workspace: its own surface picker + a close button
-/// above the surface.
-private struct SecondaryPane: View {
-    @Binding var tab: WorkspaceTab
-    let onClose: () -> Void
-
-    var body: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 6) {
-                Menu {
-                    ForEach(WorkspaceTab.allCases) { t in
-                        Button {
-                            tab = t
-                        } label: {
-                            Label(t.rawValue, systemImage: t.systemImage)
-                        }
-                    }
-                } label: {
-                    Label(tab.rawValue, systemImage: tab.systemImage)
-                }
-                .menuStyle(.borderlessButton)
-                .fixedSize()
-
-                Spacer()
-
-                Button(action: onClose) {
-                    Image(systemName: "xmark")
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(.secondary)
-                .help("Close this pane")
-            }
-            .font(.callout)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 6)
-
-            Divider()
-
-            WorkspaceSurface(tab: tab)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
-    }
-}
-
+/// The surface switcher. Each pane has its own content dropdown + split/close
+/// controls; this bar is a convenience that retargets the *focused* pane (the one
+/// outlined in the accent color when more than one pane is open).
 private struct WorkspaceTabBar: View {
-    @Binding var selection: WorkspaceTab
-    let isSplit: Bool
-    let splitAxis: SplitAxis
-    let onToggleSplit: (SplitAxis) -> Void
+    @ObservedObject var workspace: WorkspaceModel
 
     var body: some View {
         HStack(spacing: 4) {
             ForEach(WorkspaceTab.allCases) { tab in
                 Button {
-                    selection = tab
+                    workspace.setFocusedTab(tab)
                 } label: {
                     Label(tab.rawValue, systemImage: tab.systemImage)
                         .labelStyle(.titleAndIcon)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
                         .background(
-                            selection == tab
+                            workspace.focusedTab == tab
                                 ? Color.accentColor.opacity(0.18)
                                 : Color.clear,
                             in: RoundedRectangle(cornerRadius: 6)
                         )
                 }
                 .buttonStyle(.plain)
-                .foregroundStyle(selection == tab ? Color.accentColor : .secondary)
+                .foregroundStyle(workspace.focusedTab == tab ? Color.accentColor : .secondary)
             }
             Spacer()
-            splitButton(.horizontal, icon: "rectangle.split.2x1", label: "Split right")
-            splitButton(.vertical, icon: "rectangle.split.1x2", label: "Split bottom")
+            if workspace.paneCount > 1 {
+                Text("→ focused pane")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+                    .help("These tabs change the highlighted pane. Each pane also has its own content dropdown and split buttons.")
+            }
         }
         .font(.callout)
         .padding(.horizontal, 8)
         .padding(.vertical, 6)
     }
-
-    private func splitButton(_ axis: SplitAxis, icon: String, label: String) -> some View {
-        let active = isSplit && splitAxis == axis
-        return Button(action: { onToggleSplit(axis) }) {
-            Image(systemName: icon)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 5)
-        }
-        .buttonStyle(.plain)
-        .foregroundStyle(active ? Color.accentColor : .secondary)
-        .help(active ? "Close split" : label)
-    }
 }
 
 private struct SidebarView: View {
     @EnvironmentObject private var settings: AppSettings
+    @ObservedObject var usage: UsageService
 
     var body: some View {
-        List {
-            Section("Hosts") {
-                ForEach(settings.hosts) { host in
-                    Label(host.displayName,
-                          systemImage: host.isHub ? "server.rack" : "cloud")
+        VStack(spacing: 0) {
+            List {
+                Section("Hosts") {
+                    ForEach(settings.hosts) { host in
+                        Label(host.displayName,
+                              systemImage: host.isHub ? "server.rack" : "cloud")
+                    }
                 }
-            }
-            Section("Projects") {
-                if settings.projects.isEmpty {
-                    Text("No projects yet")
-                        .foregroundStyle(.secondary)
-                        .font(.callout)
-                } else {
-                    ForEach(settings.projects) { project in
-                        Label(project.name, systemImage: "folder")
+                Section("Projects") {
+                    if settings.projects.isEmpty {
+                        Text("No projects yet")
+                            .foregroundStyle(.secondary)
+                            .font(.callout)
+                    } else {
+                        ForEach(settings.projects) { project in
+                            Label(project.name, systemImage: "folder")
+                        }
                     }
                 }
             }
+            .listStyle(.sidebar)
+
+            Divider()
+            SidebarUsageFooter(usage: usage)
         }
-        .listStyle(.sidebar)
+        .onAppear { usage.start(host: settings.hub, workdir: settings.agentWorkdir) }
     }
 }
 
