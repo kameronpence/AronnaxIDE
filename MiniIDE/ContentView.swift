@@ -56,8 +56,6 @@ struct ContentView: View {
                 .navigationSplitViewColumnWidth(min: 200, ideal: 240, max: 340)
         } detail: {
             VStack(spacing: 0) {
-                brandBar
-                Divider()
                 WorkspaceTabBar(workspace: workspace)
                 Divider()
                 WorkspaceView(model: workspace)
@@ -68,22 +66,15 @@ struct ContentView: View {
         }
         .navigationTitle("AronnaxIDE")
         .preferredColorScheme(.light)   // keep the whole app light regardless of system appearance
-    }
-
-    /// Branded header: the AronnaxIDE wordmark on the cream brand color. The only
-    /// place the cream palette is used — the rest of the app keeps the default scheme.
-    private var brandBar: some View {
-        HStack {
-            Image("Wordmark")
-                .resizable()
-                .scaledToFit()
-                .frame(height: 24)
-            Spacer()
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Image("Wordmark")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 16)
+                    .accessibilityLabel("AronnaxIDE")
+            }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 7)
-        .frame(maxWidth: .infinity)
-        .background(Color("Cream"))
     }
 }
 
