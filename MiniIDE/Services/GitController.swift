@@ -15,6 +15,17 @@ struct GitStatus: Equatable {
     var isClean: Bool { dirty == 0 }
 }
 
+/// A GitHub Actions workflow run (from `gh run list --json`).
+struct ActionRun: Decodable, Identifiable, Hashable {
+    let status: String            // queued, in_progress, completed
+    let conclusion: String?       // success, failure, cancelled, … (nil while running)
+    let workflowName: String
+    let headBranch: String?
+    let createdAt: String
+
+    var id: String { workflowName + createdAt }
+}
+
 enum GitError: Error, LocalizedError {
     case command(String)
     var errorDescription: String? {
@@ -83,8 +94,97 @@ struct GitController {
         return String(line.dropFirst(prefix.count)).trimmingCharacters(in: .whitespaces)
     }
 
+    // MARK: - Actions (write — user-triggered)
+
+    /// Stages everything and commits with `message`. Throws git's error on failure
+    /// (e.g. nothing to commit, no identity configured).
+    @discardableResult
+    func commit(path: String, message: String) async throws -> String {
+        let p = SSHManager.shellEscaped(path)
+        let m = SSHManager.shellEscaped(message)
+        return try await runGit("git -C \(p) add -A && git -C \(p) commit -m \(m)")
+    }
+
+    /// Pushes the current branch to its upstream. This is the step that triggers any
+    /// GitHub Actions deploy workflow.
+    @discardableResult
+    func push(path: String) async throws -> String {
+        let p = SSHManager.shellEscaped(path)
+        // Explicit origin + current branch so it matches the confirmation, not whatever
+        // implicit upstream happens to be configured.
+        return try await runGit("git -C \(p) push origin HEAD")
+    }
+
+    @discardableResult
+    private func runGit(_ command: String) async throws -> String {
+        // GIT_TERMINAL_PROMPT=0 so a credential prompt fails fast instead of hanging
+        // the SSH command (there's no TTY to answer it).
+        let full = #"export PATH="$HOME/.local/bin:/opt/homebrew/bin:$PATH" GIT_TERMINAL_PROMPT=0; "# + command
+        let result = try await SSHManager.shared.runShell(full, on: host)
+        guard result.ok else {
+            let detail = result.stderr.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                ? result.stdout : result.stderr
+            throw GitError.command(detail)
+        }
+        return result.stdout + result.stderr   // git writes push/commit info to both
+    }
+
+    /// Recent GitHub Actions runs for the repo (via `gh`). Returns [] if gh is
+    /// unavailable, the repo has no Actions, or access is denied.
+    func actionRuns(path: String, slug: String?) async -> [ActionRun] {
+        let p = SSHManager.shellEscaped(path)
+        // Pass --repo so gh resolves the repo even when the remote uses an SSH host
+        // alias (git@github.com-work:…) that gh's auto-detection can't map.
+        let repoArg = slug.map { "--repo \(SSHManager.shellEscaped($0)) " } ?? ""
+        let command = #"export PATH="$HOME/.local/bin:/opt/homebrew/bin:$PATH"; "#
+            + "cd \(p) && gh run list \(repoArg)--limit 5 --json status,conclusion,workflowName,headBranch,createdAt 2>/dev/null"
+        guard let result = try? await SSHManager.shared.runShell(command, on: host), result.ok else { return [] }
+        let trimmed = result.stdout.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, let data = trimmed.data(using: .utf8) else { return [] }
+        return (try? JSONDecoder().decode([ActionRun].self, from: data)) ?? []
+    }
+
+    /// The `owner/repo` slug from an origin URL (alias-host safe), or nil.
+    static func repoSlug(from remote: String?) -> String? {
+        guard let remote,
+              let re = try? NSRegularExpression(pattern: #"github\.com[^/:]*(?::\d+)?[:/]([^/]+/[^/]+)"#),
+              let m = re.firstMatch(in: remote, range: NSRange(remote.startIndex..., in: remote)),
+              m.numberOfRanges > 1, let r = Range(m.range(at: 1), in: remote) else { return nil }
+        var slug = String(remote[r])
+        if slug.hasSuffix(".git") { slug = String(slug.dropLast(4)) }
+        return slug
+    }
+
+    /// The GitHub identity a push authenticates as: the SSH host-alias suffix
+    /// (`github.com-work` → `work`) or the https userinfo username
+    /// (`https://kameronpence@github.com` → `kameronpence`). Returns nil when it can't
+    /// be determined — never guesses from the repo owner, which isn't the account.
+    static func identity(remote: String?) -> String? {
+        guard let remote else { return nil }
+        if let re = try? NSRegularExpression(pattern: #"github\.com-([A-Za-z0-9_-]+)"#),
+           let m = re.firstMatch(in: remote, range: NSRange(remote.startIndex..., in: remote)),
+           m.numberOfRanges > 1, let r = Range(m.range(at: 1), in: remote) {
+            return String(remote[r])
+        }
+        if let re = try? NSRegularExpression(pattern: #"://([^:/@]+)(?::[^@]*)?@github\.com"#),
+           let m = re.firstMatch(in: remote, range: NSRange(remote.startIndex..., in: remote)),
+           m.numberOfRanges > 1, let r = Range(m.range(at: 1), in: remote) {
+            let user = String(remote[r])
+            let tokenMarkers = ["x-access-token", "oauth2", "git", "token"]
+            // Only surface a value that looks like a real GitHub username (alphanumeric +
+            // hyphen, ≤39 chars). Tokens — underscores, 40-char hex, ghp_/github_pat_… —
+            // and token markers are rejected so a PAT embedded in the URL is never shown.
+            if !tokenMarkers.contains(user.lowercased()),
+               user.range(of: #"^[A-Za-z0-9-]{1,39}$"#, options: .regularExpression) != nil {
+                return user
+            }
+            return nil
+        }
+        return nil
+    }
+
     private static func owner(from remote: String) -> String? {
-        guard let re = try? NSRegularExpression(pattern: #"github\.com[^/:]*[:/]([^/]+)/"#),
+        guard let re = try? NSRegularExpression(pattern: #"github\.com[^/:]*(?::\d+)?[:/]([^/]+)/"#),
               let m = re.firstMatch(in: remote, range: NSRange(remote.startIndex..., in: remote)),
               m.numberOfRanges > 1,
               let r = Range(m.range(at: 1), in: remote) else { return nil }

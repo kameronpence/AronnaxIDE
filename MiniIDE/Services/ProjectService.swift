@@ -77,7 +77,7 @@ final class ProjectService: ObservableObject {
     /// and SSH host aliases like `github.com-work:<owner>/`.
     private static func owner(from remote: String?) -> String? {
         guard let remote,
-              let re = try? NSRegularExpression(pattern: #"github\.com[^/:]*[:/]([^/]+)/"#),
+              let re = try? NSRegularExpression(pattern: #"github\.com[^/:]*(?::\d+)?[:/]([^/]+)/"#),
               let m = re.firstMatch(in: remote, range: NSRange(remote.startIndex..., in: remote)),
               m.numberOfRanges > 1,
               let r = Range(m.range(at: 1), in: remote) else { return nil }
