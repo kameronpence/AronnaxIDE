@@ -212,6 +212,9 @@ private struct StatusBar: View {
                 Text("hub: \(hub.sshAlias)")
                     .foregroundStyle(.tertiary)
             }
+            SettingsLink { Image(systemName: "gearshape") }
+                .buttonStyle(.borderless)
+                .help("Settings (⌘,) — hosts, GitHub accounts, workdir")
         }
         .font(.caption)
         .padding(.horizontal, 12)
