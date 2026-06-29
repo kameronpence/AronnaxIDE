@@ -239,15 +239,18 @@ final class VaultModel: ObservableObject {
         let wasDirty = isDirty
         let dirtyHash = loadedHash
         isLoading = true
-        // Under "confirm every write", don't silently autosave — block so the user saves
-        // explicitly (the caller reverts the workdir so nothing diverges).
-        if let dirtyPath, wasDirty, confirmWrites, !readOnly {
-            status = "Unsaved edits in \(displayName(dirtyPath)) — Save (⌘S) before changing the workdir."
+        // Under a write guard, don't silently autosave or discard — block so the caller
+        // reverts the workdir (nothing diverges, no edits lost). The user saves under
+        // confirm-writes, or disables read-only, before changing the workdir.
+        if let dirtyPath, wasDirty, confirmWrites || readOnly {
+            status = readOnly
+                ? "Host is read-only — can't save \(displayName(dirtyPath)). Disable read-only before changing the workdir."
+                : "Unsaved edits in \(displayName(dirtyPath)) — Save (⌘S) before changing the workdir."
             isLoading = false
             return false
         }
         // Save the open note before re-rooting; on conflict/failure stay put (caller reverts).
-        if let host, let dirtyPath, wasDirty, !readOnly {
+        if let host, let dirtyPath, wasDirty {
             let outcome = await conflictAwareWrite(dirtyContent, to: dirtyPath,
                                                    baseline: dirtyHash, host: host)
             guard token == vaultSwitchToken else { return false }
@@ -358,18 +361,20 @@ final class VaultModel: ObservableObject {
         isLoading = true   // lock the editor so edits can't be lost during the switch
         Task {
             // Write guards take precedence over the autosave so nothing is written
-            // unconfirmed and no edits are silently lost.
-            if let previous, previousDirty, confirmWrites, !readOnly {
-                // Make the user save explicitly (guarded) before leaving the note.
-                status = "Unsaved edits in \(displayName(previous)) — Save (⌘S) before switching."
+            // unconfirmed and no edits are silently lost. Block the switch and keep the
+            // user on the note: under confirm-writes they save explicitly; under
+            // read-only they can't save here, so they disable it (or discard) first.
+            if let previous, previousDirty, confirmWrites || readOnly {
+                status = readOnly
+                    ? "Host is read-only — can't save \(displayName(previous)). Disable read-only to save before switching."
+                    : "Unsaved edits in \(displayName(previous)) — Save (⌘S) before switching."
                 isLoading = false
                 return
             }
             // Auto-save the current note's unsaved edits before switching (Obsidian
             // style); stay put if it fails, and surface a conflict instead of clobbering
-            // an agent edit that landed since the last poll. On a read-only host we can't
-            // write, so any edge-case dirty edits are abandoned (the editor is disabled).
-            if let previous, previousDirty, !readOnly {
+            // an agent edit that landed since the last poll.
+            if let previous, previousDirty {
                 let outcome = await conflictAwareWrite(previousContent, to: previous,
                                                        baseline: previousHash, host: host)
                 guard token == selectionToken else { return }
