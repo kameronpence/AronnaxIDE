@@ -5,16 +5,32 @@ import Combine
 /// persistence (UserDefaults + config file) and ~/.ssh/config import land later.
 final class AppSettings: ObservableObject {
     @Published var hosts: [Host]
-    @Published var accounts: [GitHubAccount]
+    @Published var accounts: [GitHubAccount] {
+        didSet {
+            if let data = try? JSONEncoder().encode(accounts) {
+                UserDefaults.standard.set(data, forKey: Keys.accounts)
+            }
+        }
+    }
     @Published var projects: [Project]
 
     /// tmux session name used for the primary shell on a host.
-    @Published var primaryTmuxSession: String = "main"
+    @Published var primaryTmuxSession: String = "main" {
+        didSet { UserDefaults.standard.set(primaryTmuxSession, forKey: Keys.tmuxSession) }
+    }
 
     /// Working directory on the hub where the CLI agents launch — the Obsidian
     /// vault that is their shared "memory", so Claude Code and Codex read and write
     /// the same notes. (Per-project launch dirs arrive with the M8 projects work.)
-    @Published var agentWorkdir: String = "/Users/kepler/Documents/Projects/AI_OS"
+    @Published var agentWorkdir: String = "/Users/kepler/Documents/Projects/AI_OS" {
+        didSet { UserDefaults.standard.set(agentWorkdir, forKey: Keys.agentWorkdir) }
+    }
+
+    private enum Keys {
+        static let agentWorkdir = "settings.agentWorkdir"
+        static let tmuxSession = "settings.primaryTmuxSession"
+        static let accounts = "settings.githubAccounts"
+    }
 
     /// The project selected in the sidebar — the directory the Coding, Vault, Beads,
     /// and Git panes all operate in. `nil` means "no project picked yet" (panes fall
@@ -49,6 +65,17 @@ final class AppSettings: ObservableObject {
                           sshHostAlias: "github.com", email: "kameronpence@gmail.com")
         ]
         self.projects = []
+
+        // Apply persisted overrides. These are subsequent assignments (the stored
+        // properties already have initial values), so they fire the persistence
+        // didSet — harmless and idempotent.
+        let defaults = UserDefaults.standard
+        if let workdir = defaults.string(forKey: Keys.agentWorkdir) { agentWorkdir = workdir }
+        if let session = defaults.string(forKey: Keys.tmuxSession) { primaryTmuxSession = session }
+        if let data = defaults.data(forKey: Keys.accounts),
+           let decoded = try? JSONDecoder().decode([GitHubAccount].self, from: data) {
+            accounts = decoded
+        }
     }
 
     var hub: Host? { hosts.first(where: { $0.isHub }) ?? hosts.first }
