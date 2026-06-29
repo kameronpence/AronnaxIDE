@@ -133,6 +133,16 @@ struct GitController {
         return try await runGit("git -C \(p) checkout \(b)")
     }
 
+    /// Commits across all branches whose message matches `query` (case-insensitive),
+    /// newest first, as "<short-hash> <subject>" lines (capped at 50).
+    func searchCommits(path: String, query: String) async throws -> [String] {
+        let p = SSHManager.shellEscaped(path)
+        let q = SSHManager.shellEscaped(query)
+        let out = try await runGit(
+            "git -C \(p) log --all -i --grep=\(q) --pretty=format:'%h %s' -50")
+        return out.split(separator: "\n", omittingEmptySubsequences: true).map(String.init)
+    }
+
     @discardableResult
     private func runGit(_ command: String) async throws -> String {
         // GIT_TERMINAL_PROMPT=0 so a credential prompt fails fast instead of hanging

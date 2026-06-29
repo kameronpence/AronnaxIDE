@@ -8,6 +8,7 @@ struct GitDeployPanel: View {
     @StateObject private var model = GitPanelModel()
     @State private var commitMessage = ""
     @State private var showPushConfirm = false
+    @State private var commitSearch = ""
 
     var body: some View {
         VStack(spacing: 0) {
@@ -64,6 +65,13 @@ struct GitDeployPanel: View {
             if let name = settings.selectedProjectName {
                 Text(name).font(.callout.weight(.medium))
             }
+            TextField("Search commits", text: $commitSearch)
+                .textFieldStyle(.roundedBorder)
+                .frame(maxWidth: 220)
+                .onSubmit { model.searchCommits(commitSearch) }
+                .onChange(of: commitSearch) { _, q in
+                    if q.trimmingCharacters(in: .whitespaces).isEmpty { model.searchCommits("") }
+                }
             Spacer()
             if model.isLoading { ProgressView().controlSize(.small) }
             Button { model.refresh() } label: { Image(systemName: "arrow.clockwise") }
@@ -145,7 +153,20 @@ struct GitDeployPanel: View {
                     }
                 }
 
-                if !s.commits.isEmpty {
+                if let results = model.commitResults {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Search results (\(results.count))")
+                            .font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                        if results.isEmpty {
+                            Text("No commits match “\(commitSearch)”")
+                                .font(.callout).foregroundStyle(.secondary)
+                        } else {
+                            ForEach(results, id: \.self) { c in
+                                Text(c).font(.callout.monospaced()).lineLimit(1).textSelection(.enabled)
+                            }
+                        }
+                    }
+                } else if !s.commits.isEmpty {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Recent commits").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
                         ForEach(s.commits, id: \.self) { c in
@@ -249,11 +270,12 @@ struct GitDeployPanel: View {
 @MainActor
 final class GitPanelModel: ObservableObject {
     @Published var selectedPath: String? {
-        didSet { if oldValue != selectedPath { status = nil; branches = []; runs = []; actionMessage = nil; loadStatus() } }
+        didSet { if oldValue != selectedPath { status = nil; branches = []; runs = []; commitResults = nil; actionMessage = nil; loadStatus() } }
     }
     @Published var status: GitStatus?
     @Published var branches: [String] = []
     @Published var runs: [ActionRun] = []
+    @Published var commitResults: [String]?   // nil = show recent commits; set = search results
     @Published var isLoading = false
     @Published var error: String?
     @Published var actionBusy = false
@@ -321,6 +343,18 @@ final class GitPanelModel: ObservableObject {
     func checkout(_ branch: String) {
         guard branch != status?.branch else { return }
         run { _ = try await $0.checkout(path: $1, branch: branch); return "Switched to \(branch)." }
+    }
+
+    /// Search commit messages across history. Empty query restores recent commits.
+    func searchCommits(_ query: String) {
+        let q = query.trimmingCharacters(in: .whitespaces)
+        guard !q.isEmpty else { commitResults = nil; return }
+        guard let host, let path = selectedPath else { return }
+        Task {
+            let r = (try? await GitController(host: host).searchCommits(path: path, query: q)) ?? []
+            guard selectedPath == path else { return }   // switched away — drop
+            commitResults = r
+        }
     }
 
     func commit(message: String) {

@@ -42,6 +42,17 @@ struct BeadsPanel: View {
     @State private var showingCreate = false
     @State private var selectedIssue: BdIssue?
     @State private var viewMode: BeadsViewMode = .list
+    @State private var searchText = ""
+
+    /// Issues filtered by the search box (id, title, or type).
+    private var filteredIssues: [BdIssue] {
+        let q = searchText.trimmingCharacters(in: .whitespaces).lowercased()
+        guard !q.isEmpty else { return model.issues }
+        return model.issues.filter {
+            $0.title.lowercased().contains(q) || $0.id.lowercased().contains(q)
+                || $0.issueType.lowercased().contains(q)
+        }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -93,6 +104,10 @@ struct BeadsPanel: View {
             .pickerStyle(.segmented)
             .fixedSize()
 
+            TextField("Search issues", text: $searchText)
+                .textFieldStyle(.roundedBorder)
+                .frame(maxWidth: 220)
+
             Spacer()
 
             if model.isLoading { ProgressView().controlSize(.small) }
@@ -123,8 +138,10 @@ struct BeadsPanel: View {
                 message("No dependencies among these issues — try the All filter.",
                         system: "point.3.connected.trianglepath.dotted")
             }
+        } else if filteredIssues.isEmpty {
+            message("No issues match “\(searchText)”.", system: "magnifyingglass")
         } else {
-            List(model.issues) { issue in
+            List(filteredIssues) { issue in
                 Button { selectedIssue = issue } label: { BdIssueRow(issue: issue) }
                     .buttonStyle(.plain)
                     .contentShape(Rectangle())

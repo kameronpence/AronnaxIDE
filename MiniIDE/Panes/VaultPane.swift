@@ -9,6 +9,14 @@ struct VaultPane: View {
     @EnvironmentObject private var settings: AppSettings
     @StateObject private var model = VaultModel()
     @State private var showPreview = true
+    @State private var search = ""
+
+    /// Files whose name matches the search box (used to show a flat list while searching).
+    private var matchingFiles: [String] {
+        let q = search.trimmingCharacters(in: .whitespaces).lowercased()
+        guard !q.isEmpty else { return [] }
+        return model.files.filter { ($0 as NSString).lastPathComponent.lowercased().contains(q) }
+    }
 
     var body: some View {
         HSplitView {
@@ -46,21 +54,46 @@ struct VaultPane: View {
                     .help("Reload file list")
             }
             .padding(.horizontal, 8).padding(.vertical, 6)
+            TextField("Search notes", text: $search)
+                .textFieldStyle(.roundedBorder)
+                .padding(.horizontal, 8).padding(.bottom, 6)
             Divider()
-            List(model.tree, children: \.children, selection: Binding(
-                get: { model.selected },
-                set: { id in
-                    // Folder ids are prefixed "dir:"; only file nodes open a note.
-                    if let id, !id.hasPrefix("dir:") { model.select(id) }
+            if search.trimmingCharacters(in: .whitespaces).isEmpty {
+                List(model.tree, children: \.children, selection: Binding(
+                    get: { model.selected },
+                    set: { id in
+                        // Folder ids are prefixed "dir:"; only file nodes open a note.
+                        if let id, !id.hasPrefix("dir:") { model.select(id) }
+                    }
+                )) { node in
+                    Label(node.name, systemImage: node.filePath != nil ? "doc.text" : "folder")
+                        .font(.body)
+                        .lineLimit(1)
+                        .tag(node.id)
                 }
-            )) { node in
-                Label(node.name, systemImage: node.filePath != nil ? "doc.text" : "folder")
-                    .font(.callout)
-                    .lineLimit(1)
-                    .tag(node.id)
+                .listStyle(.sidebar)
+            } else if matchingFiles.isEmpty {
+                Text("No notes match “\(search)”")
+                    .font(.callout).foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                List(matchingFiles, id: \.self, selection: Binding(
+                    get: { model.selected },
+                    set: { if let p = $0 { model.select(p) } }
+                )) { path in
+                    Label(displayName(path), systemImage: "doc.text")
+                        .font(.body)
+                        .lineLimit(1)
+                        .tag(path)
+                }
+                .listStyle(.sidebar)
             }
-            .listStyle(.sidebar)
         }
+    }
+
+    /// The note's path relative to the vault, for the search results.
+    private func displayName(_ path: String) -> String {
+        model.displayName(path)
     }
 
     private var editorArea: some View {
