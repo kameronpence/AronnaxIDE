@@ -1,15 +1,50 @@
 import SwiftUI
 import SwiftTerm
 
-/// A live terminal attached to a persistent tmux session on the hub.
+/// The Terminal surface: a host picker over a live terminal. Picking a host attaches
+/// to that host's persistent tmux session — the hub directly, or EC2/Lightsail via
+/// the hub (ProxyJump). Each host keeps its own session, so switching is lossless.
+struct TerminalPane: View {
+    @EnvironmentObject private var settings: AppSettings
+    @State private var hostID: String = AppSettings.hubAlias
+
+    private var selectedHost: Host? {
+        settings.hosts.first { $0.id == hostID } ?? settings.hub
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            if settings.hosts.count > 1 {
+                HStack(spacing: 8) {
+                    Image(systemName: "server.rack").foregroundStyle(.secondary)
+                    Picker("Host", selection: $hostID) {
+                        ForEach(settings.hosts) { host in
+                            Text(host.displayName).tag(host.id)
+                        }
+                    }
+                    .labelsHidden()
+                    .fixedSize()
+                    Spacer()
+                }
+                .padding(.horizontal, 8).padding(.vertical, 5)
+                Divider()
+            }
+            HostTerminalView(host: selectedHost)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+}
+
+/// A live terminal attached to a persistent tmux session on `host`.
 ///
-/// Runs `ssh -tt kepler -- exec zsh -lc 'tmux new-session -A -s <session>'` inside
+/// Runs `ssh -tt <host> -- exec zsh -lc 'tmux new-session -A -s <session>'` inside
 /// SwiftTerm's `LocalProcessTerminalView`. Because the work lives in tmux on the
-/// mini, detaching/closing here never kills it — reattaching resumes the session.
+/// remote, detaching/closing here never kills it — reattaching resumes the session.
 ///
-/// On a `WakeObserver` reconnect signal (sleep/wake or network change), the pane
-/// tears down the stale ssh client and reconnects, re-attaching the same session.
-struct TerminalPane: NSViewRepresentable {
+/// On a host change or a `WakeObserver` reconnect signal (sleep/wake or network
+/// change), the pane tears down the stale ssh client and reconnects.
+struct HostTerminalView: NSViewRepresentable {
+    let host: Host?
     @EnvironmentObject private var settings: AppSettings
     @EnvironmentObject private var wakeObserver: WakeObserver
 
@@ -18,7 +53,7 @@ struct TerminalPane: NSViewRepresentable {
     func makeNSView(context: Context) -> LocalProcessTerminalView {
         let view = ClipboardTerminalView(frame: .zero)
         view.processDelegate = context.coordinator
-        context.coordinator.start(view, host: settings.hub,
+        context.coordinator.start(view, host: host,
                                   session: settings.primaryTmuxSession,
                                   baselineSignal: wakeObserver.reconnectSignal)
         return view
@@ -27,7 +62,7 @@ struct TerminalPane: NSViewRepresentable {
     func updateNSView(_ nsView: LocalProcessTerminalView, context: Context) {
         context.coordinator.syncReconnect(signal: wakeObserver.reconnectSignal,
                                           view: nsView,
-                                          host: settings.hub,
+                                          host: host,
                                           session: settings.primaryTmuxSession)
     }
 
@@ -67,17 +102,22 @@ struct TerminalPane: NSViewRepresentable {
             launch(reconnecting: false, master: .keep)   // first attach reuses the shared master
         }
 
-        /// Called from `updateNSView`; reconnects only when the signal advances.
+        /// Called from `updateNSView`; re-attaches when the host changes or the
+        /// reconnect signal advances.
         func syncReconnect(signal: Int, view: LocalProcessTerminalView,
                            host: Host?, session: String) {
-            guard started, signal != lastReconnectSignal else { return }
+            guard started else { return }
+            let hostChanged = host?.id != self.host?.id
+            let reconnect = signal != lastReconnectSignal
+            guard hostChanged || reconnect else { return }
             lastReconnectSignal = signal
             self.view = view
             self.host = host
             self.session = session
-            retryCount = 0   // an explicit Reconnect / wake gets a fresh retry budget
-            // resetOnce dedups across panes reacting to the same wake/network signal.
-            launch(reconnecting: true, master: .resetOnce(signal))
+            retryCount = 0   // a host switch / explicit Reconnect / wake gets a fresh budget
+            // Host switch: connect to the new host normally (its own master). Wake/
+            // network reconnect: drop the stale master once for this host.
+            launch(reconnecting: true, master: hostChanged ? .keep : .resetOnce(signal))
         }
 
         /// Pane teardown: cancel a pending retry and terminate the client so it can't

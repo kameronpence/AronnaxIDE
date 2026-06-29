@@ -11,6 +11,11 @@ struct BrowserPane: View {
     @State private var urlField = ""
     @State private var showForwards = false
     @State private var miniPort = ""
+    @State private var forwardHostID = AppSettings.hubAlias
+
+    private var forwardHost: Host? {
+        settings.hosts.first { $0.id == forwardHostID } ?? settings.hub
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -80,9 +85,16 @@ struct BrowserPane: View {
     /// Popover to forward a mini localhost port and list/open/close active forwards.
     private var forwardPanel: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Mini dev servers").font(.headline)
+            Text("Dev servers").font(.headline)
+            if settings.hosts.count > 1 {
+                Picker("Host", selection: $forwardHostID) {
+                    ForEach(settings.hosts) { Text($0.displayName).tag($0.id) }
+                }
+                .labelsHidden()
+                .help("Forward via this host (EC2/Lightsail hop through the hub)")
+            }
             HStack {
-                TextField("Mini port (e.g. 5173)", text: $miniPort)
+                TextField("Port (e.g. 5173)", text: $miniPort)
                     .textFieldStyle(.roundedBorder)
                     .frame(width: 150)
                     .onSubmit(openForward)
@@ -116,11 +128,12 @@ struct BrowserPane: View {
         .frame(width: 280)
     }
 
-    /// Forward the mini's localhost:<miniPort> to the same local port and load it.
+    /// Forward the selected host's localhost:<port> to the same local port and load
+    /// it. Non-hub hosts hop through the hub via the host's ProxyJump.
     private func openForward() {
-        guard let port = Int(miniPort), let hub = settings.hub else { return }
+        guard let port = Int(miniPort), let host = forwardHost else { return }
         Task {
-            if await forwards.open(localPort: port, remotePort: port, on: hub) != nil {
+            if await forwards.open(localPort: port, remotePort: port, on: host) != nil {
                 model.load("http://127.0.0.1:\(port)")
                 miniPort = ""
                 showForwards = false
