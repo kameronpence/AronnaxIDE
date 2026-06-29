@@ -58,7 +58,9 @@ struct BrowserPane: View {
         if ["localhost", "127.0.0.1", "::1"].contains(urlHost.lowercased()) {
             let scheme = url.scheme ?? "http"
             let port = url.port ?? (scheme == "https" ? 443 : 80)
+            // Keep query + fragment so SPA hash routes (e.g. /#/dashboard) survive.
             let suffix = url.path + (url.query.map { "?\($0)" } ?? "")
+                + (url.fragment.map { "#\($0)" } ?? "")
             forwardAndLoad(port: port, suffix: suffix, scheme: scheme)
         } else {
             model.load(t)   // already reachable — load directly
@@ -69,7 +71,10 @@ struct BrowserPane: View {
     /// original scheme so an https dev server isn't loaded as http.
     private func forwardAndLoad(port: Int, suffix: String, scheme: String = "http") {
         let target = "\(scheme)://127.0.0.1:\(port)\(suffix)"
-        if forwards.forwards.contains(where: { $0.localPort == port }) {
+        // Only reuse an existing tunnel if it points at the same host — otherwise this
+        // local port maps to a different machine's service. A same-port tunnel to
+        // another host makes open() below fail loudly rather than load the wrong one.
+        if forwards.forwards.contains(where: { $0.localPort == port && $0.host.id == forwardHost?.id }) {
             model.load(target)
             return
         }

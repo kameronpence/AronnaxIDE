@@ -203,6 +203,7 @@ final class VaultModel: ObservableObject {
     private var vault: String = ""
     private var loadedContent: String = ""
     private var loadedHash: String?          // MD5 of the open note as last loaded/saved
+    private var pendingSave: Task<Void, Never>?   // serializes back-to-back saves
     /// Host is read-only: never write; on switch, abandon any (edge-case) dirty edits.
     var readOnly = false
     /// "Confirm every write" is on: block a switch while there are unsaved edits so the
@@ -416,14 +417,19 @@ final class VaultModel: ObservableObject {
         // (Reload / Keep mine) so the remote version isn't silently overwritten.
         guard let host, let path = selected, isDirty, !externalChange else { return }
         let toSave = content
-        let baseline = loadedHash
-        Task {
-            let outcome = await conflictAwareWrite(toSave, to: path, baseline: baseline, host: host)
-            guard selected == path else { return }
+        let prior = pendingSave
+        pendingSave = Task { [weak self] in
+            // Wait for any in-flight save to finish so this one reads a fresh baseline —
+            // otherwise our own prior write looks like an external conflict.
+            await prior?.value
+            guard let self, self.selected == path else { return }
+            let baseline = self.loadedHash
+            let outcome = await self.conflictAwareWrite(toSave, to: path, baseline: baseline, host: host)
+            guard self.selected == path else { return }
             switch outcome {
-            case .written:       externalChange = false; status = nil
-            case .conflict:      externalChange = true   // an agent edited it since the last poll
-            case .failed(let e): status = "Save failed: \(e)"
+            case .written:       self.externalChange = false; self.status = nil
+            case .conflict:      self.externalChange = true   // an agent edited it since the last poll
+            case .failed(let e): self.status = "Save failed: \(e)"
             }
         }
     }
