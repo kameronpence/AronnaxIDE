@@ -18,11 +18,38 @@ struct BrowserPane: View {
             Divider()
             WebView(webView: model.webView)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .overlay {
+                    if model.currentURL.isEmpty && !model.isLoading { emptyState }
+                }
         }
         .onChange(of: model.currentURL) { _, newValue in
             // Keep the field in sync as navigation (links, redirects) changes the URL.
             urlField = newValue
         }
+    }
+
+    /// Shown before anything has loaded: how to view what the agents build.
+    private var emptyState: some View {
+        VStack(spacing: 14) {
+            Image(systemName: "globe")
+                .font(.system(size: 44, weight: .light))
+                .foregroundStyle(.secondary)
+            Text("Nothing loaded yet").font(.title3.weight(.semibold))
+            VStack(alignment: .leading, spacing: 6) {
+                Label("Type a URL above and press Go", systemImage: "character.cursor.ibeam")
+                Label("Or forward a mini dev server (its localhost port) to view what the agents build",
+                      systemImage: "network")
+            }
+            .font(.callout)
+            .foregroundStyle(.secondary)
+            Button("Forward a mini dev server") { showForwards = true }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.regular)
+        }
+        .frame(maxWidth: 460)
+        .padding(28)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(.background)
     }
 
     private var navBar: some View {
