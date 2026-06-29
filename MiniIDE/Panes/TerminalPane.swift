@@ -13,6 +13,13 @@ struct TerminalPane: View {
         settings.hosts.first { $0.id == hostID } ?? settings.hub
     }
 
+    /// On the hub the terminal opens in the selected project's directory (or the vault
+    /// when none is selected); other hosts use the default login directory.
+    private var terminalWorkdir: String? {
+        guard let host = selectedHost, host.isHub else { return nil }
+        return settings.activePath
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             if settings.hosts.count > 1 {
@@ -42,7 +49,7 @@ struct TerminalPane: View {
                 if let host = selectedHost, settings.isProtected(host) {
                     protectedBanner(host)
                 }
-                HostTerminalView(host: selectedHost)
+                HostTerminalView(host: selectedHost, workdir: terminalWorkdir)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
@@ -88,25 +95,31 @@ struct TerminalPane: View {
 /// change), the pane tears down the stale ssh client and reconnects.
 struct HostTerminalView: NSViewRepresentable {
     let host: Host?
+    let workdir: String?   // start dir; nil = default home. A per-project session per dir.
     @EnvironmentObject private var settings: AppSettings
     @EnvironmentObject private var wakeObserver: WakeObserver
+
+    /// One tmux session per working directory, so each project gets its own terminal
+    /// (opened in that project); a nil workdir uses the shared primary session.
+    private var session: String {
+        guard let workdir else { return settings.primaryTmuxSession }
+        return settings.primaryTmuxSession + AgentController.sessionSuffix(for: workdir)
+    }
 
     func makeCoordinator() -> Coordinator { Coordinator() }
 
     func makeNSView(context: Context) -> LocalProcessTerminalView {
         let view = ClipboardTerminalView(frame: .zero)
         view.processDelegate = context.coordinator
-        context.coordinator.start(view, host: host,
-                                  session: settings.primaryTmuxSession,
+        context.coordinator.start(view, host: host, session: session, workdir: workdir,
                                   baselineSignal: wakeObserver.reconnectSignal)
         return view
     }
 
     func updateNSView(_ nsView: LocalProcessTerminalView, context: Context) {
         context.coordinator.syncReconnect(signal: wakeObserver.reconnectSignal,
-                                          view: nsView,
-                                          host: host,
-                                          session: settings.primaryTmuxSession)
+                                          view: nsView, host: host,
+                                          session: session, workdir: workdir)
     }
 
     /// SwiftUI tears the pane down on tab switch / window close. Cancel any pending
@@ -124,6 +137,7 @@ struct HostTerminalView: NSViewRepresentable {
         private weak var view: LocalProcessTerminalView?
         private var host: Host?
         private var session = ""
+        private var workdir: String?
 
         private var stopping = false   // pane is being torn down
         private var retryCount = 0
@@ -135,32 +149,35 @@ struct HostTerminalView: NSViewRepresentable {
         private enum MasterAction { case keep, resetOnce(Int), forceReset }
 
         func start(_ view: LocalProcessTerminalView, host: Host?, session: String,
-                   baselineSignal: Int) {
+                   workdir: String?, baselineSignal: Int) {
             guard !started else { return }
             started = true
             lastReconnectSignal = baselineSignal
             self.view = view
             self.host = host
             self.session = session
+            self.workdir = workdir
             launch(reconnecting: false, master: .keep)   // first attach reuses the shared master
         }
 
-        /// Called from `updateNSView`; re-attaches when the host changes or the
-        /// reconnect signal advances.
+        /// Called from `updateNSView`; re-attaches when the host, the session/project
+        /// directory changes, or the reconnect signal advances.
         func syncReconnect(signal: Int, view: LocalProcessTerminalView,
-                           host: Host?, session: String) {
+                           host: Host?, session: String, workdir: String?) {
             guard started else { return }
             let hostChanged = host?.id != self.host?.id
+            let sessionChanged = session != self.session
             let reconnect = signal != lastReconnectSignal
-            guard hostChanged || reconnect else { return }
+            guard hostChanged || sessionChanged || reconnect else { return }
             lastReconnectSignal = signal
             self.view = view
             self.host = host
             self.session = session
-            retryCount = 0   // a host switch / explicit Reconnect / wake gets a fresh budget
-            // Host switch: connect to the new host normally (its own master). Wake/
-            // network reconnect: drop the stale master once for this host.
-            launch(reconnecting: true, master: hostChanged ? .keep : .resetOnce(signal))
+            self.workdir = workdir
+            retryCount = 0   // a host/project switch / explicit Reconnect / wake gets a fresh budget
+            // A wake/network reconnect drops the stale master once; a host/project
+            // switch just attaches normally.
+            launch(reconnecting: true, master: reconnect ? .resetOnce(signal) : .keep)
         }
 
         /// Pane teardown: cancel a pending retry and terminate the client so it can't
@@ -198,9 +215,13 @@ struct HostTerminalView: NSViewRepresentable {
             let verb = reconnecting ? "Reconnecting to" : "Connecting to"
             view.feed(text: "\r\n\(verb) \(host.displayName) — tmux \"\(session)\"…\r\n")
 
+            // `-c <dir>` starts a *new* session in the project dir; if the session
+            // already exists, tmux attaches to it (keeping its dir) — so the terminal
+            // opens in the selected project.
+            let startDir = workdir.map { " -c \(SSHManager.shellEscaped($0))" } ?? ""
             let args = SSHManager.shared.loginShellArguments(
                 for: host,
-                running: "tmux new-session -A -s \(SSHManager.shellEscaped(session))"
+                running: "tmux new-session -A -s \(SSHManager.shellEscaped(session))\(startDir)"
             )
             connectedAt = Date()
             view.startProcess(executable: SSHManager.shared.sshExecutable, args: args)
