@@ -55,8 +55,9 @@ enum AgentController {
     }
 
     /// A short, stable, tmux-safe suffix derived from the project directory (FNV-1a),
-    /// so each project maps to its own agent session.
-    private static func sessionSuffix(for workdir: String) -> String {
+    /// so each project maps to its own agent session. Exposed so the Health panel can
+    /// map a session name like `agent-claude-1a2b3c4d` back to its project.
+    static func sessionSuffix(for workdir: String) -> String {
         var hash: UInt64 = 0xcbf29ce484222325
         for byte in workdir.utf8 {
             hash ^= UInt64(byte)

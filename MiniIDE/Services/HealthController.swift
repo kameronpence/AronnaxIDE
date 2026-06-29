@@ -20,13 +20,15 @@ final class HealthController: ObservableObject {
     @Published private(set) var lastUpdated: Date?
 
     private var hostList: [Host] = []
+    private var agentWorkdir = ""
     private var timer: Timer?
     private var refreshTask: Task<Void, Never>?
     private var started = false
     private let interval: TimeInterval = 20
 
-    func start(hosts: [Host]) {
+    func start(hosts: [Host], agentWorkdir: String) {
         self.hostList = hosts
+        self.agentWorkdir = agentWorkdir
         // Seed rows in "checking" state so the panel isn't empty on first paint.
         if self.hosts.isEmpty {
             self.hosts = hosts.map {
@@ -55,6 +57,7 @@ final class HealthController: ObservableObject {
         guard !isRefreshing else { return }
         isRefreshing = true
         let hosts = hostList
+        let workdir = agentWorkdir
         refreshTask = Task {
             // Probe every host concurrently so one slow/down host doesn't stall the
             // rest; collect by index to keep the displayed order stable.
@@ -64,7 +67,9 @@ final class HealthController: ObservableObject {
                         let reachable = await Self.reachable(host, timeout: 10)
                         var sessions: [String] = []
                         if host.isHub && reachable {
-                            sessions = await Self.tmuxSessions(host)
+                            let raw = await Self.tmuxSessions(host)
+                            let projects = await ProjectService.discover(host: host, root: workdir) ?? []
+                            sessions = raw.map { Self.label(for: $0, projects: projects) }
                         }
                         return (index, HostHealth(id: host.id, name: host.displayName,
                                                   isHub: host.isHub, reachable: reachable,
@@ -81,6 +86,22 @@ final class HealthController: ObservableObject {
             self.isRefreshing = false
             self.refreshTask = nil
         }
+    }
+
+    /// Turn a raw tmux session name into a readable label, mapping per-project agent
+    /// sessions (`agent-claude-<hash>`) back to "Claude · <project>".
+    private nonisolated static func label(for session: String, projects: [DiscoveredProject]) -> String {
+        for (prefix, agent) in [("agent-claude", "Claude"), ("agent-codex", "Codex")] {
+            if session == prefix { return agent }   // legacy global session
+            if session.hasPrefix(prefix + "-") {
+                let suffix = String(session.dropFirst(prefix.count))   // "-<hash>"
+                if let p = projects.first(where: { AgentController.sessionSuffix(for: $0.path) == suffix }) {
+                    return "\(agent) · \(p.name)"
+                }
+                return "\(agent) (\(suffix.dropFirst()))"   // unknown project
+            }
+        }
+        return session   // main, etc.
     }
 
     private static func tmuxSessions(_ host: Host) async -> [String] {

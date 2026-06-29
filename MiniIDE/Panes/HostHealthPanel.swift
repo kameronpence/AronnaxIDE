@@ -5,19 +5,33 @@ import SwiftUI
 struct HostHealthPanel: View {
     @EnvironmentObject private var settings: AppSettings
     @StateObject private var health = HealthController()
+    @ObservedObject private var forwards = PortForwardManager.shared
 
     var body: some View {
         VStack(spacing: 0) {
             header
             Divider()
             List {
-                ForEach(health.hosts) { host in
-                    hostRow(host)
+                Section("Hosts") {
+                    ForEach(health.hosts) { host in
+                        hostRow(host)
+                    }
+                }
+                Section("Tunnels") {
+                    if forwards.forwards.isEmpty {
+                        Text("No active port-forwards").foregroundStyle(.secondary).font(.callout)
+                    } else {
+                        ForEach(forwards.forwards) { f in
+                            Label("127.0.0.1:\(f.localPort) → \(f.remoteHost):\(f.remotePort)",
+                                  systemImage: "network")
+                                .font(.callout)
+                        }
+                    }
                 }
             }
             .listStyle(.inset)
         }
-        .onAppear { health.start(hosts: settings.hosts) }
+        .onAppear { health.start(hosts: settings.hosts, agentWorkdir: settings.agentWorkdir) }
         .onDisappear { health.stop() }
     }
 
@@ -81,7 +95,7 @@ struct HostHealthPanel: View {
     }
 
     private func sessionIcon(_ name: String) -> String {
-        if name.hasPrefix("agent-") { return "sparkles" }
+        if name.hasPrefix("Claude") || name.hasPrefix("Codex") { return "sparkles" }
         if name == "main" { return "terminal" }
         return "rectangle.split.3x1"
     }
