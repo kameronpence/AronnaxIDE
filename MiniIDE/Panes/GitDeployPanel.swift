@@ -30,15 +30,33 @@ struct GitDeployPanel: View {
         }
     }
 
-    /// Surfaces the branch + the GitHub account the push goes out as, so a wrong-account
-    /// push is caught at confirm time. (Full mismatch detection against a *configured*
-    /// project identity arrives with M12 settings.)
+    /// A likely wrong-account push: the identity the repo pushes as doesn't match the
+    /// repo's owner. The convention is that each repo pushes under its own owner
+    /// (personal repos as the personal account, org repos as the org), so a difference
+    /// is a strong signal the wrong account is configured.
+    private func accountMismatch(_ s: GitStatus) -> (identity: String, owner: String)? {
+        guard let identity = GitController.identity(remote: s.remote),
+              let owner = s.owner,
+              identity.caseInsensitiveCompare(owner) != .orderedSame else { return nil }
+        return (identity, owner)
+    }
+
+    /// Surfaces the branch + the GitHub account the push goes out as — and a prominent
+    /// warning when that account doesn't match the repo owner — so a wrong-account push
+    /// is caught at confirm time.
     private var pushWarning: String {
         let branch = model.status?.branch ?? "the branch"
         let account = GitController.identity(remote: model.status?.remote)
             .map { " as \($0)" } ?? ""
         let remote = model.status?.remote.map { " (\(maskedRemote($0)))" } ?? ""
-        return "Pushes \(branch)\(account) to origin\(remote).\n\nThis triggers your GitHub Actions deploy if configured — make sure this is the right account before pushing."
+        var prefix = ""
+        if let s = model.status, let mismatch = accountMismatch(s) {
+            prefix = "⚠️ WRONG ACCOUNT? This repo is owned by \(mismatch.owner) but is set "
+                + "to push as \(mismatch.identity).\n\n"
+        }
+        return prefix + "Pushes \(branch)\(account) to origin\(remote).\n\nThis triggers "
+            + "your GitHub Actions deploy if configured — make sure this is the right "
+            + "account before pushing."
     }
 
     private var header: some View {
@@ -95,10 +113,23 @@ struct GitDeployPanel: View {
                     if s.behind > 0 { stateChip("\(s.behind) behind", system: "arrow.down.circle", tint: .blue) }
                 }
 
+                if let mismatch = accountMismatch(s) {
+                    Label("Pushes as \(mismatch.identity), but this repo is owned by \(mismatch.owner) — likely the wrong account.",
+                          systemImage: "exclamationmark.triangle.fill")
+                        .font(.callout)
+                        .foregroundStyle(.orange)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(10)
+                        .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+                }
+
                 if let remote = s.remote {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("origin").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
                         Text(maskedRemote(remote)).font(.callout.monospaced()).textSelection(.enabled)
+                        if let identity = GitController.identity(remote: remote) {
+                            Text("pushes as \(identity)").font(.caption).foregroundStyle(.secondary)
+                        }
                     }
                 }
 
