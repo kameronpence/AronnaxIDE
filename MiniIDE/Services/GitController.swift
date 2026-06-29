@@ -115,6 +115,24 @@ struct GitController {
         return try await runGit("git -C \(p) push origin HEAD")
     }
 
+    /// Local branch names, with the current one first.
+    func branches(path: String) async throws -> [String] {
+        let p = SSHManager.shellEscaped(path)
+        let out = try await runGit("git -C \(p) branch --format='%(refname:short)'")
+        return out.split(separator: "\n", omittingEmptySubsequences: true)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+    }
+
+    /// Checks out `branch` (fails if the working tree is dirty — git refuses to clobber
+    /// uncommitted changes, and we surface that error rather than forcing).
+    @discardableResult
+    func checkout(path: String, branch: String) async throws -> String {
+        let p = SSHManager.shellEscaped(path)
+        let b = SSHManager.shellEscaped(branch)
+        return try await runGit("git -C \(p) checkout \(b)")
+    }
+
     @discardableResult
     private func runGit(_ command: String) async throws -> String {
         // GIT_TERMINAL_PROMPT=0 so a credential prompt fails fast instead of hanging

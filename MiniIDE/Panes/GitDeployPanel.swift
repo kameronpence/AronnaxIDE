@@ -91,8 +91,20 @@ struct GitDeployPanel: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 10) {
-                    Label(s.branch ?? "—", systemImage: "arrow.triangle.branch")
-                        .font(.title3.weight(.semibold))
+                    Image(systemName: "arrow.triangle.branch").font(.title3)
+                    if model.branches.count > 1 {
+                        Picker("Branch", selection: Binding(
+                            get: { s.branch ?? "" },
+                            set: { model.checkout($0) }
+                        )) {
+                            ForEach(model.branches, id: \.self) { Text($0).tag($0) }
+                        }
+                        .labelsHidden()
+                        .fixedSize()
+                        .disabled(model.actionBusy)
+                    } else {
+                        Text(s.branch ?? "—").font(.title3.weight(.semibold))
+                    }
                     if let owner = s.owner {
                         Text(owner)
                             .font(.caption.weight(.medium))
@@ -237,9 +249,10 @@ struct GitDeployPanel: View {
 @MainActor
 final class GitPanelModel: ObservableObject {
     @Published var selectedPath: String? {
-        didSet { if oldValue != selectedPath { status = nil; runs = []; actionMessage = nil; loadStatus() } }
+        didSet { if oldValue != selectedPath { status = nil; branches = []; runs = []; actionMessage = nil; loadStatus() } }
     }
     @Published var status: GitStatus?
+    @Published var branches: [String] = []
     @Published var runs: [ActionRun] = []
     @Published var isLoading = false
     @Published var error: String?
@@ -271,6 +284,7 @@ final class GitPanelModel: ObservableObject {
                 guard token == statusToken else { return }
                 status = s
                 loadRuns()
+                loadBranches()
             } catch {
                 guard token == statusToken else { return }
                 status = nil
@@ -291,6 +305,22 @@ final class GitPanelModel: ObservableObject {
             guard token == runsToken, selectedPath == path else { return }   // superseded — drop
             runs = r
         }
+    }
+
+    func loadBranches() {
+        guard let host, let path = selectedPath else { branches = []; return }
+        Task {
+            let b = (try? await GitController(host: host).branches(path: path)) ?? []
+            guard selectedPath == path else { return }   // switched away — drop
+            branches = b
+        }
+    }
+
+    /// Check out a different branch on the hub (refreshes status, which the rest of
+    /// the panel — and the browser preview — reads from).
+    func checkout(_ branch: String) {
+        guard branch != status?.branch else { return }
+        run { _ = try await $0.checkout(path: $1, branch: branch); return "Switched to \(branch)." }
     }
 
     func commit(message: String) {
