@@ -8,10 +8,12 @@ struct BrowserPane: View {
     @EnvironmentObject private var settings: AppSettings
     @StateObject private var model = BrowserModel()
     @ObservedObject private var forwards = PortForwardManager.shared
+    @StateObject private var preview = PreviewWatcher()
     @State private var urlField = ""
     @State private var showForwards = false
     @State private var miniPort = ""
     @State private var forwardHostID = AppSettings.hubAlias
+    @AppStorage("browser.autoPreview") private var autoPreview = true
 
     private var forwardHost: Host? {
         settings.hosts.first { $0.id == forwardHostID } ?? settings.hub
@@ -30,6 +32,50 @@ struct BrowserPane: View {
         .onChange(of: model.currentURL) { _, newValue in
             // Keep the field in sync as navigation (links, redirects) changes the URL.
             urlField = newValue
+        }
+        .onAppear { preview.start(host: settings.hub, dir: settings.activePath) }
+        .onDisappear { preview.stop() }
+        .onChange(of: settings.selectedProjectPath) { _, _ in
+            preview.start(host: settings.hub, dir: settings.activePath)
+        }
+        .onChange(of: preview.target) { _, target in
+            // The agent pushed something — load it (when auto-preview is on).
+            if autoPreview, let target { loadPreview(target) }
+        }
+    }
+
+    /// Loads a target the agent wrote to `.miniide-preview`: a bare port, a localhost
+    /// URL (forwarded through the hub), or a remote URL (loaded directly).
+    private func loadPreview(_ raw: String) {
+        let t = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !t.isEmpty else { return }
+        if let port = Int(t), (1...65535).contains(port) {
+            forwardAndLoad(port: port, suffix: "")
+            return
+        }
+        guard let url = URL(string: t.contains("://") ? t : "http://\(t)"),
+              let urlHost = url.host else { model.load(t); return }
+        if ["localhost", "127.0.0.1", "::1"].contains(urlHost.lowercased()) {
+            let port = url.port ?? 80
+            let suffix = url.path + (url.query.map { "?\($0)" } ?? "")
+            forwardAndLoad(port: port, suffix: suffix)
+        } else {
+            model.load(t)   // already reachable — load directly
+        }
+    }
+
+    /// Forward the hub's localhost:<port> (if not already) and load it.
+    private func forwardAndLoad(port: Int, suffix: String) {
+        let target = "http://127.0.0.1:\(port)\(suffix)"
+        if forwards.forwards.contains(where: { $0.localPort == port }) {
+            model.load(target)
+            return
+        }
+        guard let host = forwardHost else { return }
+        Task {
+            if await forwards.open(localPort: port, remotePort: port, on: host) != nil {
+                model.load(target)
+            }
         }
     }
 
@@ -73,6 +119,15 @@ struct BrowserPane: View {
 
             Button("Go") { model.load(urlField) }
                 .disabled(urlField.trimmingCharacters(in: .whitespaces).isEmpty)
+
+            // Manual "show it" when auto is off but the agent has pushed a preview.
+            if !autoPreview, let target = preview.target {
+                Button { loadPreview(target) } label: { Image(systemName: "sparkles") }
+                    .help("Load the preview the agent pushed")
+            }
+            Toggle(isOn: $autoPreview) { Image(systemName: "wand.and.rays") }
+                .toggleStyle(.button)
+                .help("Auto-load previews the agents push to .miniide-preview")
 
             Button { showForwards.toggle() } label: { Image(systemName: "network") }
                 .help("Forward a mini localhost port")
