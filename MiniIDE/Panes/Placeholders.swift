@@ -30,15 +30,3 @@ struct ComingSoon: View {
     }
 }
 
-struct LogViewer: View {
-    var body: some View {
-        ComingSoon(
-            title: "Remote Logs",
-            systemImage: "list.bullet.rectangle",
-            milestone: "M9",
-            detail: "Stream logs from any host (file / journalctl / pm2 / docker) "
-                + "with live filtering — handy for prod log analysis."
-        )
-    }
-}
-

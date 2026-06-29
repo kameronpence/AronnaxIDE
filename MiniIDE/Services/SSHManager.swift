@@ -166,6 +166,23 @@ final class SSHManager {
         return sshArguments(for: host, interactive: true, remoteCommand: [remote])
     }
 
+    /// Argument vector for a long-lived **streaming** command (e.g. `tail -F`,
+    /// `pm2 logs`, `docker logs -f`). Runs under a login shell so PATH resolves
+    /// pm2/docker/etc., with no PTY (`BatchMode`) so tools emit plain, un-coloured
+    /// lines. Spawn with `sshExecutable` and terminate the process to stop the
+    /// stream; it reuses the shared ControlMaster and any ProxyJump.
+    func streamArguments(for host: Host, running command: String) -> [String] {
+        let remote = "exec zsh -lc \(Self.shellEscaped(command))"
+        let args = sshArguments(for: host, interactive: false, remoteCommand: [remote])
+        // Ride the shared master if one exists, but never *become* it: a stream that
+        // owned the master would drop the terminal/other panes when it's stopped.
+        // NOTE: ControlMaster=no still multiplexes over an existing master (verified:
+        // ssh logs `mux_client_request_session`); it only prevents *creating* one. It
+        // does NOT disable sharing. ssh uses the first value given for an option, so
+        // this wins over the ControlMaster=auto that sshArguments adds.
+        return ["-o", "ControlMaster=no"] + args
+    }
+
     /// Path to the system ssh client, for callers that spawn it themselves
     /// (e.g. SwiftTerm's `LocalProcessTerminalView.startProcess`).
     var sshExecutable: String { sshPath }
