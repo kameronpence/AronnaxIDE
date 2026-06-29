@@ -6,10 +6,6 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject private var settings: AppSettings
 
-    @State private var newName = ""
-    @State private var newAlias = ""
-    @State private var newEmail = ""
-
     @State private var newHostName = ""
     @State private var newHostAddr = ""
     @State private var newHostUser = "root"
@@ -63,42 +59,15 @@ struct SettingsView: View {
                 .textFieldStyle(.roundedBorder)
             }
 
-            Section("GitHub accounts") {
-                if settings.accounts.isEmpty {
-                    Text("No accounts configured.").foregroundStyle(.secondary)
-                }
-                ForEach(settings.accounts) { account in
-                    HStack(alignment: .firstTextBaseline) {
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text(account.displayName).fontWeight(.medium)
-                            Text("\(account.sshHostAlias) · \(account.email)")
-                                .font(.callout).foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                        Button(role: .destructive) { remove(account) } label: {
-                            Image(systemName: "minus.circle.fill")
-                        }
-                        .buttonStyle(.plain)
-                        .foregroundStyle(.secondary)
-                        .help("Remove account")
-                    }
-                }
-
-                VStack(spacing: 6) {
-                    TextField("Name (e.g. Work)", text: $newName)
-                    TextField("SSH host alias (e.g. github.com-work)", text: $newAlias)
-                    TextField("Email", text: $newEmail)
-                    HStack {
-                        Spacer()
-                        Button("Add account", action: addAccount)
-                            .disabled(newName.trimmingCharacters(in: .whitespaces).isEmpty)
-                    }
-                }
-                .textFieldStyle(.roundedBorder)
+            Section("GitHub") {
+                Text("Git auth is handled on the hosts: each repo's origin URL embeds "
+                     + "its account and gh is the credential helper, so push/pull use the "
+                     + "right account automatically. Nothing to configure here.")
+                    .font(.callout).foregroundStyle(.secondary)
             }
         }
         .formStyle(.grouped)
-        .frame(width: 500, height: 560)
+        .frame(width: 500, height: 470)
     }
 
     private func reachLabel(_ host: Host) -> String {
@@ -123,20 +92,6 @@ struct SettingsView: View {
         newHostName = ""; newHostAddr = ""; newHostUser = "root"; newHostViaHub = true
     }
 
-    private func addAccount() {
-        let name = newName.trimmingCharacters(in: .whitespaces)
-        guard !name.isEmpty else { return }
-        settings.accounts.append(GitHubAccount(
-            id: UUID().uuidString,
-            displayName: name,
-            sshHostAlias: newAlias.trimmingCharacters(in: .whitespaces),
-            email: newEmail.trimmingCharacters(in: .whitespaces)))
-        newName = ""; newAlias = ""; newEmail = ""
-    }
-
-    private func remove(_ account: GitHubAccount) {
-        settings.accounts.removeAll { $0.id == account.id }
-    }
 }
 
 #Preview {

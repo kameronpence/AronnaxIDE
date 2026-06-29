@@ -9,13 +9,6 @@ final class AppSettings: ObservableObject {
     @Published private(set) var hosts: [Host] = []
     private var discoveredHosts: [Host] = []
     private var customHosts: [Host] = []
-    @Published var accounts: [GitHubAccount] {
-        didSet {
-            if let data = try? JSONEncoder().encode(accounts) {
-                UserDefaults.standard.set(data, forKey: Keys.accounts)
-            }
-        }
-    }
     @Published var projects: [Project]
 
     /// tmux session name used for the primary shell on a host.
@@ -33,7 +26,6 @@ final class AppSettings: ObservableObject {
     private enum Keys {
         static let agentWorkdir = "settings.agentWorkdir"
         static let tmuxSession = "settings.primaryTmuxSession"
-        static let accounts = "settings.githubAccounts"
         static let customHosts = "settings.customHosts"
     }
 
@@ -98,10 +90,6 @@ final class AppSettings: ObservableObject {
             discovered.insert(Host.kepler, at: 0)
         }
         self.discoveredHosts = discovered
-        self.accounts = [
-            GitHubAccount(id: "personal", displayName: "Personal",
-                          sshHostAlias: "github.com", email: "kameronpence@gmail.com")
-        ]
         self.projects = []
 
         // Apply persisted overrides. These are subsequent assignments (the stored
@@ -110,10 +98,6 @@ final class AppSettings: ObservableObject {
         let defaults = UserDefaults.standard
         if let workdir = defaults.string(forKey: Keys.agentWorkdir) { agentWorkdir = workdir }
         if let session = defaults.string(forKey: Keys.tmuxSession) { primaryTmuxSession = session }
-        if let data = defaults.data(forKey: Keys.accounts),
-           let decoded = try? JSONDecoder().decode([GitHubAccount].self, from: data) {
-            accounts = decoded
-        }
         if let data = defaults.data(forKey: Keys.customHosts),
            let decoded = try? JSONDecoder().decode([Host].self, from: data) {
             customHosts = decoded
