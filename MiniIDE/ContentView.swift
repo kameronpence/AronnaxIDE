@@ -59,12 +59,10 @@ struct ContentView: View {
                 .navigationSplitViewColumnWidth(min: 200, ideal: 240, max: 340)
         } detail: {
             VStack(spacing: 0) {
-                WorkspaceTabBar(workspace: workspace)
+                WorkspaceTopBar(workspace: workspace)
                 Divider()
                 WorkspaceView(model: workspace)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                Divider()
-                StatusBar()
             }
         }
         .navigationTitle("AronnaxIDE")
@@ -72,43 +70,85 @@ struct ContentView: View {
     }
 }
 
-/// The surface switcher. Each pane has its own content dropdown + split/close
-/// controls; this bar is a convenience that retargets the *focused* pane (the one
-/// outlined in the accent color when more than one pane is open).
-private struct WorkspaceTabBar: View {
+/// The top bar: connection status + hub on the left, the surface tabs in the middle
+/// (they retarget the focused pane), and the Settings gear on the right.
+private struct WorkspaceTopBar: View {
     @ObservedObject var workspace: WorkspaceModel
+    @EnvironmentObject private var settings: AppSettings
+    @EnvironmentObject private var wakeObserver: WakeObserver
+    @StateObject private var monitor = ConnectionMonitor()
 
     var body: some View {
-        HStack(spacing: 4) {
-            ForEach(WorkspaceTab.allCases) { tab in
-                Button {
-                    workspace.setFocusedTab(tab)
-                } label: {
-                    Label(tab.rawValue, systemImage: tab.systemImage)
-                        .labelStyle(.titleAndIcon)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(
-                            workspace.focusedTab == tab
-                                ? Color.accentColor.opacity(0.18)
-                                : Color.clear,
-                            in: RoundedRectangle(cornerRadius: 6)
-                        )
+        HStack(spacing: 12) {
+            // Connection status + hub (left)
+            HStack(spacing: 7) {
+                Circle().fill(dotColor).frame(width: 11, height: 11)
+                Text(statusText).foregroundStyle(.secondary)
+                Button("Reconnect", action: reconnect).buttonStyle(.link)
+                if let hub = settings.hub {
+                    Text("· \(hub.sshAlias)").foregroundStyle(.tertiary)
                 }
-                .buttonStyle(.plain)
-                .foregroundStyle(workspace.focusedTab == tab ? Color.accentColor : .secondary)
             }
-            Spacer()
-            if workspace.paneCount > 1 {
-                Text("→ focused pane")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
-                    .help("These tabs change the highlighted pane. Each pane also has its own content dropdown and split buttons.")
+            .fixedSize()
+
+            Spacer(minLength: 8)
+
+            // Surface tabs — retarget the focused pane
+            HStack(spacing: 4) {
+                ForEach(WorkspaceTab.allCases) { tab in
+                    Button { workspace.setFocusedTab(tab) } label: {
+                        Label(tab.rawValue, systemImage: tab.systemImage)
+                            .labelStyle(.titleAndIcon)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(
+                                workspace.focusedTab == tab
+                                    ? Color.accentColor.opacity(0.18) : Color.clear,
+                                in: RoundedRectangle(cornerRadius: 6))
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(workspace.focusedTab == tab ? Color.accentColor : .secondary)
+                }
             }
+            .fixedSize()
+
+            Spacer(minLength: 8)
+
+            // Settings (right)
+            SettingsLink { Image(systemName: "gearshape.fill") }
+                .buttonStyle(.borderless)
+                .font(.title2)
+                .help("Settings (⌘,) — hosts, GitHub accounts, workdir")
         }
-        .font(.callout)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 6)
+        .font(.body)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .onAppear { monitor.start(host: settings.hub) }
+        .onDisappear { monitor.stop() }
+    }
+
+    private var dotColor: Color {
+        switch monitor.status {
+        case .connected:    return .green
+        case .disconnected: return .red
+        case .checking:     return .yellow
+        }
+    }
+    private var statusText: String {
+        switch monitor.status {
+        case .connected:    return "Connected"
+        case .disconnected: return "Disconnected"
+        case .checking:     return "Connecting…"
+        }
+    }
+    private func reconnect() {
+        wakeObserver.triggerReconnect()
+        // Drop the (possibly stale) hub master so Reconnect works even with no
+        // reconnect-aware pane mounted; idempotent per signal.
+        if let hub = settings.hub {
+            SSHManager.shared.resetMasterOnce(for: hub, generation: wakeObserver.reconnectSignal)
+        }
+        monitor.recheck(host: settings.hub)
     }
 }
 
@@ -141,7 +181,7 @@ private struct SidebarView: View {
                                         Label(project.name, systemImage: "folder")
                                         if let branch = project.branch {
                                             Text(branch + (project.owner.map { " · \($0)" } ?? ""))
-                                                .font(.caption)
+                                                .font(.callout)
                                                 .foregroundStyle(.secondary)
                                                 .padding(.leading, 24)
                                         }
@@ -174,6 +214,7 @@ private struct SidebarView: View {
                 }
             }
             .listStyle(.sidebar)
+            .font(.body)
 
             Divider()
             SidebarUsageFooter(usage: usage)
@@ -192,66 +233,6 @@ private struct SidebarView: View {
     }
 }
 
-private struct StatusBar: View {
-    @EnvironmentObject private var settings: AppSettings
-    @EnvironmentObject private var wakeObserver: WakeObserver
-    @StateObject private var monitor = ConnectionMonitor()
-
-    var body: some View {
-        HStack(spacing: 8) {
-            Circle()
-                .fill(dotColor)
-                .frame(width: 8, height: 8)
-            Text(statusText)
-                .foregroundStyle(.secondary)
-            Button("Reconnect", action: reconnect)
-                .buttonStyle(.link)
-                .font(.caption)
-            Spacer()
-            if let hub = settings.hub {
-                Text("hub: \(hub.sshAlias)")
-                    .foregroundStyle(.tertiary)
-            }
-            SettingsLink { Image(systemName: "gearshape") }
-                .buttonStyle(.borderless)
-                .help("Settings (⌘,) — hosts, GitHub accounts, workdir")
-        }
-        .font(.caption)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 5)
-        .onAppear { monitor.start(host: settings.hub) }
-        .onDisappear { monitor.stop() }
-    }
-
-    private var dotColor: Color {
-        switch monitor.status {
-        case .connected:    return .green
-        case .disconnected: return .red
-        case .checking:     return .yellow
-        }
-    }
-
-    private var statusText: String {
-        switch monitor.status {
-        case .connected:    return "Connected"
-        case .disconnected: return "Disconnected"
-        case .checking:     return "Connecting…"
-        }
-    }
-
-    private func reconnect() {
-        wakeObserver.triggerReconnect()
-        // Drop the (possibly stale) hub master directly so Reconnect works even on
-        // a tab with no reconnect-aware pane mounted to do it. resetMasterOnce is
-        // idempotent per signal, so this coordinates with any active pane rather
-        // than double-closing.
-        if let hub = settings.hub {
-            SSHManager.shared.resetMasterOnce(for: hub,
-                                              generation: wakeObserver.reconnectSignal)
-        }
-        monitor.recheck(host: settings.hub)
-    }
-}
 
 #Preview {
     ContentView()

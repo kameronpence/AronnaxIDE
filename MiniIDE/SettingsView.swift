@@ -23,7 +23,7 @@ struct SettingsView: View {
                 TextField("Primary tmux session", text: $settings.primaryTmuxSession)
                     .textFieldStyle(.roundedBorder)
                 Text("The agent workdir is the fallback directory when no project is selected.")
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(.callout).foregroundStyle(.secondary)
             }
 
             Section("Hosts") {
@@ -32,7 +32,7 @@ struct SettingsView: View {
                         VStack(alignment: .leading, spacing: 1) {
                             Text(host.displayName).fontWeight(.medium)
                             Text("\(host.sshAlias)\(host.user.map { " · \($0)" } ?? "") · \(reachLabel(host))")
-                                .font(.caption).foregroundStyle(.secondary)
+                                .font(.callout).foregroundStyle(.secondary)
                         }
                         Spacer()
                         if settings.isCustomHost(host.id) {
@@ -72,7 +72,7 @@ struct SettingsView: View {
                         VStack(alignment: .leading, spacing: 1) {
                             Text(account.displayName).fontWeight(.medium)
                             Text("\(account.sshHostAlias) · \(account.email)")
-                                .font(.caption).foregroundStyle(.secondary)
+                                .font(.callout).foregroundStyle(.secondary)
                         }
                         Spacer()
                         Button(role: .destructive) { remove(account) } label: {

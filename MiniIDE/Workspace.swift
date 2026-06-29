@@ -334,9 +334,10 @@ private struct LeafPaneView: View {
                     .help("Close pane")
             }
         }
-        .font(.callout)
+        .font(.body)
+        .imageScale(.large)
         .padding(.horizontal, 8)
-        .padding(.vertical, 5)
+        .padding(.vertical, 6)
         .contentShape(Rectangle())
         .onTapGesture { model.focus(id) }
     }
