@@ -89,8 +89,10 @@ struct VaultPane: View {
             } else if showPreview {
                 HSplitView {
                     editor
-                    MarkdownPreview(text: model.content)
-                        .frame(minWidth: 280, maxWidth: .infinity, maxHeight: .infinity)
+                    MarkdownPreview(text: model.content) { name in
+                        model.openWikilink(name)
+                    }
+                    .frame(minWidth: 280, maxWidth: .infinity, maxHeight: .infinity)
                 }
             } else {
                 editor
@@ -310,12 +312,31 @@ final class VaultModel: ObservableObject {
         let prefix = vault.hasSuffix("/") ? vault : vault + "/"
         return path.hasPrefix(prefix) ? String(path.dropFirst(prefix.count)) : path
     }
+
+    /// Opens the note a `[[wikilink]]` points at by matching its base filename
+    /// (case-insensitive, `.md` optional) against the vault's files.
+    func openWikilink(_ name: String) {
+        let clean = name.trimmingCharacters(in: .whitespaces)
+        let key = (clean.lowercased().hasSuffix(".md") ? String(clean.dropLast(3)) : clean).lowercased()
+        guard !key.isEmpty else { return }
+        let match = files.first { path in
+            let fn = (path as NSString).lastPathComponent.lowercased()
+            let base = fn.hasSuffix(".md") ? String(fn.dropLast(3)) : fn
+            return base == key
+        }
+        if let match {
+            select(match)
+        } else {
+            status = "No note named “\(clean)” in this vault."
+        }
+    }
 }
 
-/// A lightweight live markdown preview: headings, bullets, and inline styling.
-/// (Wikilinks become clickable in a later task.)
+/// A lightweight live markdown preview: headings, bullets, inline styling, and
+/// clickable Obsidian `[[wikilinks]]`.
 struct MarkdownPreview: View {
     let text: String
+    var onOpenWikilink: ((String) -> Void)? = nil
 
     var body: some View {
         ScrollView {
@@ -329,6 +350,11 @@ struct MarkdownPreview: View {
             .padding()
             .textSelection(.enabled)
         }
+        .environment(\.openURL, OpenURLAction { url in
+            guard url.scheme == "wikilink" else { return .systemAction }
+            onOpenWikilink?(url.lastPathComponent)   // already percent-decoded
+            return .handled
+        })
     }
 
     @ViewBuilder
@@ -352,9 +378,38 @@ struct MarkdownPreview: View {
     }
 
     private func inline(_ s: String) -> AttributedString {
-        (try? AttributedString(
-            markdown: s,
+        let linked = Self.linkifyWikilinks(s)
+        return (try? AttributedString(
+            markdown: linked,
             options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)
         )) ?? AttributedString(s)
+    }
+
+    /// Rewrites Obsidian `[[Note Name]]` (and `[[Note|alias]]` / `[[Note#heading]]`)
+    /// into a tappable markdown link with a `wikilink://` scheme, so the preview can
+    /// open the target note. The link target ignores any alias/heading.
+    static func linkifyWikilinks(_ s: String) -> String {
+        guard s.contains("[["),
+              let re = try? NSRegularExpression(pattern: #"\[\[([^\]\[]+)\]\]"#) else { return s }
+        let full = NSRange(s.startIndex..., in: s)
+        var out = ""
+        var cursor = s.startIndex
+        re.enumerateMatches(in: s, range: full) { match, _, _ in
+            guard let match,
+                  let mr = Range(match.range, in: s),
+                  let nr = Range(match.range(at: 1), in: s) else { return }
+            out += s[cursor..<mr.lowerBound]
+            let inner = String(s[nr])
+            let target = inner.split(whereSeparator: { $0 == "|" || $0 == "#" })
+                .first.map(String.init)?.trimmingCharacters(in: .whitespaces) ?? inner
+            let display = inner.contains("|")
+                ? String(inner.split(separator: "|").last ?? Substring(target))
+                : target
+            let encoded = target.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? target
+            out += "[\(display)](wikilink://open/\(encoded))"
+            cursor = mr.upperBound
+        }
+        out += s[cursor...]
+        return out
     }
 }
