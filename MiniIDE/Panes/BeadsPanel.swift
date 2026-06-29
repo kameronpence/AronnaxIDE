@@ -86,6 +86,7 @@ struct BeadsPanel: View {
         .sheet(item: $selectedIssue) { issue in
             BdIssueDetailSheet(
                 issue: issue,
+                readOnly: hubReadOnly,
                 onUpdate: { fields in requestWrite("Update \(issue.id)?") { model.update(id: issue.id, fields: fields) } },
                 onClose: { requestWrite("Close \(issue.id)?") { model.close(id: issue.id) } },
                 onReopen: { requestWrite("Reopen \(issue.id)?") { model.reopen(id: issue.id) } },
@@ -286,6 +287,7 @@ private struct BdCreateSheet: View {
 private struct BdIssueDetailSheet: View {
     @Environment(\.dismiss) private var dismiss
     let issue: BdIssue
+    var readOnly = false
     let onUpdate: (_ fields: [String]) -> Void
     let onClose: () -> Void
     let onReopen: () -> Void
@@ -324,28 +326,38 @@ private struct BdIssueDetailSheet: View {
 
             Divider()
 
+            if readOnly {
+                Label("Host is read-only — issue changes are disabled.", systemImage: "lock.fill")
+                    .font(.caption).foregroundStyle(.orange)
+            }
+
             HStack(spacing: 8) {
                 TextField("Add a note…", text: $note)
                     .textFieldStyle(.roundedBorder)
                 Button("Add Note") { onAddNote(trimmedNote); dismiss() }
-                    .disabled(trimmedNote.isEmpty)
+                    .disabled(trimmedNote.isEmpty || readOnly)
             }
 
             HStack(spacing: 10) {
-                if issue.status == "closed" {
-                    Button("Reopen") { onReopen(); dismiss() }
-                } else {
-                    if issue.status != "in_progress" {
-                        Button("Start") { onUpdate(["--status", "in_progress"]); dismiss() }
+                // Mutations are blocked on a read-only host (the model no-ops them), so
+                // disable the controls rather than presenting dead buttons.
+                Group {
+                    if issue.status == "closed" {
+                        Button("Reopen") { onReopen(); dismiss() }
+                    } else {
+                        if issue.status != "in_progress" {
+                            Button("Start") { onUpdate(["--status", "in_progress"]); dismiss() }
+                        }
+                        Button("Close") { onClose(); dismiss() }
                     }
-                    Button("Close") { onClose(); dismiss() }
-                }
-                Menu("Priority") {
-                    ForEach(0..<5) { p in
-                        Button("P\(p)") { onUpdate(["--priority", String(p)]); dismiss() }
+                    Menu("Priority") {
+                        ForEach(0..<5) { p in
+                            Button("P\(p)") { onUpdate(["--priority", String(p)]); dismiss() }
+                        }
                     }
+                    .fixedSize()
                 }
-                .fixedSize()
+                .disabled(readOnly)
                 Spacer()
                 Button("Done") { dismiss() }.keyboardShortcut(.defaultAction)
             }
