@@ -11,6 +11,29 @@ final class AppSettings: ObservableObject {
     private var customHosts: [Host] = []
     @Published var projects: [Project]
 
+    // MARK: - SSH write guardrails
+    /// Hosts flagged "protected" — the Terminal warns + confirms before connecting.
+    @Published private(set) var protectedHostIDs: Set<String> = []
+    /// Hosts flagged "read-only" — the app blocks its own writes (vault save, git
+    /// commit/push/checkout, beads changes) that target them.
+    @Published private(set) var readOnlyHostIDs: Set<String> = []
+    /// When true, every app-initiated write asks for confirmation first (all hosts).
+    @Published var confirmWrites = false {
+        didSet { UserDefaults.standard.set(confirmWrites, forKey: Keys.confirmWrites) }
+    }
+
+    func isProtected(_ host: Host?) -> Bool { host.map { protectedHostIDs.contains($0.id) } ?? false }
+    func isReadOnly(_ host: Host?) -> Bool { host.map { readOnlyHostIDs.contains($0.id) } ?? false }
+
+    func setProtected(_ id: String, _ on: Bool) {
+        if on { protectedHostIDs.insert(id) } else { protectedHostIDs.remove(id) }
+        UserDefaults.standard.set(Array(protectedHostIDs), forKey: Keys.protectedHosts)
+    }
+    func setReadOnly(_ id: String, _ on: Bool) {
+        if on { readOnlyHostIDs.insert(id) } else { readOnlyHostIDs.remove(id) }
+        UserDefaults.standard.set(Array(readOnlyHostIDs), forKey: Keys.readOnlyHosts)
+    }
+
     /// tmux session name used for the primary shell on a host.
     @Published var primaryTmuxSession: String = "main" {
         didSet { UserDefaults.standard.set(primaryTmuxSession, forKey: Keys.tmuxSession) }
@@ -27,6 +50,9 @@ final class AppSettings: ObservableObject {
         static let agentWorkdir = "settings.agentWorkdir"
         static let tmuxSession = "settings.primaryTmuxSession"
         static let customHosts = "settings.customHosts"
+        static let protectedHosts = "settings.protectedHosts"
+        static let readOnlyHosts = "settings.readOnlyHosts"
+        static let confirmWrites = "settings.confirmWrites"
     }
 
     /// Add (or replace by id) a user-defined host and persist it.
@@ -102,6 +128,9 @@ final class AppSettings: ObservableObject {
            let decoded = try? JSONDecoder().decode([Host].self, from: data) {
             customHosts = decoded
         }
+        protectedHostIDs = Set(defaults.stringArray(forKey: Keys.protectedHosts) ?? [])
+        readOnlyHostIDs = Set(defaults.stringArray(forKey: Keys.readOnlyHosts) ?? [])
+        confirmWrites = defaults.bool(forKey: Keys.confirmWrites)
         rebuildHosts()   // hosts = discovered + custom
     }
 

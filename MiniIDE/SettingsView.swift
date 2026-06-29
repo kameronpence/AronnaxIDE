@@ -20,28 +20,46 @@ struct SettingsView: View {
                     .textFieldStyle(.roundedBorder)
                 Text("The agent workdir is the fallback directory when no project is selected.")
                     .font(.callout).foregroundStyle(.secondary)
+                Toggle("Confirm before every write (Save · Commit · Push · Beads changes)",
+                       isOn: $settings.confirmWrites)
             }
 
             Section("Hosts") {
                 ForEach(settings.hosts) { host in
-                    HStack(alignment: .firstTextBaseline) {
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text(host.displayName).fontWeight(.medium)
-                            Text("\(host.sshAlias)\(host.user.map { " · \($0)" } ?? "") · \(reachLabel(host))")
-                                .font(.callout).foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                        if settings.isCustomHost(host.id) {
-                            Button(role: .destructive) { settings.removeHost(id: host.id) } label: {
-                                Image(systemName: "minus.circle.fill")
+                    VStack(alignment: .leading, spacing: 5) {
+                        HStack(alignment: .firstTextBaseline) {
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(host.displayName).fontWeight(.medium)
+                                Text("\(host.sshAlias)\(host.user.map { " · \($0)" } ?? "") · \(reachLabel(host))")
+                                    .font(.callout).foregroundStyle(.secondary)
                             }
-                            .buttonStyle(.plain).foregroundStyle(.secondary)
-                            .help("Remove host")
-                        } else {
-                            Text(host.isHub ? "hub" : "ssh config")
-                                .font(.caption2).foregroundStyle(.tertiary)
+                            Spacer()
+                            if settings.isCustomHost(host.id) {
+                                Button(role: .destructive) { settings.removeHost(id: host.id) } label: {
+                                    Image(systemName: "minus.circle.fill")
+                                }
+                                .buttonStyle(.plain).foregroundStyle(.secondary)
+                                .help("Remove host")
+                            } else {
+                                Text(host.isHub ? "hub" : "ssh config")
+                                    .font(.caption2).foregroundStyle(.tertiary)
+                            }
                         }
+                        HStack(spacing: 18) {
+                            Toggle("Protected", isOn: Binding(
+                                get: { settings.isProtected(host) },
+                                set: { settings.setProtected(host.id, $0) }))
+                                .help("Warn + confirm before the Terminal connects to this host")
+                            Toggle("Read-only", isOn: Binding(
+                                get: { settings.isReadOnly(host) },
+                                set: { settings.setReadOnly(host.id, $0) }))
+                                .help("Block the app's own writes (save, git, beads) to this host")
+                        }
+                        .toggleStyle(.checkbox)
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
                     }
+                    .padding(.vertical, 2)
                 }
 
                 VStack(spacing: 6) {

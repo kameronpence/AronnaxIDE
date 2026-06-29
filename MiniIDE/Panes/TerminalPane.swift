@@ -7,6 +7,7 @@ import SwiftTerm
 struct TerminalPane: View {
     @EnvironmentObject private var settings: AppSettings
     @State private var hostID: String = AppSettings.hubAlias
+    @State private var confirmed: Set<String> = []   // protected hosts OK'd this session
 
     private var selectedHost: Host? {
         settings.hosts.first { $0.id == hostID } ?? settings.hub
@@ -29,9 +30,51 @@ struct TerminalPane: View {
                 .padding(.horizontal, 8).padding(.vertical, 5)
                 Divider()
             }
-            HostTerminalView(host: selectedHost)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            terminalArea
         }
+    }
+
+    @ViewBuilder private var terminalArea: some View {
+        if let host = selectedHost, settings.isProtected(host), !confirmed.contains(host.id) {
+            protectedGate(host)
+        } else {
+            VStack(spacing: 0) {
+                if let host = selectedHost, settings.isProtected(host) {
+                    protectedBanner(host)
+                }
+                HostTerminalView(host: selectedHost)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+    }
+
+    /// Blocks connecting to a protected host until the user explicitly confirms.
+    private func protectedGate(_ host: Host) -> some View {
+        VStack(spacing: 14) {
+            Image(systemName: "exclamationmark.shield.fill")
+                .font(.system(size: 46)).foregroundStyle(.red)
+            Text("Protected host").font(.title2.bold())
+            Text("\(host.displayName) (\(host.sshAlias)) is marked **protected**. A terminal here is a live root shell — commands affect it directly.")
+                .multilineTextAlignment(.center).foregroundStyle(.secondary).frame(maxWidth: 440)
+            Button("Connect to \(host.displayName)") { confirmed.insert(host.id) }
+                .buttonStyle(.borderedProminent)
+                .tint(.red)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding()
+    }
+
+    /// Persistent red banner so you always know you're on a protected host.
+    private func protectedBanner(_ host: Host) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: "exclamationmark.shield.fill")
+            Text("PROTECTED — \(host.displayName) (\(host.sshAlias))").fontWeight(.semibold)
+            Spacer()
+        }
+        .font(.callout)
+        .foregroundStyle(.white)
+        .padding(.horizontal, 12).padding(.vertical, 6)
+        .background(Color.red)
     }
 }
 
