@@ -230,6 +230,11 @@ private struct SidebarView: View {
                 settings.selectedProjectPath = list.first?.path
             }
         }
+        .onChange(of: settings.agentWorkdir) { _, _ in
+            // Workdir changed in Settings — re-root project discovery (usage is global,
+            // not workdir-dependent, so it doesn't need re-rooting).
+            projects.setRoot(host: settings.hub, root: settings.projectsRoot)
+        }
     }
 }
 

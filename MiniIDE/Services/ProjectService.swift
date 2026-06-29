@@ -34,16 +34,31 @@ final class ProjectService: ObservableObject {
         refresh()
     }
 
-    func refresh() {
-        guard let host, !isLoading else { return }
+    private var refreshToken = 0
+
+    /// Re-point discovery at a new root/host (e.g. the user changed the workdir in
+    /// Settings) and rescan — forced, so an in-flight scan of the old root can't
+    /// suppress it.
+    func setRoot(host: Host?, root: String) {
+        guard root != self.root || host?.id != self.host?.id else { return }
+        self.host = host
+        self.root = root
+        projects = []   // drop the old root's list so stale projects don't linger
+        refresh(force: true)
+    }
+
+    func refresh(force: Bool = false) {
+        guard let host, force || !isLoading else { return }
+        refreshToken += 1
+        let token = refreshToken
         isLoading = true
         let root = self.root
         Task {
+            let found = await Self.discover(host: host, root: root)
+            guard token == refreshToken else { return }   // superseded by a newer scan
             // Keep the last-known list if discovery fails (nil); only overwrite on a
             // real result, so a transient SSH hiccup doesn't blank the sidebar.
-            if let found = await Self.discover(host: host, root: root) {
-                self.projects = found
-            }
+            if let found { self.projects = found }
             self.isLoading = false
         }
     }

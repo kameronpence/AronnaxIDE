@@ -33,22 +33,26 @@ struct VaultPane: View {
                 .frame(minWidth: 360, maxWidth: .infinity, maxHeight: .infinity)
         }
         .onAppear {
-            Task { await model.switchVault(host: settings.hub, to: settings.activePath) }
+            // The Vault is the shared memory at the vault root — it shows the CTX/notes,
+            // not project code (which lives under Projects/ and is excluded). It does not
+            // follow the selected project.
+            model.readOnly = hubReadOnly
+            model.confirmWrites = settings.confirmWrites
+            Task { await model.switchVault(host: settings.hub, to: settings.agentWorkdir) }
             model.startWatching()
         }
         .onDisappear { model.stopWatching() }
-        .onChange(of: settings.selectedProjectPath) { oldValue, newValue in
-            let target = newValue ?? settings.agentWorkdir
+        .onChange(of: settings.agentWorkdir) { old, new in
             Task {
-                // If the previous note couldn't be saved, the vault stays put — revert
-                // the sidebar so the selection and the vault don't diverge. Only revert
-                // when this is still the active selection, so a newer switch isn't undone.
-                let ok = await model.switchVault(host: settings.hub, to: target)
-                if !ok && settings.selectedProjectPath == newValue {
-                    settings.selectedProjectPath = oldValue
-                }
+                // If the vault can't re-root (unsaved edits / conflict), revert the
+                // setting so the workdir and the vault root stay in sync — the status
+                // tells the user to save first.
+                let ok = await model.switchVault(host: settings.hub, to: new)
+                if !ok && settings.agentWorkdir == new { settings.agentWorkdir = old }
             }
         }
+        .onChange(of: hubReadOnly) { _, ro in model.readOnly = ro }
+        .onChange(of: settings.confirmWrites) { _, c in model.confirmWrites = c }
         .writeConfirm($pendingWrite)
     }
 
@@ -195,6 +199,11 @@ final class VaultModel: ObservableObject {
     private var vault: String = ""
     private var loadedContent: String = ""
     private var loadedHash: String?          // MD5 of the open note as last loaded/saved
+    /// Host is read-only: never write; on switch, abandon any (edge-case) dirty edits.
+    var readOnly = false
+    /// "Confirm every write" is on: block a switch while there are unsaved edits so the
+    /// user saves explicitly (guarded) rather than the silent autosave bypassing it.
+    var confirmWrites = false
     private var selectionToken = 0
     private var vaultSwitchToken = 0
     private var writeChain: Task<String?, Never>?
@@ -205,16 +214,14 @@ final class VaultModel: ObservableObject {
     /// True when the editor differs from what was last loaded/saved.
     var isDirty: Bool { selected != nil && content != loadedContent }
 
-    /// Points the vault at a new project root. Saves the current note's unsaved edits
-    /// first (locking the editor so nothing is typed or lost mid-switch); if that save
-    /// fails it stays put and returns `false`, so the caller can keep the sidebar
-    /// selection in sync with the vault. Returns `true` on success or a no-op.
+    /// Re-points the vault at a new root (the user changed the workdir in Settings).
+    /// Preserves the open note's unsaved edits: it saves them first, and if it can't
+    /// (a pending conflict, a save failure, or a write guard) it stays put and returns
+    /// `false` so the caller can revert the workdir setting — no edits lost, no stale root.
     @discardableResult
     func switchVault(host: Host?, to vault: String) async -> Bool {
         self.host = host
         guard self.vault != vault else { return true }   // already here — no-op
-        // Make the user resolve a pending note conflict before switching projects, so
-        // neither their edits nor the agent's version is lost. (false → sidebar reverts.)
         guard !externalChange else {
             status = "Resolve this note's conflict first — Reload or Keep mine."
             return false
@@ -228,10 +235,15 @@ final class VaultModel: ObservableObject {
         let wasDirty = isDirty
         let dirtyHash = loadedHash
         isLoading = true
-        // Save the previous project's unsaved edits first. If the save fails, stay on
-        // the current vault so the edits aren't lost; surface a conflict rather than
-        // clobbering an agent edit that landed since the last poll.
-        if let host, let dirtyPath, wasDirty {
+        // Under "confirm every write", don't silently autosave — block so the user saves
+        // explicitly (the caller reverts the workdir so nothing diverges).
+        if let dirtyPath, wasDirty, confirmWrites, !readOnly {
+            status = "Unsaved edits in \(displayName(dirtyPath)) — Save (⌘S) before changing the workdir."
+            isLoading = false
+            return false
+        }
+        // Save the open note before re-rooting; on conflict/failure stay put (caller reverts).
+        if let host, let dirtyPath, wasDirty, !readOnly {
             let outcome = await conflictAwareWrite(dirtyContent, to: dirtyPath,
                                                    baseline: dirtyHash, host: host)
             guard token == vaultSwitchToken else { return false }
@@ -239,11 +251,11 @@ final class VaultModel: ObservableObject {
             case .written:
                 break
             case .conflict:
-                externalChange = true   // sidebar reverts; user resolves on this project
+                externalChange = true
                 isLoading = false
                 return false
             case .failed(let e):
-                status = "Couldn't save \(displayName(dirtyPath)): \(e) — staying on this project."
+                status = "Couldn't save \(displayName(dirtyPath)): \(e) — staying."
                 isLoading = false
                 return false
             }
@@ -341,10 +353,19 @@ final class VaultModel: ObservableObject {
         let previousHash = loadedHash
         isLoading = true   // lock the editor so edits can't be lost during the switch
         Task {
+            // Write guards take precedence over the autosave so nothing is written
+            // unconfirmed and no edits are silently lost.
+            if let previous, previousDirty, confirmWrites, !readOnly {
+                // Make the user save explicitly (guarded) before leaving the note.
+                status = "Unsaved edits in \(displayName(previous)) — Save (⌘S) before switching."
+                isLoading = false
+                return
+            }
             // Auto-save the current note's unsaved edits before switching (Obsidian
             // style); stay put if it fails, and surface a conflict instead of clobbering
-            // an agent edit that landed since the last poll.
-            if let previous, previousDirty {
+            // an agent edit that landed since the last poll. On a read-only host we can't
+            // write, so any edge-case dirty edits are abandoned (the editor is disabled).
+            if let previous, previousDirty, !readOnly {
                 let outcome = await conflictAwareWrite(previousContent, to: previous,
                                                        baseline: previousHash, host: host)
                 guard token == selectionToken else { return }
