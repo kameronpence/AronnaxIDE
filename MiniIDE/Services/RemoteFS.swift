@@ -22,9 +22,19 @@ struct RemoteFS {
     /// Absolute paths of every `*.md` file under `vaultPath` (excluding the `Projects/`
     /// subtree, which is project code, not vault memory), sorted.
     func listMarkdown(in vaultPath: String) async throws -> [String] {
+        // `-prune` skips descending into the Projects subtree entirely (it can hold
+        // thousands of code .md files); a plain `-not -path` would still walk it.
+        // `-path` matches a glob, so escape any glob metacharacters in the literal
+        // directory path (backslash first) or the prune won't match that path.
+        let projects = (vaultPath as NSString).appendingPathComponent("Projects")
+        let projectsGlob = projects
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "*", with: "\\*")
+            .replacingOccurrences(of: "?", with: "\\?")
+            .replacingOccurrences(of: "[", with: "\\[")
         let result = try await SSHManager.shared.run(
-            ["find", vaultPath, "-type", "f", "-name", "*.md",
-             "-not", "-path", "*/Projects/*"], on: host)
+            ["find", vaultPath, "-path", projectsGlob, "-prune", "-o",
+             "-type", "f", "-name", "*.md", "-print"], on: host)
         guard result.ok else { throw RemoteFSError.command(result.stderr) }
         return result.stdout
             .split(separator: "\n", omittingEmptySubsequences: true)

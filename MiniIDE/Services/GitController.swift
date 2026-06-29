@@ -124,12 +124,18 @@ struct GitController {
             .filter { !$0.isEmpty }
     }
 
-    /// Checks out `branch` (fails if the working tree is dirty — git refuses to clobber
-    /// uncommitted changes, and we surface that error rather than forcing).
+    /// Checks out `branch`. Refuses when the working tree is dirty: a plain
+    /// `git checkout` silently carries non-conflicting uncommitted changes onto the
+    /// target branch, so we require a clean tree and tell the user to commit/stash.
     @discardableResult
     func checkout(path: String, branch: String) async throws -> String {
         let p = SSHManager.shellEscaped(path)
         let b = SSHManager.shellEscaped(branch)
+        let dirty = try await runGit("git -C \(p) status --porcelain")
+        guard dirty.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw GitError.command(
+                "Working tree has uncommitted changes — commit or stash before switching branches.")
+        }
         return try await runGit("git -C \(p) checkout \(b)")
     }
 
