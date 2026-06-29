@@ -30,6 +30,19 @@ struct RemoteFS {
             .sorted()
     }
 
+    /// MD5 of the file's bytes (hex), or nil if it can't be read. Used to detect
+    /// remote edits by content rather than mtime — so same-second edits aren't missed
+    /// and there's no clock-resolution race. `md5 -q` is macOS; `md5sum` is the Linux
+    /// fallback for hosts reached via the hub.
+    func contentHash(of path: String) async -> String? {
+        let p = SSHManager.shellEscaped(path)
+        let cmd = "md5 -q \(p) 2>/dev/null || md5sum \(p) 2>/dev/null | cut -d' ' -f1"
+        guard let result = try? await SSHManager.shared.runShell(cmd, on: host),
+              result.ok else { return nil }
+        let hash = result.stdout.trimmingCharacters(in: .whitespacesAndNewlines)
+        return hash.isEmpty ? nil : hash
+    }
+
     /// Reads the file at `path`.
     func read(_ path: String) async throws -> String {
         let result = try await SSHManager.shared.run(["cat", path], on: host)

@@ -1,4 +1,5 @@
 import SwiftUI
+import CryptoKit
 
 /// The Obsidian vault pane: a list of the vault's markdown files on the hub, a
 /// markdown editor for the selected note (loaded/saved over SSH via `RemoteFS`),
@@ -18,7 +19,9 @@ struct VaultPane: View {
         }
         .onAppear {
             Task { await model.switchVault(host: settings.hub, to: settings.activePath) }
+            model.startWatching()
         }
+        .onDisappear { model.stopWatching() }
         .onChange(of: settings.selectedProjectPath) { oldValue, newValue in
             let target = newValue ?? settings.agentWorkdir
             Task {
@@ -72,7 +75,7 @@ struct VaultPane: View {
                     .toggleStyle(.button)
                     .controlSize(.small)
                 Button("Save") { model.save() }
-                    .disabled(!model.isDirty)
+                    .disabled(!model.isDirty || model.externalChange)
                     .keyboardShortcut("s", modifiers: .command)
             }
             .padding(.horizontal, 8).padding(.vertical, 6)
@@ -80,6 +83,19 @@ struct VaultPane: View {
                 Text(status).font(.caption).foregroundStyle(.red)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 8).padding(.bottom, 4)
+            }
+            if model.externalChange {
+                HStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+                    Text("An agent changed this note on the hub, and you have unsaved edits.")
+                        .font(.caption)
+                    Spacer()
+                    Button("Reload") { model.reloadExternal() }
+                    Button("Keep mine") { model.keepMine() }
+                }
+                .controlSize(.small)
+                .padding(.horizontal, 8).padding(.vertical, 5)
+                .background(Color.orange.opacity(0.12))
             }
             Divider()
 
@@ -126,13 +142,20 @@ final class VaultModel: ObservableObject {
     @Published var content: String = ""
     @Published var status: String?
     @Published var isLoading = false
+    /// Set when the open note changed on the hub (an agent edited it) while the
+    /// editor has unsaved local edits — a conflict the user must resolve.
+    @Published private(set) var externalChange = false
 
     private var host: Host?
     private var vault: String = ""
     private var loadedContent: String = ""
+    private var loadedHash: String?          // MD5 of the open note as last loaded/saved
     private var selectionToken = 0
     private var vaultSwitchToken = 0
     private var writeChain: Task<String?, Never>?
+    private var watchTimer: Timer?
+    private var watchPolls = 0
+    private let watchInterval: TimeInterval = 5
 
     /// True when the editor differs from what was last loaded/saved.
     var isDirty: Bool { selected != nil && content != loadedContent }
@@ -145,6 +168,12 @@ final class VaultModel: ObservableObject {
     func switchVault(host: Host?, to vault: String) async -> Bool {
         self.host = host
         guard self.vault != vault else { return true }   // already here — no-op
+        // Make the user resolve a pending note conflict before switching projects, so
+        // neither their edits nor the agent's version is lost. (false → sidebar reverts.)
+        guard !externalChange else {
+            status = "Resolve this note's conflict first — Reload or Keep mine."
+            return false
+        }
         vaultSwitchToken += 1
         let token = vaultSwitchToken
         // Snapshot + lock the editor synchronously so nothing typed between now and
@@ -152,13 +181,24 @@ final class VaultModel: ObservableObject {
         let dirtyPath = selected
         let dirtyContent = content
         let wasDirty = isDirty
+        let dirtyHash = loadedHash
         isLoading = true
         // Save the previous project's unsaved edits first. If the save fails, stay on
-        // the current vault so the edits aren't lost.
+        // the current vault so the edits aren't lost; surface a conflict rather than
+        // clobbering an agent edit that landed since the last poll.
         if let host, let dirtyPath, wasDirty {
-            if let err = await serializedWrite(dirtyContent, to: dirtyPath, host: host) {
-                guard token == vaultSwitchToken else { return false }
-                status = "Couldn't save \(displayName(dirtyPath)): \(err) — staying on this project."
+            let outcome = await conflictAwareWrite(dirtyContent, to: dirtyPath,
+                                                   baseline: dirtyHash, host: host)
+            guard token == vaultSwitchToken else { return false }
+            switch outcome {
+            case .written:
+                break
+            case .conflict:
+                externalChange = true   // sidebar reverts; user resolves on this project
+                isLoading = false
+                return false
+            case .failed(let e):
+                status = "Couldn't save \(displayName(dirtyPath)): \(e) — staying on this project."
                 isLoading = false
                 return false
             }
@@ -170,6 +210,8 @@ final class VaultModel: ObservableObject {
         selected = nil
         content = ""
         loadedContent = ""
+        loadedHash = nil
+        externalChange = false
         files = []
         tree = []
         isLoading = false
@@ -239,24 +281,40 @@ final class VaultModel: ObservableObject {
 
     func select(_ path: String) {
         guard let host, path != selected else { return }
+        // A pending conflict must be resolved (Reload / Keep mine) before leaving the
+        // note — otherwise navigating would either lose the local edits or clobber the
+        // agent's version. Blocking keeps both intact until the user chooses.
+        guard !externalChange else {
+            status = "Resolve this note's conflict first — Reload or Keep mine."
+            return
+        }
         selectionToken += 1
         let token = selectionToken
         let previous = selected
         let previousContent = content
         let previousDirty = isDirty
+        let previousHash = loadedHash
         isLoading = true   // lock the editor so edits can't be lost during the switch
         Task {
             // Auto-save the current note's unsaved edits before switching (Obsidian
-            // style), serialized with any other save; stay put if it fails.
+            // style); stay put if it fails, and surface a conflict instead of clobbering
+            // an agent edit that landed since the last poll.
             if let previous, previousDirty {
-                let err = await serializedWrite(previousContent, to: previous, host: host)
+                let outcome = await conflictAwareWrite(previousContent, to: previous,
+                                                       baseline: previousHash, host: host)
                 guard token == selectionToken else { return }
-                if let err {
-                    status = "Couldn't save \(displayName(previous)): \(err) — staying on it."
+                switch outcome {
+                case .written:
+                    break
+                case .conflict:
+                    externalChange = true
+                    isLoading = false
+                    return
+                case .failed(let e):
+                    status = "Couldn't save \(displayName(previous)): \(e) — staying on it."
                     isLoading = false
                     return
                 }
-                loadedContent = previousContent
             }
             guard token == selectionToken else { return }   // superseded by a newer pick
             do {
@@ -266,6 +324,8 @@ final class VaultModel: ObservableObject {
                 content = text
                 loadedContent = text
                 status = nil
+                externalChange = false
+                loadedHash = Self.md5Hex(text)
             } catch {
                 guard token == selectionToken else { return }
                 // Leave the user on the previous note rather than showing its content
@@ -277,16 +337,134 @@ final class VaultModel: ObservableObject {
     }
 
     func save() {
-        guard let host, let path = selected, isDirty else { return }
+        // While a conflict is pending, resolution must go through the banner
+        // (Reload / Keep mine) so the remote version isn't silently overwritten.
+        guard let host, let path = selected, isDirty, !externalChange else { return }
+        let toSave = content
+        let baseline = loadedHash
+        Task {
+            let outcome = await conflictAwareWrite(toSave, to: path, baseline: baseline, host: host)
+            guard selected == path else { return }
+            switch outcome {
+            case .written:       externalChange = false; status = nil
+            case .conflict:      externalChange = true   // an agent edited it since the last poll
+            case .failed(let e): status = "Save failed: \(e)"
+            }
+        }
+    }
+
+    /// Writes `text` and, on success, makes it the new baseline (content + hash).
+    /// Returns an error message on failure, leaving conflict/dirty state to the caller.
+    private func performWrite(_ text: String, to path: String, host: Host) async -> String? {
+        let err = await serializedWrite(text, to: path, host: host)
+        if err == nil, selected == path {
+            loadedContent = text
+            loadedHash = Self.md5Hex(text)
+        }
+        return err
+    }
+
+    private enum WriteOutcome { case written, conflict, failed(String) }
+
+    /// Writes `text` only if the remote still matches `baseline` (no agent edit since
+    /// load); otherwise reports `.conflict` so the caller surfaces it instead of
+    /// clobbering. A successful write refreshes the baseline.
+    private func conflictAwareWrite(_ text: String, to path: String,
+                                    baseline: String?, host: Host) async -> WriteOutcome {
+        let remote = await RemoteFS(host: host).contentHash(of: path)
+        if let remote, remote != baseline { return .conflict }
+        if let err = await performWrite(text, to: path, host: host) { return .failed(err) }
+        return .written
+    }
+
+    // MARK: - RemoteWatcher (detect agent edits to the shared vault)
+
+    /// Begin polling the open note's mtime (and periodically re-listing the vault) so
+    /// edits the agents make to the same files show up without a manual refresh.
+    func startWatching() {
+        guard watchTimer == nil else { return }
+        watchTimer = Timer.scheduledTimer(withTimeInterval: watchInterval, repeats: true) { [weak self] _ in
+            Task { @MainActor in self?.poll() }
+        }
+    }
+
+    func stopWatching() {
+        watchTimer?.invalidate()
+        watchTimer = nil
+    }
+
+    private func poll() {
+        guard let host else { return }
+        // Re-list every ~4th poll so notes the agents create appear in the tree
+        // (selection is by path, so a rebuild keeps the open note selected).
+        watchPolls += 1
+        if watchPolls % 4 == 0 { refresh() }
+
+        guard let path = selected, loadedHash != nil, !isLoading else { return }
+        let selToken = selectionToken
+        Task {
+            guard let remote = await RemoteFS(host: host).contentHash(of: path),
+                  selToken == selectionToken,   // a selection started meanwhile — let it win
+                  selected == path,
+                  let baseline = loadedHash,    // re-read the current baseline (a save/reload may have moved it)
+                  remote != baseline else { return }
+            if isDirty {
+                externalChange = true            // conflict — let the user choose
+            } else {
+                reloadCurrent(expectedPath: path, force: false)  // no local edits — show theirs
+            }
+        }
+    }
+
+    /// Re-read the open note from the hub (an agent changed it). Used both for the
+    /// no-edits auto-refresh and the conflict banner's "Reload (use theirs)".
+    private func reloadCurrent(expectedPath: String, force: Bool) {
+        guard let host, selected == expectedPath else { return }
+        selectionToken += 1
+        let token = selectionToken
+        isLoading = true   // lock the editor so nothing typed during the read is lost
+        Task {
+            defer { if token == selectionToken { isLoading = false } }
+            guard let text = try? await RemoteFS(host: host).read(expectedPath),
+                  token == selectionToken, selected == expectedPath else { return }
+            // The user may have started typing before the lock — don't clobber their
+            // edits unless this is an explicit "use theirs".
+            if !force && isDirty {
+                externalChange = true
+                return
+            }
+            content = text
+            loadedContent = text
+            loadedHash = Self.md5Hex(text)
+            externalChange = false
+        }
+    }
+
+    /// Conflict banner — "Reload": take the hub version, dropping local edits. The
+    /// conflict flag is cleared by reloadCurrent only once the read succeeds, so a
+    /// failed reload leaves the banner up.
+    func reloadExternal() {
+        guard let path = selected else { return }
+        reloadCurrent(expectedPath: path, force: true)
+    }
+
+    /// Conflict banner — "Keep mine": write the local edits over the agent's version.
+    /// The conflict is cleared only once the write lands (a failed write keeps it up).
+    func keepMine() {
+        guard let host, let path = selected, isDirty else { externalChange = false; return }
         let toSave = content
         Task {
-            if let err = await serializedWrite(toSave, to: path, host: host) {
-                status = "Save failed: \(err)"
-            } else {
-                if selected == path { loadedContent = toSave }
+            if let err = await performWrite(toSave, to: path, host: host) {
+                status = "Save failed: \(err)"   // keep the conflict banner up
+            } else if selected == path {
+                externalChange = false           // resolved only after the write lands
                 status = nil
             }
         }
+    }
+
+    private static func md5Hex(_ s: String) -> String {
+        Insecure.MD5.hash(data: Data(s.utf8)).map { String(format: "%02x", $0) }.joined()
     }
 
     /// Writes serialized behind any in-flight write so two saves never race on the
