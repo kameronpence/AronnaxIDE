@@ -10,6 +10,13 @@ struct VaultPane: View {
     @StateObject private var model = VaultModel()
     @State private var showPreview = true
     @State private var search = ""
+    @State private var pendingWrite: WriteRequest?
+
+    private var hubReadOnly: Bool { settings.isReadOnly(settings.hub) }
+    private func requestWrite(_ title: String, _ perform: @escaping () -> Void) {
+        if settings.confirmWrites { pendingWrite = WriteRequest(title: title, perform: perform) }
+        else { perform() }
+    }
 
     /// Files whose name matches the search box (used to show a flat list while searching).
     private var matchingFiles: [String] {
@@ -42,6 +49,7 @@ struct VaultPane: View {
                 }
             }
         }
+        .writeConfirm($pendingWrite)
     }
 
     private var fileList: some View {
@@ -107,8 +115,12 @@ struct VaultPane: View {
                 Toggle("Preview", isOn: $showPreview)
                     .toggleStyle(.button)
                     .controlSize(.small)
-                Button("Save") { model.save() }
-                    .disabled(!model.isDirty || model.externalChange)
+                if hubReadOnly {
+                    Label("read-only", systemImage: "lock.fill")
+                        .font(.callout).foregroundStyle(.orange)
+                }
+                Button("Save") { requestWrite("Save this note?") { model.save() } }
+                    .disabled(!model.isDirty || model.externalChange || hubReadOnly)
                     .keyboardShortcut("s", modifiers: .command)
             }
             .padding(.horizontal, 8).padding(.vertical, 6)
@@ -152,7 +164,7 @@ struct VaultPane: View {
     private var editor: some View {
         TextEditor(text: $model.content)
             .font(.system(.body, design: .monospaced))
-            .disabled(model.isLoading)   // locked briefly while a note loads
+            .disabled(model.isLoading || hubReadOnly)   // locked while loading, or host read-only
             .frame(minWidth: 280, maxWidth: .infinity, maxHeight: .infinity)
     }
 }

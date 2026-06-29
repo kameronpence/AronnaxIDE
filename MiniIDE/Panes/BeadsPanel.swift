@@ -43,6 +43,15 @@ struct BeadsPanel: View {
     @State private var selectedIssue: BdIssue?
     @State private var viewMode: BeadsViewMode = .list
     @State private var searchText = ""
+    @State private var pendingWrite: WriteRequest?
+
+    private var hubReadOnly: Bool { settings.isReadOnly(settings.hub) }
+    /// Block on a read-only host; confirm when "Confirm before every write" is on; else run.
+    private func requestWrite(_ title: String, _ perform: @escaping () -> Void) {
+        if hubReadOnly { return }
+        if settings.confirmWrites { pendingWrite = WriteRequest(title: title, perform: perform) }
+        else { perform() }
+    }
 
     /// Issues filtered by the search box (id, title, or type).
     private var filteredIssues: [BdIssue] {
@@ -69,18 +78,21 @@ struct BeadsPanel: View {
         }
         .sheet(isPresented: $showingCreate) {
             BdCreateSheet { title, type, priority, description in
-                model.create(title: title, type: type, priority: priority, description: description)
+                requestWrite("Create issue “\(title)”?") {
+                    model.create(title: title, type: type, priority: priority, description: description)
+                }
             }
         }
         .sheet(item: $selectedIssue) { issue in
             BdIssueDetailSheet(
                 issue: issue,
-                onUpdate: { fields in model.update(id: issue.id, fields: fields) },
-                onClose: { model.close(id: issue.id) },
-                onReopen: { model.reopen(id: issue.id) },
-                onAddNote: { text in model.addNote(id: issue.id, text: text) }
+                onUpdate: { fields in requestWrite("Update \(issue.id)?") { model.update(id: issue.id, fields: fields) } },
+                onClose: { requestWrite("Close \(issue.id)?") { model.close(id: issue.id) } },
+                onReopen: { requestWrite("Reopen \(issue.id)?") { model.reopen(id: issue.id) } },
+                onAddNote: { text in requestWrite("Add note to \(issue.id)?") { model.addNote(id: issue.id, text: text) } }
             )
         }
+        .writeConfirm($pendingWrite)
     }
 
     private var header: some View {
@@ -110,10 +122,13 @@ struct BeadsPanel: View {
 
             Spacer()
 
+            if hubReadOnly {
+                Image(systemName: "lock.fill").foregroundStyle(.orange).help("Host is read-only")
+            }
             if model.isLoading { ProgressView().controlSize(.small) }
             Button { showingCreate = true } label: { Image(systemName: "plus") }
                 .buttonStyle(.borderless)
-                .disabled(model.selectedProjectPath == nil)
+                .disabled(model.selectedProjectPath == nil || hubReadOnly)
                 .help("New issue")
             Button { model.refresh() } label: { Image(systemName: "arrow.clockwise") }
                 .buttonStyle(.borderless)

@@ -9,6 +9,15 @@ struct GitDeployPanel: View {
     @State private var commitMessage = ""
     @State private var showPushConfirm = false
     @State private var commitSearch = ""
+    @State private var pendingWrite: WriteRequest?
+
+    private var hubReadOnly: Bool { settings.isReadOnly(settings.hub) }
+
+    /// Run a write now, or stage it for confirmation when "Confirm before every write" is on.
+    private func requestWrite(_ title: String, _ perform: @escaping () -> Void) {
+        if settings.confirmWrites { pendingWrite = WriteRequest(title: title, perform: perform) }
+        else { perform() }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -29,6 +38,7 @@ struct GitDeployPanel: View {
         } message: {
             Text(pushWarning)
         }
+        .writeConfirm($pendingWrite)
     }
 
     /// A likely wrong-account push: the identity the repo pushes as doesn't match the
@@ -103,13 +113,13 @@ struct GitDeployPanel: View {
                     if model.branches.count > 1 {
                         Picker("Branch", selection: Binding(
                             get: { s.branch ?? "" },
-                            set: { model.checkout($0) }
+                            set: { branch in requestWrite("Check out \(branch)?") { model.checkout(branch) } }
                         )) {
                             ForEach(model.branches, id: \.self) { Text($0).tag($0) }
                         }
                         .labelsHidden()
                         .fixedSize()
-                        .disabled(model.actionBusy)
+                        .disabled(hubReadOnly || model.actionBusy)
                     } else {
                         Text(s.branch ?? "—").font(.title3.weight(.semibold))
                     }
@@ -179,19 +189,26 @@ struct GitDeployPanel: View {
 
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Actions").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                    if hubReadOnly {
+                        Label("\(settings.hub?.sshAlias ?? "Host") is read-only — commit/push/checkout are disabled.",
+                              systemImage: "lock.fill")
+                            .font(.callout).foregroundStyle(.orange)
+                    }
                     HStack {
                         TextField("Commit message", text: $commitMessage)
                             .textFieldStyle(.roundedBorder)
                         Button("Commit") {
-                            model.commit(message: commitMessage.trimmingCharacters(in: .whitespacesAndNewlines))
-                            commitMessage = ""
+                            let msg = commitMessage.trimmingCharacters(in: .whitespacesAndNewlines)
+                            requestWrite("Commit “\(msg)”?") {
+                                model.commit(message: msg); commitMessage = ""
+                            }
                         }
-                        .disabled(model.actionBusy || s.isClean
+                        .disabled(hubReadOnly || model.actionBusy || s.isClean
                                   || commitMessage.trimmingCharacters(in: .whitespaces).isEmpty)
                     }
                     HStack(spacing: 10) {
                         Button { showPushConfirm = true } label: { Label("Push", systemImage: "arrow.up.circle") }
-                            .disabled(model.actionBusy)
+                            .disabled(hubReadOnly || model.actionBusy)
                         if model.actionBusy { ProgressView().controlSize(.small) }
                         if let msg = model.actionMessage {
                             Text(msg).font(.caption).foregroundStyle(.secondary).lineLimit(2)
