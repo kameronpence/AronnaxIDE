@@ -9,6 +9,7 @@ enum WorkspaceTab: String, CaseIterable, Identifiable {
     case beads = "Beads"
     case logs = "Logs"
     case git = "Git / Deploy"
+    case health = "Health"
 
     var id: String { rawValue }
 
@@ -21,6 +22,7 @@ enum WorkspaceTab: String, CaseIterable, Identifiable {
         case .beads:    return "point.3.connected.trianglepath.dotted"
         case .logs:     return "list.bullet.rectangle"
         case .git:      return "arrow.triangle.branch"
+        case .health:   return "waveform.path.ecg"
         }
     }
 }
@@ -40,6 +42,7 @@ struct WorkspaceSurface: View {
         case .beads:    BeadsPanel()
         case .logs:     LogViewer()
         case .git:      GitDeployPanel()
+        case .health:   HostHealthPanel()
         }
     }
 }
