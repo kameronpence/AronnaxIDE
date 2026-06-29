@@ -10,6 +10,11 @@ struct SettingsView: View {
     @State private var newAlias = ""
     @State private var newEmail = ""
 
+    @State private var newHostName = ""
+    @State private var newHostAddr = ""
+    @State private var newHostUser = "root"
+    @State private var newHostViaHub = true
+
     var body: some View {
         Form {
             Section("General") {
@@ -21,12 +26,41 @@ struct SettingsView: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
 
-            Section("Hosts — from ~/.ssh/config") {
+            Section("Hosts") {
                 ForEach(settings.hosts) { host in
-                    LabeledContent(host.displayName) {
-                        Text(reachLabel(host)).foregroundStyle(.secondary)
+                    HStack(alignment: .firstTextBaseline) {
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(host.displayName).fontWeight(.medium)
+                            Text("\(host.sshAlias)\(host.user.map { " · \($0)" } ?? "") · \(reachLabel(host))")
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        if settings.isCustomHost(host.id) {
+                            Button(role: .destructive) { settings.removeHost(id: host.id) } label: {
+                                Image(systemName: "minus.circle.fill")
+                            }
+                            .buttonStyle(.plain).foregroundStyle(.secondary)
+                            .help("Remove host")
+                        } else {
+                            Text(host.isHub ? "hub" : "ssh config")
+                                .font(.caption2).foregroundStyle(.tertiary)
+                        }
                     }
                 }
+
+                VStack(spacing: 6) {
+                    TextField("Name (e.g. GATSA staging)", text: $newHostName)
+                    TextField("Hostname or IP", text: $newHostAddr)
+                    TextField("User (e.g. root)", text: $newHostUser)
+                    Toggle("Reach via the hub (ProxyJump)", isOn: $newHostViaHub)
+                    HStack {
+                        Spacer()
+                        Button("Add host", action: addHost)
+                            .disabled(newHostName.trimmingCharacters(in: .whitespaces).isEmpty
+                                      || newHostAddr.trimmingCharacters(in: .whitespaces).isEmpty)
+                    }
+                }
+                .textFieldStyle(.roundedBorder)
             }
 
             Section("GitHub accounts") {
@@ -72,6 +106,21 @@ struct SettingsView: View {
         case .direct:             return host.isHub ? "hub · direct" : "direct"
         case .proxyJump(let via): return "via \(via)"
         }
+    }
+
+    private func addHost() {
+        let name = newHostName.trimmingCharacters(in: .whitespaces)
+        let addr = newHostAddr.trimmingCharacters(in: .whitespaces)
+        guard !name.isEmpty, !addr.isEmpty else { return }
+        let user = newHostUser.trimmingCharacters(in: .whitespaces)
+        settings.addHost(Host(
+            id: addr,            // the address is unique + stable; also the ssh target
+            displayName: name,
+            sshAlias: addr,      // connect straight to the address (not an ~/.ssh/config alias)
+            user: user.isEmpty ? nil : user,
+            reach: newHostViaHub ? .proxyJump(via: AppSettings.hubAlias) : .direct,
+            isHub: false))
+        newHostName = ""; newHostAddr = ""; newHostUser = "root"; newHostViaHub = true
     }
 
     private func addAccount() {

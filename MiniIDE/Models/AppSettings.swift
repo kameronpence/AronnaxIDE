@@ -4,7 +4,11 @@ import Combine
 /// App-wide configuration: hosts (imported from `~/.ssh/config`), GitHub accounts,
 /// and the agent workdir / tmux session. The editable bits persist to UserDefaults.
 final class AppSettings: ObservableObject {
-    @Published var hosts: [Host]
+    /// Hosts shown across the app: discovered from `~/.ssh/config` plus any the user
+    /// added in Settings (persisted). Read-only — mutate via `addHost`/`removeHost`.
+    @Published private(set) var hosts: [Host] = []
+    private var discoveredHosts: [Host] = []
+    private var customHosts: [Host] = []
     @Published var accounts: [GitHubAccount] {
         didSet {
             if let data = try? JSONEncoder().encode(accounts) {
@@ -30,6 +34,40 @@ final class AppSettings: ObservableObject {
         static let agentWorkdir = "settings.agentWorkdir"
         static let tmuxSession = "settings.primaryTmuxSession"
         static let accounts = "settings.githubAccounts"
+        static let customHosts = "settings.customHosts"
+    }
+
+    /// Add (or replace by id) a user-defined host and persist it.
+    func addHost(_ host: Host) {
+        customHosts.removeAll { $0.id == host.id }
+        customHosts.append(host)
+        saveCustomHosts()
+        rebuildHosts()
+    }
+
+    /// Remove a user-added host. Discovered (ssh-config) and hub hosts can't be removed.
+    func removeHost(id: String) {
+        guard customHosts.contains(where: { $0.id == id }) else { return }
+        customHosts.removeAll { $0.id == id }
+        saveCustomHosts()
+        rebuildHosts()
+    }
+
+    /// True for hosts the user added (and can remove) vs. discovered/hub hosts.
+    func isCustomHost(_ id: String) -> Bool { customHosts.contains { $0.id == id } }
+
+    private func rebuildHosts() {
+        var merged = discoveredHosts
+        for host in customHosts where !merged.contains(where: { $0.id == host.id }) {
+            merged.append(host)
+        }
+        hosts = merged
+    }
+
+    private func saveCustomHosts() {
+        if let data = try? JSONEncoder().encode(customHosts) {
+            UserDefaults.standard.set(data, forKey: Keys.customHosts)
+        }
     }
 
     /// The project selected in the sidebar — the directory the Coding, Vault, Beads,
@@ -59,7 +97,7 @@ final class AppSettings: ObservableObject {
         } else {
             discovered.insert(Host.kepler, at: 0)
         }
-        self.hosts = discovered
+        self.discoveredHosts = discovered
         self.accounts = [
             GitHubAccount(id: "personal", displayName: "Personal",
                           sshHostAlias: "github.com", email: "kameronpence@gmail.com")
@@ -76,6 +114,11 @@ final class AppSettings: ObservableObject {
            let decoded = try? JSONDecoder().decode([GitHubAccount].self, from: data) {
             accounts = decoded
         }
+        if let data = defaults.data(forKey: Keys.customHosts),
+           let decoded = try? JSONDecoder().decode([Host].self, from: data) {
+            customHosts = decoded
+        }
+        rebuildHosts()   // hosts = discovered + custom
     }
 
     var hub: Host? { hosts.first(where: { $0.isHub }) ?? hosts.first }
