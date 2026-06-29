@@ -56,17 +56,19 @@ struct BrowserPane: View {
         guard let url = URL(string: t.contains("://") ? t : "http://\(t)"),
               let urlHost = url.host else { model.load(t); return }
         if ["localhost", "127.0.0.1", "::1"].contains(urlHost.lowercased()) {
-            let port = url.port ?? 80
+            let scheme = url.scheme ?? "http"
+            let port = url.port ?? (scheme == "https" ? 443 : 80)
             let suffix = url.path + (url.query.map { "?\($0)" } ?? "")
-            forwardAndLoad(port: port, suffix: suffix)
+            forwardAndLoad(port: port, suffix: suffix, scheme: scheme)
         } else {
             model.load(t)   // already reachable — load directly
         }
     }
 
-    /// Forward the hub's localhost:<port> (if not already) and load it.
-    private func forwardAndLoad(port: Int, suffix: String) {
-        let target = "http://127.0.0.1:\(port)\(suffix)"
+    /// Forward the hub's localhost:<port> (if not already) and load it, keeping the
+    /// original scheme so an https dev server isn't loaded as http.
+    private func forwardAndLoad(port: Int, suffix: String, scheme: String = "http") {
+        let target = "\(scheme)://127.0.0.1:\(port)\(suffix)"
         if forwards.forwards.contains(where: { $0.localPort == port }) {
             model.load(target)
             return

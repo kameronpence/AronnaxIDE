@@ -140,7 +140,11 @@ struct VaultPane: View {
                         .font(.caption)
                     Spacer()
                     Button("Reload") { model.reloadExternal() }
-                    Button("Keep mine") { model.keepMine() }
+                    // Overwriting the agent's version is a write — gate it like Save.
+                    Button("Keep mine") {
+                        requestWrite("Overwrite the agent's version with yours?") { model.keepMine() }
+                    }
+                    .disabled(hubReadOnly)
                 }
                 .controlSize(.small)
                 .padding(.horizontal, 8).padding(.vertical, 5)
