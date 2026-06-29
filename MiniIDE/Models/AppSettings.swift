@@ -1,8 +1,8 @@
 import Foundation
 import Combine
 
-/// App-wide configuration. For M0 this is in-memory with sensible defaults;
-/// persistence (UserDefaults + config file) and ~/.ssh/config import land later.
+/// App-wide configuration: hosts (imported from `~/.ssh/config`), GitHub accounts,
+/// and the agent workdir / tmux session. The editable bits persist to UserDefaults.
 final class AppSettings: ObservableObject {
     @Published var hosts: [Host]
     @Published var accounts: [GitHubAccount] {
@@ -19,9 +19,9 @@ final class AppSettings: ObservableObject {
         didSet { UserDefaults.standard.set(primaryTmuxSession, forKey: Keys.tmuxSession) }
     }
 
-    /// Working directory on the hub where the CLI agents launch — the Obsidian
-    /// vault that is their shared "memory", so Claude Code and Codex read and write
-    /// the same notes. (Per-project launch dirs arrive with the M8 projects work.)
+    /// Fallback working directory on the hub where the CLI agents launch (the Obsidian
+    /// vault that is their shared "memory"). When a project is selected the panes use
+    /// that project's directory instead — see `activePath`.
     @Published var agentWorkdir: String = "/Users/kepler/Documents/Projects/AI_OS" {
         didSet { UserDefaults.standard.set(agentWorkdir, forKey: Keys.agentWorkdir) }
     }

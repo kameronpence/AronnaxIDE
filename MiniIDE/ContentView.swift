@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// The surfaces available in the main workspace.
-enum WorkspaceTab: String, CaseIterable, Identifiable {
+enum WorkspaceTab: String, CaseIterable, Identifiable, Codable {
     case terminal = "Terminal"
     case coding = "Coding"
     case browser = "Browser"

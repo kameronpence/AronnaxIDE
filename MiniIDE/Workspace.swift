@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Orientation of a split.
-enum SplitAxis: Hashable {
+enum SplitAxis: Hashable, Codable {
     case horizontal   // children side by side
     case vertical     // children stacked
 }
@@ -10,7 +10,7 @@ enum SplitAxis: Hashable {
 /// binary split of two child trees. Arbitrary IDE-style layouts — 2 columns + a
 /// bottom row, 4-way grids, … — are built by nesting splits. Each leaf carries a
 /// stable `id` so its live content (terminals, web views) survives restructuring.
-indirect enum PaneTree: Identifiable {
+indirect enum PaneTree: Identifiable, Codable {
     case leaf(id: UUID, tab: WorkspaceTab)
     case split(id: UUID, axis: SplitAxis, first: PaneTree, second: PaneTree, fraction: CGFloat)
 
@@ -25,13 +25,34 @@ indirect enum PaneTree: Identifiable {
 /// Owns the workspace layout tree and the operations that mutate it.
 @MainActor
 final class WorkspaceModel: ObservableObject {
-    @Published private(set) var tree: PaneTree
+    @Published private(set) var tree: PaneTree {
+        didSet { Self.save(tree) }   // not called for the initializing assignment in init
+    }
     @Published var focusedID: UUID
 
+    private static let storageKey = "workspace.layout"
+
     init(initial: WorkspaceTab = .terminal) {
-        let id = UUID()
-        tree = .leaf(id: id, tab: initial)
-        focusedID = id
+        // Restore the saved split layout if present; fall back to a single pane.
+        if let restored = Self.load() {
+            tree = restored
+            focusedID = Self.firstLeafID(restored)
+        } else {
+            let id = UUID()
+            tree = .leaf(id: id, tab: initial)
+            focusedID = id
+        }
+    }
+
+    private static func save(_ tree: PaneTree) {
+        if let data = try? JSONEncoder().encode(tree) {
+            UserDefaults.standard.set(data, forKey: storageKey)
+        }
+    }
+
+    private static func load() -> PaneTree? {
+        guard let data = UserDefaults.standard.data(forKey: storageKey) else { return nil }
+        return try? JSONDecoder().decode(PaneTree.self, from: data)
     }
 
     var paneCount: Int { Self.leafCount(tree) }
