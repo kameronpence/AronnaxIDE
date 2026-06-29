@@ -39,12 +39,15 @@ final class AppSettings: ObservableObject {
         didSet { UserDefaults.standard.set(primaryTmuxSession, forKey: Keys.tmuxSession) }
     }
 
-    /// Fallback working directory on the hub where the CLI agents launch (the Obsidian
-    /// vault that is their shared "memory"). When a project is selected the panes use
-    /// that project's directory instead — see `activePath`.
-    @Published var agentWorkdir: String = "/Users/kepler/Documents/Projects/AI_OS" {
+    /// The Obsidian vault on the hub — the agents' shared "memory" and the Vault pane's
+    /// root. Also the agents' fallback launch dir when no project is selected. Project
+    /// code lives under `projectsRoot` (`<vault>/Projects`).
+    @Published var agentWorkdir: String = "/Users/kepler/Documents/AI_OS" {
         didSet { UserDefaults.standard.set(agentWorkdir, forKey: Keys.agentWorkdir) }
     }
+
+    /// Where project folders live: `<vault>/Projects`.
+    var projectsRoot: String { (agentWorkdir as NSString).appendingPathComponent("Projects") }
 
     private enum Keys {
         static let agentWorkdir = "settings.agentWorkdir"
@@ -123,6 +126,10 @@ final class AppSettings: ObservableObject {
         // didSet — harmless and idempotent.
         let defaults = UserDefaults.standard
         if let workdir = defaults.string(forKey: Keys.agentWorkdir) { agentWorkdir = workdir }
+        // Migrate the old vault location to the restructured one.
+        if agentWorkdir == "/Users/kepler/Documents/Projects/AI_OS" {
+            agentWorkdir = "/Users/kepler/Documents/AI_OS"
+        }
         if let session = defaults.string(forKey: Keys.tmuxSession) { primaryTmuxSession = session }
         if let data = defaults.data(forKey: Keys.customHosts),
            let decoded = try? JSONDecoder().decode([Host].self, from: data) {

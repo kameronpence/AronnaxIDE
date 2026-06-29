@@ -221,7 +221,7 @@ private struct SidebarView: View {
         }
         .onAppear {
             usage.start(host: settings.hub, workdir: settings.agentWorkdir)
-            projects.start(host: settings.hub, root: settings.agentWorkdir)
+            projects.start(host: settings.hub, root: settings.projectsRoot)
         }
         .onChange(of: projects.projects) { _, list in
             // Auto-select the first project (and recover if the selection vanished).

@@ -19,10 +19,12 @@ enum RemoteFSError: Error, LocalizedError {
 struct RemoteFS {
     let host: Host
 
-    /// Absolute paths of every `*.md` file under `vaultPath`, sorted.
+    /// Absolute paths of every `*.md` file under `vaultPath` (excluding the `Projects/`
+    /// subtree, which is project code, not vault memory), sorted.
     func listMarkdown(in vaultPath: String) async throws -> [String] {
         let result = try await SSHManager.shared.run(
-            ["find", vaultPath, "-name", "*.md", "-type", "f"], on: host)
+            ["find", vaultPath, "-type", "f", "-name", "*.md",
+             "-not", "-path", "*/Projects/*"], on: host)
         guard result.ok else { throw RemoteFSError.command(result.stderr) }
         return result.stdout
             .split(separator: "\n", omittingEmptySubsequences: true)

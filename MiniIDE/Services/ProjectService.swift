@@ -49,10 +49,11 @@ final class ProjectService: ObservableObject {
     }
 
     static func discover(host: Host, root: String) async -> [DiscoveredProject]? {
+        // Each immediate subfolder of `root` (= <vault>/Projects) is a project — whether
+        // or not it has a git repo yet. Branch/remote are filled in when present.
         let dir = SSHManager.shellEscaped(root)
         let command = """
-        find \(dir) -maxdepth 3 -name .git -type d 2>/dev/null | while IFS= read -r d; do
-          repo=$(dirname "$d")
+        find \(dir) -mindepth 1 -maxdepth 1 -type d 2>/dev/null | while IFS= read -r repo; do
           br=$(git -C "$repo" rev-parse --abbrev-ref HEAD 2>/dev/null)
           rm=$(git -C "$repo" remote get-url origin 2>/dev/null)
           printf '%s\\t%s\\t%s\\n' "$repo" "$br" "$rm"

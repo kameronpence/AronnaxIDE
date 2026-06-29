@@ -31,7 +31,7 @@ struct HostHealthPanel: View {
             }
             .listStyle(.inset)
         }
-        .onAppear { health.start(hosts: settings.hosts, agentWorkdir: settings.agentWorkdir) }
+        .onAppear { health.start(hosts: settings.hosts, agentWorkdir: settings.projectsRoot) }
         .onDisappear { health.stop() }
     }
 
