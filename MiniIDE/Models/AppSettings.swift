@@ -70,7 +70,7 @@ final class AppSettings: ObservableObject {
         static let codexMode = "settings.codexMode"
         static let activeHost = "settings.activeHost"
         static let hostVaultPaths = "settings.hostVaultPaths"
-        static let hostProjectsRoots = "settings.hostProjectsRoots"
+        static let hostProjectPaths = "settings.hostProjectPaths"
     }
 
     /// Add (or replace by id) a user-defined host and persist it.
@@ -123,8 +123,10 @@ final class AppSettings: ObservableObject {
     @Published var hostVaultPaths: [String: String] = [:] {
         didSet { UserDefaults.standard.set(hostVaultPaths, forKey: Keys.hostVaultPaths) }
     }
-    @Published var hostProjectsRoots: [String: String] = [:] {
-        didSet { UserDefaults.standard.set(hostProjectsRoots, forKey: Keys.hostProjectsRoots) }
+    /// Per-server project directory (the app's repo, e.g. /var/www/html/gatsa_rewrite).
+    /// A server is ONE project at a path — not a folder to scan like the hub. Persisted.
+    @Published var hostProjectPaths: [String: String] = [:] {
+        didSet { UserDefaults.standard.set(hostProjectPaths, forKey: Keys.hostProjectPaths) }
     }
 
     /// The resolved active host (the selected one, or the hub).
@@ -135,16 +137,17 @@ final class AppSettings: ObservableObject {
         if activeHost?.isHub ?? true { return agentWorkdir }
         return hostVaultPaths[activeHostID] ?? agentWorkdir
     }
-    /// Where the active host's projects live.
-    var activeProjectsRoot: String {
-        if activeHost?.isHub ?? true { return projectsRoot }
-        return hostProjectsRoots[activeHostID]
-            ?? hostVaultPaths[activeHostID].map { ($0 as NSString).appendingPathComponent("Projects") }
-            ?? projectsRoot
+    /// The active server's single project directory (nil on the hub, which discovers
+    /// many projects under `projectsRoot` instead).
+    var serverProjectPath: String? {
+        guard activeHost?.isHub == false else { return nil }
+        let p = hostProjectPaths[activeHostID] ?? ""
+        return p.isEmpty ? nil : p
     }
 
-    /// The directory the panes work in: the selected project, else the active vault.
-    var activePath: String { selectedProjectPath ?? activeVaultPath }
+    /// The directory the panes work in: the selected project, else the active server's
+    /// project, else the active vault.
+    var activePath: String { selectedProjectPath ?? serverProjectPath ?? activeVaultPath }
     var selectedProjectName: String? {
         selectedProjectPath.map { ($0 as NSString).lastPathComponent }
     }
@@ -189,7 +192,7 @@ final class AppSettings: ObservableObject {
         if let raw = defaults.string(forKey: Keys.codexMode), let m = CodexMode(rawValue: raw) { codexMode = m }
         if let id = defaults.string(forKey: Keys.activeHost) { activeHostID = id }
         if let d = defaults.dictionary(forKey: Keys.hostVaultPaths) as? [String: String] { hostVaultPaths = d }
-        if let d = defaults.dictionary(forKey: Keys.hostProjectsRoots) as? [String: String] { hostProjectsRoots = d }
+        if let d = defaults.dictionary(forKey: Keys.hostProjectPaths) as? [String: String] { hostProjectPaths = d }
         rebuildHosts()   // hosts = discovered + custom
     }
 

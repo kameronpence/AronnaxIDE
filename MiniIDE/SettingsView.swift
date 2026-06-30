@@ -66,9 +66,9 @@ struct SettingsView: View {
                                 set: { settings.hostVaultPaths[host.id] = $0.isEmpty ? nil : $0 }))
                                 .textFieldStyle(.roundedBorder)
                                 .font(.callout)
-                            TextField("Projects root (optional; defaults to <vault>/Projects)", text: Binding(
-                                get: { settings.hostProjectsRoots[host.id] ?? "" },
-                                set: { settings.hostProjectsRoots[host.id] = $0.isEmpty ? nil : $0 }))
+                            TextField("Project directory (e.g. /var/www/html/gatsa_rewrite)", text: Binding(
+                                get: { settings.hostProjectPaths[host.id] ?? "" },
+                                set: { settings.hostProjectPaths[host.id] = $0.isEmpty ? nil : $0 }))
                                 .textFieldStyle(.roundedBorder)
                                 .font(.callout)
                         }

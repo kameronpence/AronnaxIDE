@@ -26,6 +26,7 @@ final class ServerOnboarding: ObservableObject {
     @Published var address = ""        // IP or hostname the app/kepler will ssh to
     @Published var user = "root"
     @Published var viaHub = false      // reached via kepler (ProxyJump) vs. directly
+    @Published var projectDir = ""     // the project's repo dir on the box (e.g. /var/www/html/gatsa_rewrite)
 
     // MARK: Flow
     @Published var current = 0
@@ -308,6 +309,11 @@ final class ServerOnboarding: ObservableObject {
         guard !Task.isCancelled else { return }
         if r?.ok == true {
             settings.addHost(host)            // now the app knows about it
+            // Wire up the panes for this server so the user never sets paths by hand:
+            // its vault clone (the app made it) + its one project dir.
+            settings.hostVaultPaths[host.id] = vaultDir
+            let proj = projectDir.trimmingCharacters(in: .whitespaces)
+            if !proj.isEmpty { settings.hostProjectPaths[host.id] = proj }
             set(7, .done, "\(host.displayName) is set up and added to the app.")
             finished = true
         } else {

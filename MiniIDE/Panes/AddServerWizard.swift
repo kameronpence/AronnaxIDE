@@ -88,6 +88,7 @@ struct AddServerWizard: View {
                 TextField("Name (e.g. relayptc-prod)", text: $model.name)
                 TextField("IP or hostname", text: $model.address)
                 TextField("User", text: $model.user)
+                TextField("Project directory on the box (e.g. /var/www/html/gatsa_rewrite)", text: $model.projectDir)
                 Toggle("Reach it through kepler (ProxyJump)", isOn: $model.viaHub)
             }
             .formStyle(.columns)

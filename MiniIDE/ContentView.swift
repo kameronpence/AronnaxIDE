@@ -171,48 +171,35 @@ private struct SidebarView: View {
                     .labelsHidden()
                 }
                 Section {
-                    if projects.projects.isEmpty {
-                        Text(projects.isLoading ? "Scanning…" : "No projects found")
-                            .foregroundStyle(.secondary)
-                            .font(.callout)
-                    } else {
-                        ForEach(projects.projects) { project in
-                            Button {
-                                settings.selectedProjectPath = project.path
-                            } label: {
-                                HStack {
-                                    VStack(alignment: .leading, spacing: 1) {
-                                        Label(project.name, systemImage: "folder")
-                                        if let branch = project.branch {
-                                            Text(branch + (project.owner.map { " · \($0)" } ?? ""))
-                                                .font(.callout)
-                                                .foregroundStyle(.secondary)
-                                                .padding(.leading, 24)
-                                        }
-                                    }
-                                    Spacer()
-                                    if settings.selectedProjectPath == project.path {
-                                        Image(systemName: "checkmark")
-                                            .font(.caption.weight(.semibold))
-                                            .foregroundStyle(.tint)
-                                    }
-                                }
-                                .contentShape(Rectangle())
+                    if settings.activeHost?.isHub ?? true {
+                        // Hub: the projects discovered under the vault's Projects/ folder.
+                        if projects.projects.isEmpty {
+                            Text(projects.isLoading ? "Scanning…" : "No projects found")
+                                .foregroundStyle(.secondary).font(.callout)
+                        } else {
+                            ForEach(projects.projects) { project in
+                                projectRow(name: project.name, path: project.path,
+                                           subtitle: project.branch.map { $0 + (project.owner.map { o in " · \(o)" } ?? "") })
                             }
-                            .buttonStyle(.plain)
                         }
+                    } else if let path = settings.serverProjectPath {
+                        // Server: its one project directory — not a folder to scan.
+                        projectRow(name: (path as NSString).lastPathComponent, path: path, subtitle: path)
+                    } else {
+                        Text("No project directory set for this server — add it in Settings → Hosts.")
+                            .foregroundStyle(.secondary).font(.callout)
                     }
                 } header: {
                     HStack {
-                        Text("Projects")
+                        Text((settings.activeHost?.isHub ?? true) ? "Projects" : "Project")
                         Spacer()
-                        if projects.isLoading {
-                            ProgressView().controlSize(.mini)
-                        } else {
-                            Button { projects.refresh() } label: { Image(systemName: "arrow.clockwise") }
-                                .buttonStyle(.borderless)
-                                .controlSize(.small)
-                                .help("Rescan projects")
+                        if settings.activeHost?.isHub ?? true {
+                            if projects.isLoading {
+                                ProgressView().controlSize(.mini)
+                            } else {
+                                Button { projects.refresh() } label: { Image(systemName: "arrow.clockwise") }
+                                    .buttonStyle(.borderless).controlSize(.small).help("Rescan projects")
+                            }
                         }
                     }
                 }
@@ -225,21 +212,55 @@ private struct SidebarView: View {
         }
         .onAppear {
             usage.start(host: settings.hub, workdir: settings.agentWorkdir)
-            projects.start(host: settings.activeHost, root: settings.activeProjectsRoot)
+            if settings.activeHost?.isHub ?? true {
+                projects.start(host: settings.hub, root: settings.projectsRoot)
+            } else {
+                settings.selectedProjectPath = settings.serverProjectPath
+            }
         }
         .onChange(of: projects.projects) { _, list in
-            // Auto-select the first project (and recover if the selection vanished).
+            // Hub only: auto-select the first project (and recover if it vanished).
+            guard settings.activeHost?.isHub ?? true else { return }
             if settings.selectedProjectPath == nil
                 || !list.contains(where: { $0.path == settings.selectedProjectPath }) {
                 settings.selectedProjectPath = list.first?.path
             }
         }
-        .onChange(of: settings.activeProjectsRoot) { _, _ in
-            // Active host (or its projects root / the hub workdir) changed — re-scan
-            // there. The projects.onChange auto-selects the first of the new list, so a
-            // stale selection from the previous host clears itself.
-            projects.setRoot(host: settings.activeHost, root: settings.activeProjectsRoot)
+        .onChange(of: settings.activeHostID) { _, _ in
+            // Switched host: the hub re-scans its Projects/ folder; a server pins to its
+            // one configured project directory (no scan).
+            if settings.activeHost?.isHub ?? true {
+                projects.setRoot(host: settings.hub, root: settings.projectsRoot)
+            } else {
+                settings.selectedProjectPath = settings.serverProjectPath
+            }
         }
+        .onChange(of: settings.agentWorkdir) { _, _ in
+            if settings.activeHost?.isHub ?? true {
+                projects.setRoot(host: settings.hub, root: settings.projectsRoot)
+            }
+        }
+    }
+
+    /// One selectable project row (used for both hub-discovered projects + the server's project).
+    @ViewBuilder
+    private func projectRow(name: String, path: String, subtitle: String?) -> some View {
+        Button { settings.selectedProjectPath = path } label: {
+            HStack {
+                VStack(alignment: .leading, spacing: 1) {
+                    Label(name, systemImage: "folder")
+                    if let subtitle {
+                        Text(subtitle).font(.callout).foregroundStyle(.secondary).padding(.leading, 24)
+                    }
+                }
+                Spacer()
+                if settings.selectedProjectPath == path {
+                    Image(systemName: "checkmark").font(.caption.weight(.semibold)).foregroundStyle(.tint)
+                }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 }
 
