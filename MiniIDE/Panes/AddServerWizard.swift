@@ -108,17 +108,23 @@ struct AddServerWizard: View {
         let step = model.steps[1]
         return VStack(alignment: .leading, spacing: 14) {
             Text("Give the app a foothold").font(.title3.weight(.semibold))
-            Text("A fresh box only has AWS's initial access. Add this key to the box's "
-                 + "`~/.ssh/authorized_keys` (via the AWS/Lightsail console or initial key) — "
-                 + "then the app can take over.")
+            Text("A brand-new AWS/Lightsail box only trusts the key it launched with. Add this "
+                 + "Mac's key so the app can take over — step by step:")
                 .font(.callout).foregroundStyle(.secondary)
 
             if model.bootstrapKey.isEmpty {
                 ProgressView("Fetching the key…")
             } else {
-                Text("This Mac's public key:")
-                    .font(.callout.weight(.medium))
+                Text("**1.** Copy this Mac's public key (button on the right):")
+                    .font(.callout)
                 keyBox(model.bootstrapKey)
+                Text("**2.** Get into the box with the access you already have — the `.pem` key from launch (`ssh -i your-key.pem user@your-box-ip`), or the provider's browser SSH (EC2 → **Connect**, or Lightsail → **Connect using SSH**).")
+                    .font(.callout)
+                Text("**3.** On the box, paste the key onto a new line in `~/.ssh/authorized_keys`. Easiest — run this, replacing `PASTE_KEY` with the key you copied in step 1:")
+                    .font(.callout)
+                keyBox("mkdir -p ~/.ssh && chmod 700 ~/.ssh && echo 'PASTE_KEY' >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys")
+                Text("**4.** Come back here and click **I've added it — connect** below.")
+                    .font(.callout)
             }
 
             if !step.detail.isEmpty {
@@ -145,11 +151,24 @@ struct AddServerWizard: View {
         let step = model.steps[4]
         return VStack(alignment: .leading, spacing: 14) {
             Text("Add the deploy key to GitHub").font(.title3.weight(.semibold))
-            Text("In the **ai-os-vault** repo → Settings → Deploy keys → Add deploy key. "
-                 + "Title it \"\(model.host.displayName)\" and check **Allow write access**.")
+            Label("This goes on your **personal** GitHub (kameronpence) — the `ai-os-vault` repo lives there, NOT under the GATSA org.",
+                  systemImage: "person.crop.circle.badge.exclamationmark")
+                .font(.callout.weight(.medium))
+                .foregroundStyle(.orange)
+            Text("On **personal GitHub** → the **ai-os-vault** repo → Settings → Deploy keys → "
+                 + "Add deploy key. Title it \"\(model.host.displayName)\" and check **Allow write access**.")
                 .font(.callout).foregroundStyle(.secondary)
             if model.deployKey.isEmpty { ProgressView() }
-            else { keyBox(model.deployKey) }
+            else {
+                keyBox(model.deployKey)
+                if !model.deployKeyFingerprint.isEmpty {
+                    Text("Fingerprint: \(model.deployKeyFingerprint)")
+                        .font(.caption.monospaced()).foregroundStyle(.secondary)
+                        .textSelection(.enabled)
+                }
+                Text("Already set this server up before? If GitHub says **\"Key is already in use\"**, it's already added — match the fingerprint above to the repo's Deploy keys list; if it's there, just click **continue** and the app verifies it.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
             if !step.detail.isEmpty {
                 Label(step.detail, systemImage: step.phase == .failed
                       ? "exclamationmark.triangle.fill" : "info.circle")

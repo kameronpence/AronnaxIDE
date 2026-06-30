@@ -31,6 +31,7 @@ final class ServerOnboarding: ObservableObject {
     @Published var current = 0
     @Published var bootstrapKey = ""   // pubkey to paste onto the box in step 1
     @Published var deployKey = ""      // vault deploy pubkey to add to GitHub in step 4
+    @Published var deployKeyFingerprint = ""  // SHA256 fp — to match against GitHub's deploy-key list
     @Published var finished = false
 
     @Published var steps: [Step] = [
@@ -40,7 +41,7 @@ final class ServerOnboarding: ObservableObject {
         Step(id: 3, title: "Generate the vault deploy key",  role: .app),
         Step(id: 4, title: "Add the deploy key to GitHub",   role: .you),
         Step(id: 5, title: "Clone the vault + memory rules", role: .app),
-        Step(id: 6, title: "Check dev tools",                role: .app),
+        Step(id: 6, title: "Install dev tools",              role: .app),
         Step(id: 7, title: "Verify + finish",                role: .app),
     ]
 
@@ -137,13 +138,16 @@ final class ServerOnboarding: ObservableObject {
         [ -f ~/.ssh/id_vault ] || ssh-keygen -t ed25519 -f ~/.ssh/id_vault -C \(SSHManager.shellEscaped(host.id + "-vault")) -N "" -q
         grep -q github-vault ~/.ssh/config 2>/dev/null || printf '\\nHost github-vault\\n    HostName github.com\\n    User git\\n    IdentityFile ~/.ssh/id_vault\\n    IdentitiesOnly yes\\n    StrictHostKeyChecking accept-new\\n' >> ~/.ssh/config
         cat ~/.ssh/id_vault.pub
+        ssh-keygen -lf ~/.ssh/id_vault.pub 2>/dev/null | awk '{print "FP:" $2}'
         """
         guard let r = try? await SSHManager.shared.runShell(setup, on: host), r.ok else {
             set(3, .failed, "Couldn't generate the deploy key on the box."); return
         }
-        let key = r.stdout.split(separator: "\n").map(String.init).last { $0.hasPrefix("ssh-") } ?? ""
+        let lines = r.stdout.split(separator: "\n").map(String.init)
+        let key = lines.last { $0.hasPrefix("ssh-") } ?? ""
         guard !key.isEmpty else { set(3, .failed, "Made the key but couldn't read it back."); return }
         deployKey = key
+        deployKeyFingerprint = lines.last { $0.hasPrefix("FP:") }?.replacingOccurrences(of: "FP:", with: "") ?? ""
         set(3, .done, "Deploy key ready.")
         current = 4
         set(4, .waitingOnYou, "Add the deploy key below to the ai-os-vault repo, with write access.")
@@ -194,37 +198,98 @@ final class ServerOnboarding: ObservableObject {
         await checkTools()
     }
 
-    // MARK: - Step 6 (app): check dev tools (informational — missing ones don't fail setup)
+    // MARK: - Step 6 (app): check dev tools — and install whatever's missing.
+    // zsh + tmux are what the app's Terminal/Coding panes launch through
+    // (`exec zsh -lc 'tmux …'`); claude/bd/cr/codex are the agent toolchain.
     func checkTools() async {
         guard !Task.isCancelled else { return }
         current = 6
         set(6, .running, "Checking dev tools…")
-        // zsh + tmux are what the app's own Terminal/Coding panes launch through
-        // (`exec zsh -lc 'tmux …'`); claude/bd/cr/codex are the agent toolchain.
+        guard let missing = await toolStatus() else {
+            set(6, .failed, "Couldn't check the box's tools (connection issue?) — Retry.")
+            return
+        }
+        if missing.isEmpty {
+            set(6, .done, "zsh, tmux, claude, bd, cr, codex all present.")
+            await finish()
+        } else {
+            await installTools(missing)   // install, then re-check
+        }
+    }
+
+    /// The tools missing on the box, or nil if the check itself couldn't run.
+    private func toolStatus() async -> [String]? {
         guard let r = try? await SSHManager.shared.runShell(
                 "bash -lc 'for t in zsh tmux claude bd cr codex; do command -v $t >/dev/null 2>&1 && echo $t:ok || echo $t:missing; done'",
                 on: host),
               r.ok, !r.stdout.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            // The check itself didn't run — don't assume everything's present.
-            set(6, .failed, "Couldn't check the box's tools (connection issue?) — Retry.")
-            return
+            return nil
         }
-        let missing = r.stdout.split(separator: "\n")
+        return r.stdout.split(separator: "\n")
             .filter { $0.hasSuffix(":missing") }
             .map { $0.replacingOccurrences(of: ":missing", with: "") }
-        let missingTerminal = missing.filter { $0 == "zsh" || $0 == "tmux" }
-        if !missingTerminal.isEmpty {
-            // The app's Terminal/Coding panes can't run without these — don't finish or
-            // add a host that won't actually work. Install them and Retry.
-            set(6, .failed, "Install \(missingTerminal.joined(separator: " + ")) on the box "
-                + "— the Terminal & Coding panes need them — then Retry.")
+    }
+
+    /// Each agent CLI's official installer, run on the box.
+    private static let cliInstaller: [String: String] = [
+        "claude": "curl -fsSL https://claude.ai/install.sh | bash",
+        "codex":  "curl -fsSL https://chatgpt.com/codex/install.sh | sh",
+        "bd":     "curl -fsSL https://raw.githubusercontent.com/gastownhall/beads/main/scripts/install.sh | bash",
+        "cr":     "curl -fsSL https://cli.coderabbit.ai/install.sh | sh",
+    ]
+
+    /// Install the missing tools on the box — system tools (zsh/tmux) via its package
+    /// manager, agent CLIs via their official installers — then re-check.
+    private func installTools(_ missing: [String]) async {
+        guard !Task.isCancelled else { return }
+        let sys = missing.filter { $0 == "zsh" || $0 == "tmux" }
+        if !sys.isEmpty {
+            set(6, .running, "Installing \(sys.joined(separator: " + "))…")
+            let pkgs = sys.joined(separator: " ")
+            _ = try? await SSHManager.shared.runShell("""
+            SUDO=""; [ "$(id -u)" -ne 0 ] && SUDO="sudo "
+            if command -v apt-get >/dev/null 2>&1; then ${SUDO}apt-get update -qq && ${SUDO}apt-get install -y \(pkgs)
+            elif command -v dnf >/dev/null 2>&1; then ${SUDO}dnf install -y \(pkgs)
+            elif command -v yum >/dev/null 2>&1; then ${SUDO}yum install -y \(pkgs)
+            elif command -v apk >/dev/null 2>&1; then ${SUDO}apk add \(pkgs)
+            else echo NO_PKG_MGR; exit 1; fi
+            """, on: host)
+        }
+        for tool in missing {
+            guard !Task.isCancelled else { return }
+            guard let installer = Self.cliInstaller[tool] else { continue }
+            set(6, .running, "Installing \(tool)…")
+            _ = try? await SSHManager.shared.runShell(installer, on: host)
+        }
+        guard !Task.isCancelled else { return }
+        set(6, .running, "Verifying the installs…")
+        let nowMissing = await toolStatus() ?? missing
+        let sysStill = nowMissing.filter { $0 == "zsh" || $0 == "tmux" }
+        if !sysStill.isEmpty {
+            set(6, .failed, "Couldn't install \(sysStill.joined(separator: " + ")) — the box's "
+                + "package manager may need different access. Install it manually, then Retry.")
             return
         }
-        let agentMissing = missing.filter { $0 != "zsh" && $0 != "tmux" }
-        set(6, .done, agentMissing.isEmpty
-            ? "zsh, tmux, claude, bd, cr, codex all present."
-            : "Ready. Missing agent tools: \(agentMissing.joined(separator: ", ")) — install when you want them.")
+        let installed = missing.filter { !nowMissing.contains($0) }
+        let stillMissing = nowMissing.filter { $0 != "zsh" && $0 != "tmux" }
+        let needAuth = installed.filter { ["claude", "codex", "cr"].contains($0) }
+        var detail = "zsh + tmux ready."
+        if !installed.isEmpty { detail += " Installed: \(installed.joined(separator: ", "))." }
+        if !stillMissing.isEmpty { detail += " Couldn't auto-install: \(stillMissing.joined(separator: ", "))." }
+        if !needAuth.isEmpty {
+            detail += " Sign in on the box: " + needAuth.map { authHint($0) }.joined(separator: ", ") + "."
+        }
+        set(6, .done, detail)
         await finish()
+    }
+
+    private func authHint(_ tool: String) -> String {
+        switch tool {
+        case "claude": return "run `claude` then `/login`"
+        case "codex":  return "`codex login`"
+        case "cr":     return "`cr auth login`"
+        default:       return tool
+        }
     }
 
     // MARK: - Step 7 (app): verify the round-trip + commit the host to the app
