@@ -74,6 +74,10 @@ final class SSHManager {
             "-o", "ControlMaster=auto",
             "-o", "ControlPath=\(controlPath(for: host))",
             "-o", "ControlPersist=300",
+            // Auto-trust a *new* host's key on first connect (so a freshly added server
+            // probes without a prompt that BatchMode can't answer), but still reject a
+            // *changed* key — MITM/reassign protection is preserved.
+            "-o", "StrictHostKeyChecking=accept-new",
             // Fail a stalled TCP/auth connect in ~10s instead of hanging on ssh's
             // long default — so a down hub surfaces as "Disconnected" promptly.
             "-o", "ConnectTimeout=10",
@@ -162,7 +166,12 @@ final class SSHManager {
     /// process is ssh's direct child (its exit drives `processTerminated`).
     /// Used by the terminal and agent panes with SwiftTerm's `startProcess`.
     func loginShellArguments(for host: Host, running command: String) -> [String] {
-        let remote = "exec zsh -lc \(Self.shellEscaped(command))"
+        // COLORTERM=truecolor makes tmux on ANY host detect 24-bit colour and stop
+        // downgrading truecolour (e.g. codex's near-white input box rendered dark) —
+        // a universal fix that needs no per-server ~/.tmux.conf. The inner `exec` keeps
+        // the target process as ssh's direct child so its exit still drives processTerminated.
+        let withColor = "export COLORTERM=truecolor; exec \(command)"
+        let remote = "exec zsh -lc \(Self.shellEscaped(withColor))"
         return sshArguments(for: host, interactive: true, remoteCommand: [remote])
     }
 

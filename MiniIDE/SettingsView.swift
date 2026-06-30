@@ -10,6 +10,7 @@ struct SettingsView: View {
     @State private var newHostAddr = ""
     @State private var newHostUser = "root"
     @State private var newHostViaHub = true
+    @State private var showingWizard = false
 
     var body: some View {
         Form {
@@ -62,19 +63,28 @@ struct SettingsView: View {
                     .padding(.vertical, 2)
                 }
 
-                VStack(spacing: 6) {
-                    TextField("Name (e.g. GATSA staging)", text: $newHostName)
-                    TextField("Hostname or IP", text: $newHostAddr)
-                    TextField("User (e.g. root)", text: $newHostUser)
-                    Toggle("Reach via the hub (ProxyJump)", isOn: $newHostViaHub)
-                    HStack {
-                        Spacer()
-                        Button("Add host", action: addHost)
-                            .disabled(newHostName.trimmingCharacters(in: .whitespaces).isEmpty
-                                      || newHostAddr.trimmingCharacters(in: .whitespaces).isEmpty)
-                    }
+                Button {
+                    showingWizard = true
+                } label: {
+                    Label("Add Server…", systemImage: "wand.and.stars")
                 }
-                .textFieldStyle(.roundedBorder)
+                .help("Guided setup: connect, vault deploy key, clone, and tools")
+
+                DisclosureGroup("Add manually (host list only)") {
+                    VStack(spacing: 6) {
+                        TextField("Name (e.g. GATSA staging)", text: $newHostName)
+                        TextField("Hostname or IP", text: $newHostAddr)
+                        TextField("User (e.g. root)", text: $newHostUser)
+                        Toggle("Reach via the hub (ProxyJump)", isOn: $newHostViaHub)
+                        HStack {
+                            Spacer()
+                            Button("Add host", action: addHost)
+                                .disabled(newHostName.trimmingCharacters(in: .whitespaces).isEmpty
+                                          || newHostAddr.trimmingCharacters(in: .whitespaces).isEmpty)
+                        }
+                    }
+                    .textFieldStyle(.roundedBorder)
+                }
             }
 
             Section("GitHub") {
@@ -86,6 +96,9 @@ struct SettingsView: View {
         }
         .formStyle(.grouped)
         .frame(width: 500, height: 470)
+        .sheet(isPresented: $showingWizard) {
+            AddServerWizard(settings: settings)
+        }
     }
 
     private func reachLabel(_ host: Host) -> String {
