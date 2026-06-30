@@ -11,7 +11,7 @@ struct GitDeployPanel: View {
     @State private var commitSearch = ""
     @State private var pendingWrite: WriteRequest?
 
-    private var hubReadOnly: Bool { settings.isReadOnly(settings.hub) }
+    private var hubReadOnly: Bool { settings.isReadOnly(settings.activeHost) }
 
     /// Run a write now, or stage it for confirmation when "Confirm before every write" is on.
     private func requestWrite(_ title: String, _ perform: @escaping () -> Void) {
@@ -26,11 +26,14 @@ struct GitDeployPanel: View {
             content
         }
         .onAppear {
-            model.start(host: settings.hub)
+            model.start(host: settings.activeHost)
             model.selectedPath = settings.selectedProjectPath
         }
         .onChange(of: settings.selectedProjectPath) { _, new in
             model.selectedPath = new
+        }
+        .onChange(of: settings.activeHostID) { _, _ in
+            model.setHost(settings.activeHost)
         }
         .alert("Push to GitHub?", isPresented: $showPushConfirm) {
             Button("Cancel", role: .cancel) {}
@@ -190,7 +193,7 @@ struct GitDeployPanel: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Actions").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
                     if hubReadOnly {
-                        Label("\(settings.hub?.sshAlias ?? "Host") is read-only — commit/push/checkout are disabled.",
+                        Label("\(settings.activeHost?.sshAlias ?? "Host") is read-only — commit/push/checkout are disabled.",
                               systemImage: "lock.fill")
                             .font(.callout).foregroundStyle(.orange)
                     }
@@ -307,6 +310,13 @@ final class GitPanelModel: ObservableObject {
         guard !started else { return }
         started = true
         self.host = host
+    }
+
+    /// Re-point at a new host and reload — `start()` only runs once.
+    func setHost(_ host: Host?) {
+        guard host?.id != self.host?.id else { return }
+        self.host = host
+        loadStatus()
     }
 
     func refresh() { loadStatus() }

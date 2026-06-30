@@ -45,7 +45,7 @@ struct BeadsPanel: View {
     @State private var searchText = ""
     @State private var pendingWrite: WriteRequest?
 
-    private var hubReadOnly: Bool { settings.isReadOnly(settings.hub) }
+    private var hubReadOnly: Bool { settings.isReadOnly(settings.activeHost) }
     /// Block on a read-only host; confirm when "Confirm before every write" is on; else run.
     private func requestWrite(_ title: String, _ perform: @escaping () -> Void) {
         if hubReadOnly { return }
@@ -70,11 +70,14 @@ struct BeadsPanel: View {
             content
         }
         .onAppear {
-            model.start(host: settings.hub)
+            model.start(host: settings.activeHost)
             model.selectedProjectPath = settings.selectedProjectPath
         }
         .onChange(of: settings.selectedProjectPath) { _, new in
             model.selectedProjectPath = new
+        }
+        .onChange(of: settings.activeHostID) { _, _ in
+            model.setHost(settings.activeHost)
         }
         .sheet(isPresented: $showingCreate) {
             BdCreateSheet { title, type, priority, description in
@@ -387,6 +390,13 @@ final class BeadsModel: ObservableObject {
         guard !started else { return }
         started = true
         self.host = host
+    }
+
+    /// Re-point at a new host and reload — `start()` only runs once.
+    func setHost(_ host: Host?) {
+        guard host?.id != self.host?.id else { return }
+        self.host = host
+        reload()
     }
 
     func refresh() { reload() }

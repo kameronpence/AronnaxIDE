@@ -160,11 +160,15 @@ private struct SidebarView: View {
     var body: some View {
         VStack(spacing: 0) {
             List {
-                Section("Hosts") {
-                    ForEach(settings.hosts) { host in
-                        Label(host.displayName,
-                              systemImage: host.isHub ? "server.rack" : "cloud")
+                Section("Working on") {
+                    Picker("Host", selection: $settings.activeHostID) {
+                        ForEach(settings.hosts) { host in
+                            Label(host.displayName,
+                                  systemImage: host.isHub ? "server.rack" : "cloud").tag(host.id)
+                        }
                     }
+                    .pickerStyle(.inline)
+                    .labelsHidden()
                 }
                 Section {
                     if projects.projects.isEmpty {
@@ -221,7 +225,7 @@ private struct SidebarView: View {
         }
         .onAppear {
             usage.start(host: settings.hub, workdir: settings.agentWorkdir)
-            projects.start(host: settings.hub, root: settings.projectsRoot)
+            projects.start(host: settings.activeHost, root: settings.activeProjectsRoot)
         }
         .onChange(of: projects.projects) { _, list in
             // Auto-select the first project (and recover if the selection vanished).
@@ -230,10 +234,11 @@ private struct SidebarView: View {
                 settings.selectedProjectPath = list.first?.path
             }
         }
-        .onChange(of: settings.agentWorkdir) { _, _ in
-            // Workdir changed in Settings — re-root project discovery (usage is global,
-            // not workdir-dependent, so it doesn't need re-rooting).
-            projects.setRoot(host: settings.hub, root: settings.projectsRoot)
+        .onChange(of: settings.activeProjectsRoot) { _, _ in
+            // Active host (or its projects root / the hub workdir) changed — re-scan
+            // there. The projects.onChange auto-selects the first of the new list, so a
+            // stale selection from the previous host clears itself.
+            projects.setRoot(host: settings.activeHost, root: settings.activeProjectsRoot)
         }
     }
 }

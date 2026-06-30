@@ -68,6 +68,9 @@ final class AppSettings: ObservableObject {
         static let confirmWrites = "settings.confirmWrites"
         static let claudeMode = "settings.claudeMode"
         static let codexMode = "settings.codexMode"
+        static let activeHost = "settings.activeHost"
+        static let hostVaultPaths = "settings.hostVaultPaths"
+        static let hostProjectsRoots = "settings.hostProjectsRoots"
     }
 
     /// Add (or replace by id) a user-defined host and persist it.
@@ -108,8 +111,40 @@ final class AppSettings: ObservableObject {
     /// back to the agent workdir).
     @Published var selectedProjectPath: String?
 
-    /// The directory the panes should work in: the selected project, else the workdir.
-    var activePath: String { selectedProjectPath ?? agentWorkdir }
+    /// The host the project panes (Coding, Vault, Beads, Git) operate on. Defaults to
+    /// the hub; switch it to run agents on / read from a server instead — a project
+    /// there uses that server's GitHub-synced vault clone as its memory. Persisted.
+    @Published var activeHostID: String = AppSettings.hubAlias {
+        didSet { UserDefaults.standard.set(activeHostID, forKey: Keys.activeHost) }
+    }
+    /// Per-host vault-clone path + projects root (the hub uses `agentWorkdir`). Set in
+    /// Settings for each server so its Vault tab + project discovery point at the right
+    /// directories. Persisted.
+    @Published var hostVaultPaths: [String: String] = [:] {
+        didSet { UserDefaults.standard.set(hostVaultPaths, forKey: Keys.hostVaultPaths) }
+    }
+    @Published var hostProjectsRoots: [String: String] = [:] {
+        didSet { UserDefaults.standard.set(hostProjectsRoots, forKey: Keys.hostProjectsRoots) }
+    }
+
+    /// The resolved active host (the selected one, or the hub).
+    var activeHost: Host? { hosts.first { $0.id == activeHostID } ?? hub }
+    /// The active host's vault root — `agentWorkdir` on the hub, the configured clone
+    /// path on a server.
+    var activeVaultPath: String {
+        if activeHost?.isHub ?? true { return agentWorkdir }
+        return hostVaultPaths[activeHostID] ?? agentWorkdir
+    }
+    /// Where the active host's projects live.
+    var activeProjectsRoot: String {
+        if activeHost?.isHub ?? true { return projectsRoot }
+        return hostProjectsRoots[activeHostID]
+            ?? hostVaultPaths[activeHostID].map { ($0 as NSString).appendingPathComponent("Projects") }
+            ?? projectsRoot
+    }
+
+    /// The directory the panes work in: the selected project, else the active vault.
+    var activePath: String { selectedProjectPath ?? activeVaultPath }
     var selectedProjectName: String? {
         selectedProjectPath.map { ($0 as NSString).lastPathComponent }
     }
@@ -152,6 +187,9 @@ final class AppSettings: ObservableObject {
         confirmWrites = defaults.bool(forKey: Keys.confirmWrites)
         if let raw = defaults.string(forKey: Keys.claudeMode), let m = ClaudeMode(rawValue: raw) { claudeMode = m }
         if let raw = defaults.string(forKey: Keys.codexMode), let m = CodexMode(rawValue: raw) { codexMode = m }
+        if let id = defaults.string(forKey: Keys.activeHost) { activeHostID = id }
+        if let d = defaults.dictionary(forKey: Keys.hostVaultPaths) as? [String: String] { hostVaultPaths = d }
+        if let d = defaults.dictionary(forKey: Keys.hostProjectsRoots) as? [String: String] { hostProjectsRoots = d }
         rebuildHosts()   // hosts = discovered + custom
     }
 

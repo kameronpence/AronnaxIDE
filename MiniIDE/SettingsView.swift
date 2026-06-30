@@ -59,6 +59,19 @@ struct SettingsView: View {
                         .toggleStyle(.checkbox)
                         .font(.callout)
                         .foregroundStyle(.secondary)
+
+                        if !host.isHub {
+                            TextField("Vault clone path (e.g. /root/AI_OS)", text: Binding(
+                                get: { settings.hostVaultPaths[host.id] ?? "" },
+                                set: { settings.hostVaultPaths[host.id] = $0.isEmpty ? nil : $0 }))
+                                .textFieldStyle(.roundedBorder)
+                                .font(.callout)
+                            TextField("Projects root (optional; defaults to <vault>/Projects)", text: Binding(
+                                get: { settings.hostProjectsRoots[host.id] ?? "" },
+                                set: { settings.hostProjectsRoots[host.id] = $0.isEmpty ? nil : $0 }))
+                                .textFieldStyle(.roundedBorder)
+                                .font(.callout)
+                        }
                     }
                     .padding(.vertical, 2)
                 }

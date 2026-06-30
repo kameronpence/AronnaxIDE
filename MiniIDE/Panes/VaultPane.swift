@@ -12,7 +12,7 @@ struct VaultPane: View {
     @State private var search = ""
     @State private var pendingWrite: WriteRequest?
 
-    private var hubReadOnly: Bool { settings.isReadOnly(settings.hub) }
+    private var hubReadOnly: Bool { settings.isReadOnly(settings.activeHost) }
     private func requestWrite(_ title: String, _ perform: @escaping () -> Void) {
         if settings.confirmWrites { pendingWrite = WriteRequest(title: title, perform: perform) }
         else { perform() }
@@ -33,23 +33,20 @@ struct VaultPane: View {
                 .frame(minWidth: 360, maxWidth: .infinity, maxHeight: .infinity)
         }
         .onAppear {
-            // The Vault is the shared memory at the vault root — it shows the CTX/notes,
-            // not project code (which lives under Projects/ and is excluded). It does not
-            // follow the selected project.
+            // The Vault shows the active host's vault clone — the CTX/notes plus each
+            // project's docs. On a server it's that box's GitHub-synced clone (what the
+            // agent there uses as memory); on the hub it's the canonical vault.
             model.readOnly = hubReadOnly
             model.confirmWrites = settings.confirmWrites
-            Task { await model.switchVault(host: settings.hub, to: settings.agentWorkdir) }
+            Task { await model.switchVault(host: settings.activeHost, to: settings.activeVaultPath) }
             model.startWatching()
         }
         .onDisappear { model.stopWatching() }
-        .onChange(of: settings.agentWorkdir) { old, new in
-            Task {
-                // If the vault can't re-root (unsaved edits / conflict), revert the
-                // setting so the workdir and the vault root stay in sync — the status
-                // tells the user to save first.
-                let ok = await model.switchVault(host: settings.hub, to: new)
-                if !ok && settings.agentWorkdir == new { settings.agentWorkdir = old }
-            }
+        .onChange(of: settings.activeVaultPath) { _, new in
+            // Active host (or its vault path) changed — re-root the Vault at the new
+            // host's clone. If unsaved edits block the switch, the model stays put and
+            // its status tells the user to save first.
+            Task { _ = await model.switchVault(host: settings.activeHost, to: new) }
         }
         .onChange(of: hubReadOnly) { _, ro in model.readOnly = ro }
         .onChange(of: settings.confirmWrites) { _, c in model.confirmWrites = c }

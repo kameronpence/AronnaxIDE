@@ -174,14 +174,14 @@ private struct AgentTerminalView: NSViewRepresentable {
     func makeNSView(context: Context) -> LocalProcessTerminalView {
         let view = ClipboardTerminalView(frame: .zero)
         view.processDelegate = context.coordinator
-        context.coordinator.start(view, host: settings.hub, agent: agent,
+        context.coordinator.start(view, host: settings.activeHost, agent: agent,
                                   workdir: workdir, extraArgs: extraArgs,
                                   baselineSignal: wakeObserver.reconnectSignal)
         return view
     }
 
     func updateNSView(_ nsView: LocalProcessTerminalView, context: Context) {
-        context.coordinator.sync(view: nsView, host: settings.hub, agent: agent,
+        context.coordinator.sync(view: nsView, host: settings.activeHost, agent: agent,
                                  workdir: workdir, extraArgs: extraArgs,
                                  signal: wakeObserver.reconnectSignal)
     }
@@ -199,6 +199,7 @@ private struct AgentTerminalView: NSViewRepresentable {
         private var currentAgent: Agent?
         private var currentWorkdir: String?
         private var currentArgs: [String]?
+        private var currentHost: Host?
         private var lastReconnectSignal = 0
 
         func start(_ view: LocalProcessTerminalView, host: Host?, agent: Agent,
@@ -209,6 +210,7 @@ private struct AgentTerminalView: NSViewRepresentable {
             currentAgent = agent
             currentWorkdir = workdir
             currentArgs = extraArgs
+            currentHost = host
             launch(view, host: host, agent: agent, workdir: workdir, extraArgs: extraArgs,
                    recreate: false, reconnecting: false, generation: baselineSignal)
         }
@@ -222,12 +224,14 @@ private struct AgentTerminalView: NSViewRepresentable {
             let agentChanged = agent != currentAgent
             let workdirChanged = workdir != currentWorkdir
             let argsChanged = extraArgs != currentArgs
+            let hostChanged = host?.id != currentHost?.id
             let reconnect = signal != lastReconnectSignal
-            guard agentChanged || workdirChanged || argsChanged || reconnect else { return }
+            guard agentChanged || workdirChanged || argsChanged || hostChanged || reconnect else { return }
             lastReconnectSignal = signal
             currentAgent = agent
             currentWorkdir = workdir
             currentArgs = extraArgs
+            currentHost = host
             launch(view, host: host, agent: agent, workdir: workdir, extraArgs: extraArgs,
                    recreate: argsChanged, reconnecting: reconnect, generation: signal)
         }
