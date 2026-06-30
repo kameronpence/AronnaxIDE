@@ -28,7 +28,7 @@ struct AddServerWizard: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .frame(width: 740, height: 500)
+        .frame(minWidth: 860, idealWidth: 900, minHeight: 620, idealHeight: 660)
         .onDisappear { model.cancel() }   // closing the wizard cancels in-flight provisioning
     }
 
@@ -226,6 +226,8 @@ struct AddServerWizard: View {
             Text(key)
                 .font(.system(.caption, design: .monospaced))
                 .textSelection(.enabled)
+                .lineLimit(nil)
+                .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(8)
                 .background(Color.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 6))
