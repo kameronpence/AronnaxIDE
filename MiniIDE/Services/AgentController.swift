@@ -104,7 +104,10 @@ enum AgentController {
         let argv = ([agent.launchCommand] + extraArgs)
             .map(SSHManager.shellEscaped)
             .joined(separator: " ")
-        let attach = "tmux new-session -A -s \(session) -c \(dir) \(argv)"
+        // Scope tmux mouse-on to this agent session so the wheel scrolls Codex's
+        // history (Codex runs on the normal screen and doesn't grab the mouse). The
+        // user's global mouse-off — and their manual tmux sessions — stay untouched.
+        let attach = "tmux new-session -A -s \(session) -c \(dir) \(argv); tmux set -t \(session) mouse on"
         return recreate ? "tmux kill-session -t \(session) 2>/dev/null; \(attach)" : attach
     }
 
