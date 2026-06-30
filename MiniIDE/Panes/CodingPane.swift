@@ -2,15 +2,14 @@ import SwiftUI
 import SwiftTerm
 
 /// Drives the CLI coding agents (Claude Code + Codex). The switcher picks Claude,
-/// Codex, or Both; the live terminal(s) show the agent TUI(s) attached to their
-/// tmux session(s) on the hub, and you type prompts straight into them. "Both"
-/// shows the two agents side by side, each attached to its own session.
+/// Codex, or Both; each agent shows in its own column — a header with the agent's
+/// name and *its own* permission-mode dropdown, over a live terminal attached to
+/// that agent's tmux session on the hub. "Both" shows the two columns side by side,
+/// each with its own dropdown, because the two CLIs have different permission modes.
 ///
-/// Because each agent lives in its own persistent tmux session on the mini,
-/// switching layout (or a sleep/wake reconnect) just re-attaches — the agents and
-/// any work they're doing keep running.
+/// Because each agent lives in its own persistent tmux session, switching layout
+/// (or a sleep/wake reconnect) just re-attaches — the agents keep running.
 struct CodingPane: View {
-    @EnvironmentObject private var settings: AppSettings
     @State private var layout: AgentLayout = .claude
 
     var body: some View {
@@ -34,38 +33,19 @@ struct CodingPane: View {
     private var content: some View {
         switch layout {
         case .claude:
-            AgentTerminalView(agent: .claude, workdir: settings.activePath)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            AgentColumn(agent: .claude)
         case .codex:
-            AgentTerminalView(agent: .codex, workdir: settings.activePath)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            AgentColumn(agent: .codex)
         case .both:
             HSplitView {
-                labeledAgent(.claude)
-                labeledAgent(.codex)
+                AgentColumn(agent: .claude)
+                AgentColumn(agent: .codex)
             }
         }
     }
-
-    /// One agent column in the side-by-side layout: a small title over its terminal
-    /// so it's clear which agent is which.
-    private func labeledAgent(_ agent: Agent) -> some View {
-        VStack(spacing: 0) {
-            Text(agent.displayName)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-            Divider()
-            AgentTerminalView(agent: agent, workdir: settings.activePath)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
-        .frame(minWidth: 300, maxWidth: .infinity, maxHeight: .infinity)
-    }
 }
 
-/// How the Chat pane lays out the agents.
+/// How the Coding pane lays out the agents.
 enum AgentLayout: String, CaseIterable, Identifiable {
     case claude
     case codex
@@ -82,13 +62,110 @@ enum AgentLayout: String, CaseIterable, Identifiable {
     }
 }
 
-/// A live terminal attached to an agent's persistent tmux session on the hub.
-/// Mirrors `TerminalPane`, but the attached session is chosen by `agent`; changing
-/// `agent` re-attaches to the other session (the previous one keeps running,
-/// detached).
+/// One agent's column: a header with its name + its own permission-mode dropdown,
+/// over the live terminal. The dropdown shows that agent's modes (Claude and Codex
+/// differ), and switching it restarts only that agent's session, after confirming.
+private struct AgentColumn: View {
+    let agent: Agent
+    @EnvironmentObject private var settings: AppSettings
+    @State private var showRestartWarning = false
+    @State private var pendingClaude: ClaudeMode?
+    @State private var pendingCodex: CodexMode?
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text(agent.displayName)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                modePicker
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+
+            Divider()
+
+            AgentTerminalView(agent: agent, workdir: settings.activePath, extraArgs: extraArgs)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .frame(minWidth: 300, maxWidth: .infinity, maxHeight: .infinity)
+        .confirmationDialog("Restart \(agent.displayName) to switch mode?",
+                            isPresented: $showRestartWarning, titleVisibility: .visible) {
+            Button("Restart in \(pendingLabel) mode", role: .destructive) { applyPending() }
+            Button("Cancel", role: .cancel) { clearPending() }
+        } message: {
+            Text("Switching the permission mode ends \(agent.displayName)'s running session and "
+                + "starts it fresh — any in-progress state in that session is lost.")
+        }
+    }
+
+    /// The dropdown — Claude's modes or Codex's, depending on the agent. Selecting a
+    /// new mode stages it and raises the restart confirmation instead of applying
+    /// immediately (so the picker stays on the current mode until confirmed).
+    @ViewBuilder private var modePicker: some View {
+        switch agent {
+        case .claude:
+            Picker("Mode", selection: Binding(
+                get: { settings.claudeMode },
+                set: { newMode in
+                    guard newMode != settings.claudeMode else { return }
+                    pendingClaude = newMode
+                    showRestartWarning = true
+                })) {
+                ForEach(ClaudeMode.allCases) { Text($0.label).tag($0) }
+            }
+            .pickerStyle(.menu)
+            .labelsHidden()
+            .fixedSize()
+            .help("Claude's permission mode. Switching restarts Claude's session.")
+        case .codex:
+            Picker("Mode", selection: Binding(
+                get: { settings.codexMode },
+                set: { newMode in
+                    guard newMode != settings.codexMode else { return }
+                    pendingCodex = newMode
+                    showRestartWarning = true
+                })) {
+                ForEach(CodexMode.allCases) { Text($0.label).tag($0) }
+            }
+            .pickerStyle(.menu)
+            .labelsHidden()
+            .fixedSize()
+            .help("Codex's approval mode. Switching restarts Codex's session.")
+        }
+    }
+
+    /// The agent's current launch flags, from its own mode.
+    private var extraArgs: [String] {
+        switch agent {
+        case .claude: return settings.claudeMode.launchArgs
+        case .codex:  return settings.codexMode.launchArgs
+        }
+    }
+
+    private var pendingLabel: String { pendingClaude?.label ?? pendingCodex?.label ?? "" }
+
+    private func applyPending() {
+        if let mode = pendingClaude { settings.claudeMode = mode }
+        if let mode = pendingCodex { settings.codexMode = mode }
+        clearPending()
+    }
+
+    private func clearPending() {
+        pendingClaude = nil
+        pendingCodex = nil
+    }
+}
+
+/// A live terminal attached to an agent's persistent tmux session on the hub,
+/// launched with `extraArgs` (the agent's permission-mode flags). Changing
+/// `extraArgs` recreates the session so the new mode actually takes effect; an
+/// agent/workdir change or a wake/reconnect just re-attaches.
 private struct AgentTerminalView: NSViewRepresentable {
     let agent: Agent
-    let workdir: String   // explicit so a project switch re-renders + re-attaches
+    let workdir: String       // explicit so a project switch re-renders + re-attaches
+    let extraArgs: [String]   // explicit so a mode switch re-renders + relaunches
     @EnvironmentObject private var settings: AppSettings
     @EnvironmentObject private var wakeObserver: WakeObserver
 
@@ -98,14 +175,14 @@ private struct AgentTerminalView: NSViewRepresentable {
         let view = ClipboardTerminalView(frame: .zero)
         view.processDelegate = context.coordinator
         context.coordinator.start(view, host: settings.hub, agent: agent,
-                                  workdir: workdir,
+                                  workdir: workdir, extraArgs: extraArgs,
                                   baselineSignal: wakeObserver.reconnectSignal)
         return view
     }
 
     func updateNSView(_ nsView: LocalProcessTerminalView, context: Context) {
         context.coordinator.sync(view: nsView, host: settings.hub, agent: agent,
-                                 workdir: workdir,
+                                 workdir: workdir, extraArgs: extraArgs,
                                  signal: wakeObserver.reconnectSignal)
     }
 
@@ -121,38 +198,43 @@ private struct AgentTerminalView: NSViewRepresentable {
         private var started = false
         private var currentAgent: Agent?
         private var currentWorkdir: String?
+        private var currentArgs: [String]?
         private var lastReconnectSignal = 0
 
         func start(_ view: LocalProcessTerminalView, host: Host?, agent: Agent,
-                   workdir: String, baselineSignal: Int) {
+                   workdir: String, extraArgs: [String], baselineSignal: Int) {
             guard !started else { return }
             started = true
             lastReconnectSignal = baselineSignal
             currentAgent = agent
             currentWorkdir = workdir
-            launch(view, host: host, agent: agent, workdir: workdir,
-                   reconnecting: false, generation: baselineSignal)
+            currentArgs = extraArgs
+            launch(view, host: host, agent: agent, workdir: workdir, extraArgs: extraArgs,
+                   recreate: false, reconnecting: false, generation: baselineSignal)
         }
 
-        /// Called from `updateNSView`; re-attaches when the agent changes or a
-        /// wake/network reconnect signal advances.
+        /// Called from `updateNSView`; re-attaches when the agent, workdir, or mode
+        /// flags change, or a wake/network reconnect signal advances. A mode change
+        /// recreates the session (new launch flags); the others just re-attach.
         func sync(view: LocalProcessTerminalView, host: Host?, agent: Agent,
-                  workdir: String, signal: Int) {
+                  workdir: String, extraArgs: [String], signal: Int) {
             guard started else { return }
             let agentChanged = agent != currentAgent
             let workdirChanged = workdir != currentWorkdir
+            let argsChanged = extraArgs != currentArgs
             let reconnect = signal != lastReconnectSignal
-            guard agentChanged || workdirChanged || reconnect else { return }
+            guard agentChanged || workdirChanged || argsChanged || reconnect else { return }
             lastReconnectSignal = signal
             currentAgent = agent
             currentWorkdir = workdir
-            launch(view, host: host, agent: agent, workdir: workdir,
-                   reconnecting: reconnect, generation: signal)
+            currentArgs = extraArgs
+            launch(view, host: host, agent: agent, workdir: workdir, extraArgs: extraArgs,
+                   recreate: argsChanged, reconnecting: reconnect, generation: signal)
         }
 
         private func launch(_ view: LocalProcessTerminalView, host: Host?,
-                            agent: Agent, workdir: String,
-                            reconnecting: Bool, generation: Int) {
+                            agent: Agent, workdir: String, extraArgs: [String],
+                            recreate: Bool, reconnecting: Bool, generation: Int) {
             guard let host else {
                 view.feed(text: "No hub host configured.\r\n")
                 return
@@ -174,7 +256,8 @@ private struct AgentTerminalView: NSViewRepresentable {
 
             let args = SSHManager.shared.loginShellArguments(
                 for: host,
-                running: AgentController.attachCommand(for: agent, workdir: workdir)
+                running: AgentController.attachCommand(for: agent, workdir: workdir,
+                                                       extraArgs: extraArgs, recreate: recreate)
             )
             view.startProcess(executable: SSHManager.shared.sshExecutable, args: args)
         }

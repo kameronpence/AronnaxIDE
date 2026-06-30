@@ -49,6 +49,16 @@ final class AppSettings: ObservableObject {
     /// Where project folders live: `<vault>/Projects`.
     var projectsRoot: String { (agentWorkdir as NSString).appendingPathComponent("Projects") }
 
+    /// Per-agent permission posture the Coding pane launches each agent with — the
+    /// two CLIs have different modes, so they're tracked separately. Switching one
+    /// relaunches only that agent's session in the new mode.
+    @Published var claudeMode: ClaudeMode = .acceptEdits {
+        didSet { UserDefaults.standard.set(claudeMode.rawValue, forKey: Keys.claudeMode) }
+    }
+    @Published var codexMode: CodexMode = .askForApproval {
+        didSet { UserDefaults.standard.set(codexMode.rawValue, forKey: Keys.codexMode) }
+    }
+
     private enum Keys {
         static let agentWorkdir = "settings.agentWorkdir"
         static let tmuxSession = "settings.primaryTmuxSession"
@@ -56,6 +66,8 @@ final class AppSettings: ObservableObject {
         static let protectedHosts = "settings.protectedHosts"
         static let readOnlyHosts = "settings.readOnlyHosts"
         static let confirmWrites = "settings.confirmWrites"
+        static let claudeMode = "settings.claudeMode"
+        static let codexMode = "settings.codexMode"
     }
 
     /// Add (or replace by id) a user-defined host and persist it.
@@ -138,6 +150,8 @@ final class AppSettings: ObservableObject {
         protectedHostIDs = Set(defaults.stringArray(forKey: Keys.protectedHosts) ?? [])
         readOnlyHostIDs = Set(defaults.stringArray(forKey: Keys.readOnlyHosts) ?? [])
         confirmWrites = defaults.bool(forKey: Keys.confirmWrites)
+        if let raw = defaults.string(forKey: Keys.claudeMode), let m = ClaudeMode(rawValue: raw) { claudeMode = m }
+        if let raw = defaults.string(forKey: Keys.codexMode), let m = CodexMode(rawValue: raw) { codexMode = m }
         rebuildHosts()   // hosts = discovered + custom
     }
 

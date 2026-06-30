@@ -18,7 +18,21 @@ import SwiftTerm
 final class ClipboardTerminalView: LocalProcessTerminalView {
     private var scrollMonitor: Any?
 
+    /// True when this terminal (or a descendant) holds first responder — i.e. it's
+    /// the focused agent. `performKeyEquivalent` is offered to every view in the
+    /// window, so without this the first terminal in the hierarchy would claim
+    /// Cmd-V for both panes and paste into the wrong agent in Both view.
+    private var isFocusedTerminal: Bool {
+        guard let responder = window?.firstResponder else { return false }
+        if responder === self { return true }
+        return (responder as? NSView)?.isDescendant(of: self) ?? false
+    }
+
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
+        // Only the focused terminal may claim clipboard shortcuts; otherwise defer so
+        // the event reaches the pane the user is actually working in.
+        guard isFocusedTerminal else { return super.performKeyEquivalent(with: event) }
+
         // Mask to the modifiers that matter so Caps Lock (and fn / numeric pad)
         // don't break the match — macOS shortcuts ignore Caps Lock.
         let relevant: NSEvent.ModifierFlags = [.command, .shift, .option, .control]
