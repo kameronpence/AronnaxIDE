@@ -86,6 +86,16 @@ final class AppSettings: ObservableObject {
         guard customHosts.contains(where: { $0.id == id }) else { return }
         customHosts.removeAll { $0.id == id }
         saveCustomHosts()
+        // Clean up everything keyed to this host so nothing dangles.
+        hostVaultPaths[id] = nil
+        hostProjectPaths[id] = nil
+        setProtected(id, false)
+        setReadOnly(id, false)
+        // If we were working on the deleted host, fall back to the hub.
+        if activeHostID == id {
+            activeHostID = AppSettings.hubAlias
+            selectedProjectPath = nil
+        }
         rebuildHosts()
     }
 
