@@ -106,7 +106,6 @@ final class UsageService: ObservableObject {
     /// runs the status command, and captures the rendered panel.
     private static func captureCommand(cli: String, command: String, workdir: String,
                                        session: String, repeatCommand: Bool) -> String {
-        let wd = SSHManager.shellEscaped(workdir)
         // Codex's first /status can show stale limits ("run /status again shortly"),
         // so run it a second time for fresh numbers (shorter wait on the first pass).
         let firstWait = repeatCommand ? 4 : 6
@@ -116,9 +115,39 @@ final class UsageService: ObservableObject {
         tmux send-keys -t $SES Enter
         sleep 6
         """ : ""
+        // /usage and /status are account-global, so the working folder is irrelevant.
+        // Claude now gates startup behind a folder-trust prompt, so probe it in a
+        // dedicated empty, app-owned dir — accepting that prompt there grants nothing,
+        // and we abort rather than fall back to (and trust) a real folder. Codex's trust
+        // is config-based (no startup prompt), so keep it on the agent workdir it
+        // already trusts — unchanged, so its probe doesn't regress.
+        let cdBlock = cli == "claude"
+            ? """
+              PROBE="$HOME/.miniide-usage-probe"
+              [ -L "$PROBE" ] && exit 1
+              if [ -e "$PROBE" ]; then
+                # Only reuse/clean a dir we created (carries our marker) — never touch
+                # anything else a user might have at that path.
+                { [ -d "$PROBE" ] && [ -f "$PROBE/.miniide-owned" ]; } || exit 1
+              else
+                mkdir -p "$PROBE" && : > "$PROBE/.miniide-owned" || exit 1
+              fi
+              find "$PROBE" -mindepth 1 ! -name .miniide-owned -delete 2>/dev/null
+              [ -z "$(find "$PROBE" -mindepth 1 ! -name .miniide-owned -print -quit 2>/dev/null)" ] || exit 1
+              cd "$PROBE" || exit 1
+              """
+            : "cd \(SSHManager.shellEscaped(workdir)) 2>/dev/null || true"
+        // Accept the folder-trust prompt ONLY on the Claude probe — it runs in the safe
+        // empty dir above. Never on Codex's path, which uses the user's real workdir.
+        let trustAccept = cli == "claude" ? """
+        if tmux capture-pane -t $SES -p | grep -qiE 'trust.*folder'; then
+          tmux send-keys -t $SES Enter
+          sleep 3
+        fi
+        """ : ""
         return """
         export PATH="$HOME/.local/bin:/opt/homebrew/bin:$PATH"
-        cd \(wd) 2>/dev/null || true
+        \(cdBlock)
         now=$(date +%s)
         tmux ls -F '#{session_name} #{session_created}' 2>/dev/null | while read -r n c; do
           case "$n" in miniide-usage-*) [ $((now - c)) -gt 120 ] && tmux kill-session -t "$n" 2>/dev/null || true ;; esac
@@ -128,6 +157,7 @@ final class UsageService: ObservableObject {
         tmux new-session -d -s $SES -x 220 -y 60
         tmux send-keys -t $SES \(cli) Enter
         sleep 10
+        \(trustAccept)
         tmux send-keys -t $SES Escape
         sleep 1
         tmux send-keys -t $SES \(command)
