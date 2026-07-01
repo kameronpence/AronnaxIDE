@@ -3,7 +3,15 @@ import SwiftUI
 /// The "Add Server" wizard. The app runs every step it can over SSH and pauses with
 /// instructions at the steps only Kameron can do. Chunk 1 covers details → foothold
 /// key → connection test; provisioning (deploy key, clone, tools) lands next.
+/// Reads the app-wide settings from the environment and hands them to the wizard's
+/// `@StateObject`. Needed because the wizard lives in its own `Window` scene.
+struct AddServerWizardWindow: View {
+    @EnvironmentObject private var settings: AppSettings
+    var body: some View { AddServerWizard(settings: settings) }
+}
+
 struct AddServerWizard: View {
+    static let windowID = "add-server"
     @Environment(\.dismiss) private var dismiss
     @StateObject private var model: ServerOnboarding
 

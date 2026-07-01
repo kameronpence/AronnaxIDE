@@ -25,5 +25,14 @@ struct MiniIDEApp: App {
                 .environmentObject(settings)
                 .preferredColorScheme(.light)   // keep Settings light too
         }
+
+        // The Add-Server wizard is its own window, not a sheet — a sheet is clamped
+        // to the tiny Settings window's width and clips the wizard on both sides.
+        Window("Add Server", id: AddServerWizard.windowID) {
+            AddServerWizardWindow()
+                .environmentObject(settings)
+                .preferredColorScheme(.light)
+        }
+        .windowResizability(.contentSize)
     }
 }

@@ -10,7 +10,7 @@ struct SettingsView: View {
     @State private var newHostAddr = ""
     @State private var newHostUser = "root"
     @State private var newHostViaHub = true
-    @State private var showingWizard = false
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         Form {
@@ -77,7 +77,7 @@ struct SettingsView: View {
                 }
 
                 Button {
-                    showingWizard = true
+                    openWindow(id: AddServerWizard.windowID)
                 } label: {
                     Label("Add Server…", systemImage: "wand.and.stars")
                 }
@@ -109,9 +109,6 @@ struct SettingsView: View {
         }
         .formStyle(.grouped)
         .frame(width: 500, height: 470)
-        .sheet(isPresented: $showingWizard) {
-            AddServerWizard(settings: settings)
-        }
     }
 
     private func reachLabel(_ host: Host) -> String {
