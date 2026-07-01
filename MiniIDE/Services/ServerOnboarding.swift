@@ -198,7 +198,7 @@ final class ServerOnboarding: ObservableObject {
         // Install the real slash commands / skills so /resumeproject + /save actually
         // exist on the box (the memory rules only *describe* them; /resume is a built-in).
         guard await installAgentCommands() else {
-            set(5, .failed, "Cloned, but couldn't install the /resumeproject + /save commands."); return
+            set(5, .failed, "Cloned, but couldn't install the /resumeproject + /saveproject commands."); return
         }
         await setClaudeRetention()   // stop Claude's 30-day auto-prune of /resume history
         set(5, .done, "Vault cloned + memory rules + slash commands in place.")
@@ -360,7 +360,7 @@ final class ServerOnboarding: ObservableObject {
     3. Pull deeper context from /root/AI_OS/permanent/ by grepping/reading what's relevant.
 
     ## Session Commands (installed slash commands, in ~/.claude/commands/)
-    Use `/resumeproject` to load project state and `/save` to wrap up — both are installed
+    Use `/resumeproject` to load project state and `/saveproject` to wrap up — both are installed
     command files here. (`/resume` is Claude's built-in session picker — leave it for that.)
 
     ### /resumeproject
@@ -369,7 +369,7 @@ final class ServerOnboarding: ObservableObject {
     3. `bd prime` then `bd ready` -> live ready/in-progress tasks
     4. Summarize current state + next tasks (from beads, not guessed)
 
-    ### /save  (you-triggered — this IS permission to push)
+    ### /saveproject  (you-triggered — this IS permission to push)
     1. Update beads: `bd close` finished, `bd update` progress, `bd create` new pending items
     2. Write a session log at <project>/logs/YYYY-MM-DD-description.md (frontmatter, type: session)
     3. Record what was done + decisions; link bead IDs; update DECISIONS.md/ROADMAP.md if changed
@@ -426,7 +426,7 @@ final class ServerOnboarding: ObservableObject {
     allowed-tools: Read, Write, Edit, Bash, AskUserQuestion
     ---
 
-    # /save — Save the session
+    # /saveproject — Save the session
 
     You-triggered save. **Running this IS Kameron's permission to push and merge** — never push or merge otherwise.
 
@@ -439,7 +439,7 @@ final class ServerOnboarding: ObservableObject {
        decisions. For pending items, **link the bead IDs** — don't restate them.
     4. **Update `DECISIONS.md` / `ROADMAP.md`** if decisions or the plan changed. Add `[[wikilinks]]`.
     5. **CodeRabbit review:** run `cr` on the changes. Address findings. **Never commit unreviewed code.**
-    6. **Commit + push** on the current feature branch (authorized only because Kameron ran `/save`).
+    6. **Commit + push** on the current feature branch (authorized only because Kameron ran `/saveproject`).
     7. **Open + auto-merge the PR:** create one if none exists (`gh pr create --fill`), then
        `gh pr merge --squash --delete-branch`. Only skip if not cleanly mergeable — then leave it
        open and report why.
@@ -472,12 +472,12 @@ final class ServerOnboarding: ObservableObject {
 
     static let codexSave = """
     ---
-    name: save
+    name: saveproject
     description: Save the session — update beads, write a session log, update DECISIONS/ROADMAP, CodeRabbit review, then commit + push. Does NOT open or merge a pull request (that is Claude's job). Invoke explicitly to wrap up a session.
     auto_trigger: false
     ---
 
-    # save — Save the session (no PR)
+    # saveproject — Save the session (no PR)
 
     Wrap up the current session. Running this is your permission to commit + push — never push otherwise.
 
@@ -491,7 +491,7 @@ final class ServerOnboarding: ObservableObject {
     5. CodeRabbit review: run `cr` on the changes; address findings. Never commit unreviewed code.
     6. Commit + push on the current feature branch.
 
-    Do NOT open or merge a pull request — leave that to Claude's /save. Stop after pushing.
+    Do NOT open or merge a pull request — leave that to Claude's /saveproject. Stop after pushing.
     """
 
     /// Raise Claude's transcript retention to a year on the box, so /resume history isn't
@@ -515,20 +515,20 @@ final class ServerOnboarding: ObservableObject {
         _ = try? await SSHManager.shared.runShell("python3", input: py, on: host)
     }
 
-    /// Installs the Claude commands + Codex skills on the box so /resumeproject and /save
-    /// (and their Codex $-skill equivalents) actually exist. Overwrites — these files are
+    /// Installs the Claude commands + Codex skills on the box so /resumeproject and
+    /// /saveproject (and their Codex $-skill equivalents) actually exist. Overwrites — these files are
     /// canonical and versioned with the app; vault-root paths point at this box's clone.
     private func installAgentCommands() async -> Bool {
         let skills = "\(resolvedHome)/.agents/skills"
         let mk = "mkdir -p \(SSHManager.shellEscaped(claudeDir + "/commands")) "
             + "\(SSHManager.shellEscaped(skills + "/resumeproject")) "
-            + "\(SSHManager.shellEscaped(skills + "/save"))"
+            + "\(SSHManager.shellEscaped(skills + "/saveproject"))"
         guard let m = try? await SSHManager.shared.runShell(mk, on: host), m.ok else { return false }
         let files: [(String, String)] = [
             ("\(claudeDir)/commands/resumeproject.md", Self.claudeResumeProject),
-            ("\(claudeDir)/commands/save.md",          Self.claudeSave),
+            ("\(claudeDir)/commands/saveproject.md",   Self.claudeSave),
             ("\(skills)/resumeproject/SKILL.md",       Self.codexResumeProject),
-            ("\(skills)/save/SKILL.md",                Self.codexSave),
+            ("\(skills)/saveproject/SKILL.md",         Self.codexSave),
         ]
         for (path, content) in files {
             let body = content.replacingOccurrences(of: "/root/AI_OS", with: vaultDir)
