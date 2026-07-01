@@ -165,12 +165,18 @@ final class SSHManager {
     /// shell does not have on its PATH. `exec` replaces the wrapper so the target
     /// process is ssh's direct child (its exit drives `processTerminated`).
     /// Used by the terminal and agent panes with SwiftTerm's `startProcess`.
-    func loginShellArguments(for host: Host, running command: String) -> [String] {
+    func loginShellArguments(for host: Host, running command: String,
+                             execProcess: Bool = true) -> [String] {
         // COLORTERM=truecolor makes tmux on ANY host detect 24-bit colour and stop
         // downgrading truecolour (e.g. codex's near-white input box rendered dark) —
         // a universal fix that needs no per-server ~/.tmux.conf. The inner `exec` keeps
-        // the target process as ssh's direct child so its exit still drives processTerminated.
-        let withColor = "export COLORTERM=truecolor; exec \(command)"
+        // the target process as ssh's direct child so its exit still drives
+        // processTerminated. Pass execProcess:false for a *multi-statement* command
+        // (e.g. set a tmux option, THEN attach) — `exec` would replace the shell on the
+        // first statement and swallow the rest; the outer `exec zsh` still makes ssh's
+        // child the login shell, whose exit (when the final blocking cmd ends) still fires.
+        let inner = execProcess ? "exec \(command)" : command
+        let withColor = "export COLORTERM=truecolor; \(inner)"
         let remote = "exec zsh -lc \(Self.shellEscaped(withColor))"
         return sshArguments(for: host, interactive: true, remoteCommand: [remote])
     }

@@ -261,7 +261,8 @@ private struct AgentTerminalView: NSViewRepresentable {
             let args = SSHManager.shared.loginShellArguments(
                 for: host,
                 running: AgentController.attachCommand(for: agent, workdir: workdir,
-                                                       extraArgs: extraArgs, recreate: recreate)
+                                                       extraArgs: extraArgs, recreate: recreate),
+                execProcess: false   // multi-statement: set mouse-on, then attach
             )
             view.startProcess(executable: SSHManager.shared.sshExecutable, args: args)
         }

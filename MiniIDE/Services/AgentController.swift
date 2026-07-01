@@ -110,11 +110,15 @@ enum AgentController {
         // "command not found", and the session exits immediately. $HOME/$PATH expand
         // in the remote login shell that runs this command.
         let launched = "env \"PATH=$HOME/.local/bin:/usr/local/bin:$PATH\" \(argv)"
-        // Scope tmux mouse-on to this agent session so the wheel scrolls Codex's
-        // history (Codex runs on the normal screen and doesn't grab the mouse). The
-        // user's global mouse-off — and their manual tmux sessions — stay untouched.
-        let attach = "tmux new-session -A -s \(session) -c \(dir) \(launched); tmux set -t \(session) mouse on"
-        return recreate ? "tmux kill-session -t \(session) 2>/dev/null; \(attach)" : attach
+        // Create-or-attach the session *detached* (-A -d), enable mouse for THIS
+        // session, THEN attach. Mouse-on must run before the blocking attach — and
+        // this whole thing runs un-`exec`'d (see loginShellArguments execProcess:false)
+        // so all three statements execute. Scoping mouse to the agent session lets
+        // Codex's wheel scroll its history (it runs on the normal screen and doesn't
+        // grab the mouse) while the user's global mouse-off and manual sessions stay put.
+        let kill = recreate ? "tmux kill-session -t \(session) 2>/dev/null; " : ""
+        return "\(kill)tmux new-session -A -d -s \(session) -c \(dir) \(launched); "
+            + "tmux set -t \(session) mouse on; tmux attach -t \(session)"
     }
 
     /// A short, stable, tmux-safe suffix derived from the project directory (FNV-1a),
