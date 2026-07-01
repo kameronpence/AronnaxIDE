@@ -494,9 +494,9 @@ final class ServerOnboarding: ObservableObject {
     Do NOT open or merge a pull request — leave that to Claude's /save. Stop after pushing.
     """
 
-    /// Disable Claude's 30-day transcript auto-prune on the box, so /resume history is
-    /// kept indefinitely (Claude's default `cleanupPeriodDays` silently deletes sessions
-    /// older than 30 days). Merges the key into settings.json, preserving any others.
+    /// Raise Claude's transcript retention to a year on the box, so /resume history isn't
+    /// lost (Claude's default `cleanupPeriodDays` silently deletes sessions older than
+    /// 30 days). Merges the key into settings.json, preserving any others.
     /// Best-effort: the script is piped to python3 over stdin so there's no shell quoting.
     private func setClaudeRetention() async {
         let py = """
@@ -508,7 +508,7 @@ final class ServerOnboarding: ObservableObject {
                 d = json.load(open(p))
             except Exception:
                 d = {}
-        d['cleanupPeriodDays'] = 3650
+        d['cleanupPeriodDays'] = 365
         os.makedirs(os.path.dirname(p), exist_ok=True)
         json.dump(d, open(p, 'w'), indent=2)
         """
