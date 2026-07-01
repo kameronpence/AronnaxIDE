@@ -200,6 +200,7 @@ final class ServerOnboarding: ObservableObject {
         guard await installAgentCommands() else {
             set(5, .failed, "Cloned, but couldn't install the /resumeproject + /save commands."); return
         }
+        await setClaudeRetention()   // stop Claude's 30-day auto-prune of /resume history
         set(5, .done, "Vault cloned + memory rules + slash commands in place.")
         await checkTools()
     }
@@ -492,6 +493,27 @@ final class ServerOnboarding: ObservableObject {
 
     Do NOT open or merge a pull request — leave that to Claude's /save. Stop after pushing.
     """
+
+    /// Disable Claude's 30-day transcript auto-prune on the box, so /resume history is
+    /// kept indefinitely (Claude's default `cleanupPeriodDays` silently deletes sessions
+    /// older than 30 days). Merges the key into settings.json, preserving any others.
+    /// Best-effort: the script is piped to python3 over stdin so there's no shell quoting.
+    private func setClaudeRetention() async {
+        let py = """
+        import json, os
+        p = os.path.expanduser('~/.claude/settings.json')
+        d = {}
+        if os.path.isfile(p):
+            try:
+                d = json.load(open(p))
+            except Exception:
+                d = {}
+        d['cleanupPeriodDays'] = 3650
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        json.dump(d, open(p, 'w'), indent=2)
+        """
+        _ = try? await SSHManager.shared.runShell("python3", input: py, on: host)
+    }
 
     /// Installs the Claude commands + Codex skills on the box so /resumeproject and /save
     /// (and their Codex $-skill equivalents) actually exist. Overwrites — these files are
