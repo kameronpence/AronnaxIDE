@@ -6,7 +6,10 @@ import WebKit
 /// the mini's forwarded localhost dev servers once the port-forward manager lands.
 struct BrowserPane: View {
     @EnvironmentObject private var settings: AppSettings
-    @StateObject private var model = BrowserModel()
+    // Shared singleton so the WKWebView (and its loaded page) survives leaving and
+    // returning to the Browser tab — SwiftUI tears the pane down on tab switch, which
+    // would otherwise reset the browser to blank.
+    @ObservedObject private var model = BrowserModel.shared
     @ObservedObject private var forwards = PortForwardManager.shared
     @StateObject private var preview = PreviewWatcher()
     @State private var urlField = ""
@@ -229,6 +232,10 @@ struct BrowserPane: View {
 /// Owns the `WKWebView` and publishes the navigation state the bar binds to.
 @MainActor
 final class BrowserModel: NSObject, ObservableObject, WKNavigationDelegate {
+    /// App-wide singleton: the WKWebView lives here so it persists across Browser-tab
+    /// teardown/rebuild (switching to Coding for logins and back keeps the page).
+    static let shared = BrowserModel()
+
     let webView: WKWebView
 
     @Published var canGoBack = false
