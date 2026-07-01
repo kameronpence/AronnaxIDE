@@ -54,13 +54,9 @@ enum ClaudeMode: String, CaseIterable, Identifiable {
     }
 
     var launchArgs: [String] {
-        // Map to Claude's *real* --permission-mode values (acceptEdits, plan,
-        // dontAsk, bypassPermissions). "Auto" = dontAsk — run without prompting.
         switch self {
-        case .acceptEdits:       return ["--permission-mode", "acceptEdits"]
-        case .plan:              return ["--permission-mode", "plan"]
-        case .auto:              return ["--permission-mode", "dontAsk"]
         case .bypassPermissions: return ["--dangerously-skip-permissions"]
+        default:                 return ["--permission-mode", rawValue]
         }
     }
 }
