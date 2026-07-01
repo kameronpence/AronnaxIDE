@@ -127,7 +127,7 @@ struct AddServerWizard: View {
                 Text("**1.** Copy this Mac's public key (button on the right):")
                     .font(.callout)
                 keyBox(model.bootstrapKey)
-                Text("**2.** Get into the box with the access you already have — the `.pem` key from launch (`ssh -i your-key.pem user@your-box-ip`), or the provider's browser SSH (EC2 → **Connect**, or Lightsail → **Connect using SSH**).")
+                Text("**2.** In a terminal window (not within this app), ssh into your server. If you're using AWS EC2 or Lightsail, just use the **Connect using SSH** option.")
                     .font(.callout)
                 Text("**3.** On the box, paste the key onto a new line in `~/.ssh/authorized_keys`. Easiest — run this, replacing `PASTE_KEY` with the key you copied in step 1:")
                     .font(.callout)
