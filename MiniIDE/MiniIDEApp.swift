@@ -10,6 +10,7 @@ struct MiniIDEApp: App {
             ContentView()
                 .environmentObject(settings)
                 .environmentObject(wakeObserver)
+                .textSelection(.enabled)   // let text be highlighted/copied everywhere
                 .frame(minWidth: 1100, minHeight: 700)
                 .onAppear {
                     // Re-establish port-forwards on the same reconnect signal the
@@ -23,6 +24,7 @@ struct MiniIDEApp: App {
         Settings {
             SettingsView()
                 .environmentObject(settings)
+                .textSelection(.enabled)
                 .preferredColorScheme(.light)   // keep Settings light too
         }
 
@@ -31,6 +33,7 @@ struct MiniIDEApp: App {
         Window("Add Server", id: AddServerWizard.windowID) {
             AddServerWizardWindow()
                 .environmentObject(settings)
+                .textSelection(.enabled)
                 .preferredColorScheme(.light)
         }
         .windowResizability(.contentSize)
