@@ -54,9 +54,13 @@ enum ClaudeMode: String, CaseIterable, Identifiable {
     }
 
     var launchArgs: [String] {
+        // Map to Claude's *real* --permission-mode values (acceptEdits, plan,
+        // dontAsk, bypassPermissions). "Auto" = dontAsk — run without prompting.
         switch self {
+        case .acceptEdits:       return ["--permission-mode", "acceptEdits"]
+        case .plan:              return ["--permission-mode", "plan"]
+        case .auto:              return ["--permission-mode", "dontAsk"]
         case .bypassPermissions: return ["--dangerously-skip-permissions"]
-        default:                 return ["--permission-mode", rawValue]
         }
     }
 }
@@ -104,10 +108,16 @@ enum AgentController {
         let argv = ([agent.launchCommand] + extraArgs)
             .map(SSHManager.shellEscaped)
             .joined(separator: " ")
+        // Guarantee the CLI install dirs are on PATH before launching: codex installs
+        // to ~/.local/bin and claude to /usr/local/bin, which a box's tmux-server
+        // environment may not include — without this the agent launches, fails
+        // "command not found", and the session exits immediately. $HOME/$PATH expand
+        // in the remote login shell that runs this command.
+        let launched = "env \"PATH=$HOME/.local/bin:/usr/local/bin:$PATH\" \(argv)"
         // Scope tmux mouse-on to this agent session so the wheel scrolls Codex's
         // history (Codex runs on the normal screen and doesn't grab the mouse). The
         // user's global mouse-off — and their manual tmux sessions — stay untouched.
-        let attach = "tmux new-session -A -s \(session) -c \(dir) \(argv); tmux set -t \(session) mouse on"
+        let attach = "tmux new-session -A -s \(session) -c \(dir) \(launched); tmux set -t \(session) mouse on"
         return recreate ? "tmux kill-session -t \(session) 2>/dev/null; \(attach)" : attach
     }
 
