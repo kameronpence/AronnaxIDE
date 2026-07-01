@@ -359,10 +359,10 @@ final class ServerOnboarding: ObservableObject {
     3. Pull deeper context from /root/AI_OS/permanent/ by grepping/reading what's relevant.
 
     ## Session Commands (installed slash commands, in ~/.claude/commands/)
-    Use `/resumeproject` to load state and `/save` to wrap up. NOTE: `/resume` is Claude's
-    BUILT-IN session picker and will NOT run this protocol — always use `/resumeproject`.
+    `/resume` (or `/resumeproject`) loads project state; `/save` wraps up. Both are installed
+    command files on this box, so typing them runs the protocol below.
 
-    ### /resumeproject
+    ### /resume  (alias: /resumeproject)
     1. Detect project root (walk up from `pwd` for CLAUDE.md/.git)
     2. Read the project's DECISIONS.md + ROADMAP.md + the 3 most recent logs/ summaries
     3. `bd prime` then `bd ready` -> live ready/in-progress tasks
@@ -417,6 +417,29 @@ final class ServerOnboarding: ObservableObject {
     4. **Summarize:** current state, recent decisions, and next tasks — pulled from **beads**, not guessed.
 
     Arguments: `/resumeproject 10` = read 10 logs instead of 3. Don't load the whole project.
+    """
+
+    static let claudeResume = """
+    ---
+    description: Load project state — decisions, roadmap, recent logs, and ready beads
+    allowed-tools: Read, Glob, Bash
+    ---
+
+    # /resume — Load project state
+
+    Get up to speed on the current project without bulk-loading it.
+
+    ## Steps
+    1. **Detect project root.** Walk up from `pwd` for a `CLAUDE.md` or `.git`. That dir = project
+       root. If none found, you're at the vault root (`/root/AI_OS`).
+    2. **Read living state:**
+       - `DECISIONS.md` — key decisions + why
+       - `ROADMAP.md` — current plan / what's next
+       - The 3 most recent files in `logs/` — **summaries only** (stop at `## Raw Session Log`)
+    3. **Load tasks from beads:** run `bd prime` to orient, then `bd ready` for ready/in-progress items.
+    4. **Summarize:** current state, recent decisions, and next tasks — pulled from **beads**, not guessed.
+
+    Arguments: `/resume 10` = read 10 logs instead of 3. Do not load the whole project.
     """
 
     static let claudeSave = """
@@ -503,6 +526,7 @@ final class ServerOnboarding: ObservableObject {
             + "\(SSHManager.shellEscaped(skills + "/save"))"
         guard let m = try? await SSHManager.shared.runShell(mk, on: host), m.ok else { return false }
         let files: [(String, String)] = [
+            ("\(claudeDir)/commands/resume.md",        Self.claudeResume),
             ("\(claudeDir)/commands/resumeproject.md", Self.claudeResumeProject),
             ("\(claudeDir)/commands/save.md",          Self.claudeSave),
             ("\(skills)/resumeproject/SKILL.md",       Self.codexResumeProject),
