@@ -16,7 +16,7 @@ struct BrowserPane: View {
     @AppStorage("browser.autoPreview") private var autoPreview = true
 
     private var forwardHost: Host? {
-        settings.hosts.first { $0.id == forwardHostID } ?? settings.hub
+        settings.hosts.first { $0.id == forwardHostID } ?? settings.activeHost
     }
 
     var body: some View {
@@ -33,10 +33,17 @@ struct BrowserPane: View {
             // Keep the field in sync as navigation (links, redirects) changes the URL.
             urlField = newValue
         }
-        .onAppear { preview.start(host: settings.hub, dir: settings.activePath) }
+        .onAppear {
+            forwardHostID = settings.activeHostID
+            preview.start(host: settings.activeHost, dir: settings.activePath)
+        }
         .onDisappear { preview.stop() }
+        .onChange(of: settings.activeHostID) { _, id in
+            forwardHostID = id
+            preview.start(host: settings.activeHost, dir: settings.activePath)
+        }
         .onChange(of: settings.selectedProjectPath) { _, _ in
-            preview.start(host: settings.hub, dir: settings.activePath)
+            preview.start(host: settings.activeHost, dir: settings.activePath)
         }
         .onChange(of: preview.target) { _, target in
             // The agent pushed something — load it (when auto-preview is on).
@@ -44,8 +51,14 @@ struct BrowserPane: View {
         }
     }
 
+    /// URL-bar submit. Routes through the same logic as agent previews so a
+    /// `localhost:PORT` / bare-port target is auto-forwarded through the active host
+    /// before loading; public URLs load directly. This is what makes typing a
+    /// project's dev-server URL (e.g. localhost:4100) actually work.
+    private func submitURL() { loadPreview(urlField) }
+
     /// Loads a target the agent wrote to `.miniide-preview`: a bare port, a localhost
-    /// URL (forwarded through the hub), or a remote URL (loaded directly).
+    /// URL (forwarded through the active host), or a remote URL (loaded directly).
     private func loadPreview(_ raw: String) {
         let t = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !t.isEmpty else { return }
@@ -122,9 +135,9 @@ struct BrowserPane: View {
 
             TextField("Enter a URL", text: $urlField)
                 .textFieldStyle(.roundedBorder)
-                .onSubmit { model.load(urlField) }
+                .onSubmit { submitURL() }
 
-            Button("Go") { model.load(urlField) }
+            Button("Go") { submitURL() }
                 .disabled(urlField.trimmingCharacters(in: .whitespaces).isEmpty)
 
             // Manual "show it" when auto is off but the agent has pushed a preview.
