@@ -195,7 +195,12 @@ final class ServerOnboarding: ObservableObject {
                 "cat >> \(cm)", input: "\n" + rules + "\n", on: host)
             guard w?.ok == true else { set(5, .failed, "Cloned, but couldn't write the memory rules."); return }
         }
-        set(5, .done, "Vault cloned + memory rules in place.")
+        // Install the real slash commands / skills so /resumeproject + /save actually
+        // exist on the box (the memory rules only *describe* them; /resume is a built-in).
+        guard await installAgentCommands() else {
+            set(5, .failed, "Cloned, but couldn't install the /resumeproject + /save commands."); return
+        }
+        set(5, .done, "Vault cloned + memory rules + slash commands in place.")
         await checkTools()
     }
 
@@ -353,8 +358,11 @@ final class ServerOnboarding: ObservableObject {
        CTX-project-index.md -> CTX-systems.md -> CTX-now.md.
     3. Pull deeper context from /root/AI_OS/permanent/ by grepping/reading what's relevant.
 
-    ## Session Commands
-    ### /resume
+    ## Session Commands (installed slash commands, in ~/.claude/commands/)
+    Use `/resumeproject` to load state and `/save` to wrap up. NOTE: `/resume` is Claude's
+    BUILT-IN session picker and will NOT run this protocol — always use `/resumeproject`.
+
+    ### /resumeproject
     1. Detect project root (walk up from `pwd` for CLAUDE.md/.git)
     2. Read the project's DECISIONS.md + ROADMAP.md + the 3 most recent logs/ summaries
     3. `bd prime` then `bd ready` -> live ready/in-progress tasks
@@ -382,4 +390,130 @@ final class ServerOnboarding: ObservableObject {
     - Database safety: never migrate:fresh / migrate:reset; migrate only. Ask before destructive DB commands.
     - Secrets stay in gitignored .env — never commit them.
     """
+
+    // MARK: - Agent slash commands / skills installed on every server
+    // /resume is Claude's BUILT-IN session picker and can't be overridden by CLAUDE.md,
+    // so the real protocol must be an installed command file. These are the canonical
+    // copies (mirror the mini); installAgentCommands writes them onto the box.
+
+    static let claudeResumeProject = """
+    ---
+    description: Load project state — decisions, roadmap, recent logs, and ready beads
+    allowed-tools: Read, Glob, Bash
+    ---
+
+    # /resumeproject — Load project state
+
+    Get up to speed on the current project without bulk-loading it.
+
+    ## Steps
+    1. **Detect project root.** Walk up from `pwd` for a `CLAUDE.md` or `.git`. That dir = project
+       root. If none found, you're at the vault root (`/root/AI_OS`).
+    2. **Read living state** (summaries only, to save tokens):
+       - `DECISIONS.md` — key decisions + why
+       - `ROADMAP.md` — current plan / what's next
+       - The 3 most recent files in `logs/` — stop at `## Raw Session Log`
+    3. **Load tasks from beads:** run `bd prime` to orient, then `bd ready` for ready/in-progress items.
+    4. **Summarize:** current state, recent decisions, and next tasks — pulled from **beads**, not guessed.
+
+    Arguments: `/resumeproject 10` = read 10 logs instead of 3. Don't load the whole project.
+    """
+
+    static let claudeSave = """
+    ---
+    description: Save the session — update beads, write a log note, CodeRabbit review, commit, push + auto-merge the PR
+    allowed-tools: Read, Write, Edit, Bash, AskUserQuestion
+    ---
+
+    # /save — Save the session
+
+    You-triggered save. **Running this IS Kameron's permission to push and merge** — never push or merge otherwise.
+
+    ## Steps
+    1. **Detect project root** (walk up from `pwd` for `CLAUDE.md`/`.git`).
+    2. **Update beads:** `bd close` finished, `bd update` progress, `bd create` for new pending items.
+       Beads is the task ledger — pending work lives here, not in prose.
+    3. **Write the session log** at `<project>/logs/YYYY-MM-DD-description.md` with frontmatter
+       (title, tags, created, updated, status: complete, type: session). Record what was done +
+       decisions. For pending items, **link the bead IDs** — don't restate them.
+    4. **Update `DECISIONS.md` / `ROADMAP.md`** if decisions or the plan changed. Add `[[wikilinks]]`.
+    5. **CodeRabbit review:** run `cr` on the changes. Address findings. **Never commit unreviewed code.**
+    6. **Commit + push** on the current feature branch (authorized only because Kameron ran `/save`).
+    7. **Open + auto-merge the PR:** create one if none exists (`gh pr create --fill`), then
+       `gh pr merge --squash --delete-branch`. Only skip if not cleanly mergeable — then leave it
+       open and report why.
+    8. **Sync the vault:** `git -C /root/AI_OS add -A && git -C /root/AI_OS commit -m "<what>" && git -C /root/AI_OS push`
+    """
+
+    static let codexResumeProject = """
+    ---
+    name: resumeproject
+    description: Load current project state at session start — decisions, roadmap, recent log summaries, and ready beads. Invoke explicitly when resuming work on a project; do not trigger automatically.
+    auto_trigger: false
+    ---
+
+    # resumeproject — Load project state
+
+    Get up to speed on the current project without bulk-loading it. Do these steps, then summarize and stop:
+
+    1. Detect the project root: walk up from the current directory for a `CLAUDE.md` or `.git`. That
+       directory is the project root. If none is found, you are at the vault root (`/root/AI_OS`).
+    2. Read the living state (summaries only, to save tokens):
+       - `DECISIONS.md` — key decisions and why
+       - `ROADMAP.md` — current plan / what's next
+       - The 3 most recent files in `logs/` — read only the summary, stop at `## Raw Session Log`
+    3. Load tasks from beads: run `bd prime` to orient, then `bd ready` for ready/in-progress items.
+    4. Summarize the current state, recent decisions, and next tasks — pulled from beads, not guessed.
+
+    Remember your role on this project: you are the reviewer. After resuming, wait for Claude's changes
+    to review — do not start editing.
+    """
+
+    static let codexSave = """
+    ---
+    name: save
+    description: Save the session — update beads, write a session log, update DECISIONS/ROADMAP, CodeRabbit review, then commit + push. Does NOT open or merge a pull request (that is Claude's job). Invoke explicitly to wrap up a session.
+    auto_trigger: false
+    ---
+
+    # save — Save the session (no PR)
+
+    Wrap up the current session. Running this is your permission to commit + push — never push otherwise.
+
+    ## Steps
+    1. Detect the project root (walk up from the current directory for `CLAUDE.md`/`.git`).
+    2. Update beads: `bd close` finished, `bd update` progress, `bd create` for new pending items.
+       Beads is the task ledger — pending work lives there, not in prose.
+    3. Write the session log at `<project>/logs/YYYY-MM-DD-description.md` with frontmatter
+       (title, tags, created, updated, status: complete, type: session). Link bead IDs for pending items.
+    4. Update `DECISIONS.md` / `ROADMAP.md` if decisions or the plan changed. Add `[[wikilinks]]`.
+    5. CodeRabbit review: run `cr` on the changes; address findings. Never commit unreviewed code.
+    6. Commit + push on the current feature branch.
+
+    Do NOT open or merge a pull request — leave that to Claude's /save. Stop after pushing.
+    """
+
+    /// Installs the Claude commands + Codex skills on the box so /resumeproject and /save
+    /// (and their Codex $-skill equivalents) actually exist. Overwrites — these files are
+    /// canonical and versioned with the app; vault-root paths point at this box's clone.
+    private func installAgentCommands() async -> Bool {
+        let skills = "\(resolvedHome)/.agents/skills"
+        let mk = "mkdir -p \(SSHManager.shellEscaped(claudeDir + "/commands")) "
+            + "\(SSHManager.shellEscaped(skills + "/resumeproject")) "
+            + "\(SSHManager.shellEscaped(skills + "/save"))"
+        guard let m = try? await SSHManager.shared.runShell(mk, on: host), m.ok else { return false }
+        let files: [(String, String)] = [
+            ("\(claudeDir)/commands/resumeproject.md", Self.claudeResumeProject),
+            ("\(claudeDir)/commands/save.md",          Self.claudeSave),
+            ("\(skills)/resumeproject/SKILL.md",       Self.codexResumeProject),
+            ("\(skills)/save/SKILL.md",                Self.codexSave),
+        ]
+        for (path, content) in files {
+            let body = content.replacingOccurrences(of: "/root/AI_OS", with: vaultDir)
+            let w = try? await SSHManager.shared.runShell(
+                "cat > \(SSHManager.shellEscaped(path))", input: body, on: host)
+            guard w?.ok == true else { return false }
+        }
+        return true
+    }
 }
