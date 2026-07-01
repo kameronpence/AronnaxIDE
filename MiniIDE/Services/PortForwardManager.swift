@@ -194,8 +194,10 @@ final class PortForwardManager: ObservableObject {
 
     /// True if something is accepting TCP connections on `127.0.0.1:port` — i.e. the
     /// forward's local listener is up. A localhost connect resolves immediately
-    /// (accept or refuse), so this doesn't block meaningfully.
-    private static func portAccepts(_ port: Int) -> Bool {
+    /// (accept or refuse), so this doesn't block meaningfully. Exposed so the Browser
+    /// can reuse a forward that's already serving (e.g. one that survived a relaunch)
+    /// instead of failing to re-bind the port.
+    static func portAccepts(_ port: Int) -> Bool {
         let fd = socket(AF_INET, SOCK_STREAM, 0)
         guard fd >= 0 else { return false }
         defer { Darwin.close(fd) }

@@ -84,10 +84,11 @@ struct BrowserPane: View {
     /// original scheme so an https dev server isn't loaded as http.
     private func forwardAndLoad(port: Int, suffix: String, scheme: String = "http") {
         let target = "\(scheme)://127.0.0.1:\(port)\(suffix)"
-        // Only reuse an existing tunnel if it points at the same host — otherwise this
-        // local port maps to a different machine's service. A same-port tunnel to
-        // another host makes open() below fail loudly rather than load the wrong one.
-        if forwards.forwards.contains(where: { $0.localPort == port && $0.host.id == forwardHost?.id }) {
+        // Reuse a tunnel we already track for this host, OR any forward already
+        // serving on this local port (e.g. one that outlived a relaunch) — otherwise
+        // open() can't re-bind the port and we'd never load a working tunnel.
+        if forwards.forwards.contains(where: { $0.localPort == port && $0.host.id == forwardHost?.id })
+            || PortForwardManager.portAccepts(port) {
             model.load(target)
             return
         }
