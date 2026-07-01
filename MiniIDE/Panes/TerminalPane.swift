@@ -6,18 +6,18 @@ import SwiftTerm
 /// the hub (ProxyJump). Each host keeps its own session, so switching is lossless.
 struct TerminalPane: View {
     @EnvironmentObject private var settings: AppSettings
-    @State private var hostID: String = AppSettings.hubAlias
     @State private var confirmed: Set<String> = []   // protected hosts OK'd this session
 
-    private var selectedHost: Host? {
-        settings.hosts.first { $0.id == hostID } ?? settings.hub
-    }
+    /// The terminal follows the "Working on" host — the picker here is bound to the
+    /// same selection, so switching either keeps both in sync.
+    private var selectedHost: Host? { settings.activeHost }
 
-    /// On the hub the terminal opens in the selected project's directory (or the vault
-    /// when none is selected); other hosts use the default login directory.
+    /// The terminal opens in the active project's directory: on the hub that's the
+    /// selected project (or vault); on a server it's that server's project dir. An
+    /// unconfigured server falls back to the default login directory.
     private var terminalWorkdir: String? {
-        guard let host = selectedHost, host.isHub else { return nil }
-        return settings.activePath
+        guard let host = selectedHost else { return nil }
+        return host.isHub ? settings.activePath : settings.serverProjectPath
     }
 
     var body: some View {
@@ -25,7 +25,7 @@ struct TerminalPane: View {
             if settings.hosts.count > 1 {
                 HStack(spacing: 8) {
                     Image(systemName: "server.rack").foregroundStyle(.secondary)
-                    Picker("Host", selection: $hostID) {
+                    Picker("Host", selection: $settings.activeHostID) {
                         ForEach(settings.hosts) { host in
                             Text(host.displayName).tag(host.id)
                         }
