@@ -208,6 +208,14 @@ struct BrowserPane: View {
     /// it. Non-hub hosts hop through the hub via the host's ProxyJump.
     private func openForward() {
         guard let port = Int(miniPort), let host = forwardHost else { return }
+        // If the port is already forwarded/serving locally, just load it instead of
+        // failing to re-bind it with "port already in use".
+        if PortForwardManager.portAccepts(port) {
+            model.load("http://127.0.0.1:\(port)")
+            miniPort = ""
+            showForwards = false
+            return
+        }
         Task {
             if await forwards.open(localPort: port, remotePort: port, on: host) != nil {
                 model.load("http://127.0.0.1:\(port)")
