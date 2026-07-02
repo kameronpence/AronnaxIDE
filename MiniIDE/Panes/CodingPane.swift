@@ -265,17 +265,31 @@ private struct AgentTerminalView: NSViewRepresentable {
                 execProcess: false   // multi-statement: set mouse-on, then attach
             )
             view.startProcess(executable: SSHManager.shared.sshExecutable, args: args)
-            // Re-attaching on a project/host switch otherwise leaves the terminal
-            // without keyboard focus — you'd have to switch tabs and back before you
-            // could type. Claim first responder now AND after a short delay: an
-            // immediate grab gets stomped when the new ssh/terminal resets on launch,
-            // so the delayed retry is the one that actually sticks.
-            let claimFocus: () -> Void = { [weak view] in
-                guard let view, let window = view.window else { return }
-                window.makeFirstResponder(view)
+            // Reliably take keyboard focus after (re)attaching. SwiftUI doesn't focus
+            // embedded AppKit views, and a single timed makeFirstResponder is racy — it
+            // can fire before the view is in a window or before the terminal finishes
+            // resetting on launch, leaving you unable to type until a tab switch.
+            focusRetry(view, attempts: 0)
+        }
+
+        /// Poll makeFirstResponder until it sticks, then stop — so focus is reliable
+        /// without re-grabbing (which would fight the other pane / double input).
+        private func focusRetry(_ view: LocalProcessTerminalView, attempts: Int) {
+            guard attempts < 25 else { return }
+            let again = { [weak self, weak view] in
+                guard let self, let view else { return }
+                self.focusRetry(view, attempts: attempts + 1)
             }
-            DispatchQueue.main.async(execute: claimFocus)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: claimFocus)
+            guard let window = view.window else {   // not on screen yet — wait for it
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: again)
+                return
+            }
+            if window.firstResponder === view { return }   // we have focus — done
+            // Don't steal focus from another terminal the user clicked into (Both view).
+            if let fr = window.firstResponder as? NSView, fr !== view,
+               fr is LocalProcessTerminalView { return }
+            window.makeFirstResponder(view)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: again)
         }
 
         // MARK: LocalProcessTerminalViewDelegate

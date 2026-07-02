@@ -72,16 +72,6 @@ final class ClipboardTerminalView: LocalProcessTerminalView {
                     self?.handleScroll(event) ?? event
                 }
             }
-            // Grab keyboard focus when we (re)appear in a window so the user can type
-            // immediately — but only if nothing else already holds it, so we never
-            // steal focus from the other agent's terminal in Both view.
-            DispatchQueue.main.async { [weak self] in
-                guard let self, let window = self.window else { return }
-                let fr = window.firstResponder
-                if fr == nil || fr === window {
-                    window.makeFirstResponder(self)
-                }
-            }
         }
     }
 
