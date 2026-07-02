@@ -88,6 +88,12 @@ private struct AgentColumn: View {
 
             AgentTerminalView(agent: agent, workdir: settings.activePath, extraArgs: extraArgs)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                // Give the terminal a stable identity per host+project+mode. When any
+                // of those change, SwiftUI tears down the old terminal (dismantle kills
+                // its ssh) and builds a fresh one — the same path a tab-switch takes,
+                // which correctly routes keyboard input to the new session. Reusing the
+                // view + re-attaching left input wired to the old (dead) process.
+                .id("\(agent.rawValue)|\(settings.activeHost?.id ?? "?")|\(settings.activePath)|\(extraArgs.joined(separator: " "))")
         }
         .frame(minWidth: 300, maxWidth: .infinity, maxHeight: .infinity)
         .confirmationDialog("Restart \(agent.displayName) to switch mode?",
