@@ -267,11 +267,15 @@ private struct AgentTerminalView: NSViewRepresentable {
             view.startProcess(executable: SSHManager.shared.sshExecutable, args: args)
             // Re-attaching on a project/host switch otherwise leaves the terminal
             // without keyboard focus — you'd have to switch tabs and back before you
-            // could type. Reclaim first responder once the view/window has settled.
-            DispatchQueue.main.async { [weak view] in
+            // could type. Claim first responder now AND after a short delay: an
+            // immediate grab gets stomped when the new ssh/terminal resets on launch,
+            // so the delayed retry is the one that actually sticks.
+            let claimFocus: () -> Void = { [weak view] in
                 guard let view, let window = view.window else { return }
                 window.makeFirstResponder(view)
             }
+            DispatchQueue.main.async(execute: claimFocus)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: claimFocus)
         }
 
         // MARK: LocalProcessTerminalViewDelegate
