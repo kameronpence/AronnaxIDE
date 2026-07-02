@@ -265,6 +265,13 @@ private struct AgentTerminalView: NSViewRepresentable {
                 execProcess: false   // multi-statement: set mouse-on, then attach
             )
             view.startProcess(executable: SSHManager.shared.sshExecutable, args: args)
+            // Re-attaching on a project/host switch otherwise leaves the terminal
+            // without keyboard focus — you'd have to switch tabs and back before you
+            // could type. Reclaim first responder once the view/window has settled.
+            DispatchQueue.main.async { [weak view] in
+                guard let view, let window = view.window else { return }
+                window.makeFirstResponder(view)
+            }
         }
 
         // MARK: LocalProcessTerminalViewDelegate
