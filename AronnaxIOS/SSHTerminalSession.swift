@@ -13,16 +13,19 @@ import Crypto
 final class SSHTerminalSession: ObservableObject {
     @Published var status = "Idle"
     @Published var target: AgentTarget = .terminal
+    @Published var projects: [String] = []
+    @Published var selectedProject = ""
     weak var terminalView: TerminalView?
 
-    let projectDir: String
+    private let projectsRoot = "/Users/kepler/Documents/AI_OS/Projects"
+    private var projectDir: String {
+        selectedProject.isEmpty ? projectsRoot : projectsRoot + "/" + selectedProject
+    }
 
     private var client: SSHClient?
     private var connectTask: Task<Void, Never>?
     private var ptyTask: Task<Void, Never>?
     private var inputContinuation: AsyncStream<[UInt8]>.Continuation?
-
-    init(projectDir: String) { self.projectDir = projectDir }
 
     func start() {
         guard connectTask == nil else { return }
@@ -59,8 +62,31 @@ final class SSHTerminalSession: ObservableObject {
             client = try await SSHClient.connect(to: settings)
             status = "Connected"
             restartPTY()
+            await fetchProjects()
         } catch {
             status = "Error: \(error)"
+        }
+    }
+
+    /// Switch which kepler project the Claude/Codex sessions attach to.
+    func selectProject(_ name: String) {
+        guard name != selectedProject else { return }
+        selectedProject = name
+        if target != .terminal { restartPTY() }
+    }
+
+    private func fetchProjects() async {
+        guard let client else { return }
+        do {
+            let out = try await client.executeCommand("ls -1 \(projectsRoot)")
+            let list = String(buffer: out)
+                .split(separator: "\n")
+                .map { String($0).trimmingCharacters(in: .whitespaces) }
+                .filter { !$0.isEmpty }
+            projects = list
+            if selectedProject.isEmpty { selectedProject = list.first ?? "" }
+        } catch {
+            // Terminal still works even if the project list can't be fetched.
         }
     }
 
