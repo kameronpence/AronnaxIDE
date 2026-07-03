@@ -15,7 +15,7 @@ final class SSHTerminalSession: ObservableObject {
     @Published var target: AgentTarget = .terminal
     @Published var projects: [String] = []
     @Published var selectedProject = ""
-    weak var terminalView: TerminalView?
+    weak var terminalView: AronnaxTerminalView?
 
     private let projectsRoot = "/Users/kepler/Documents/AI_OS/Projects"
     private var projectDir: String {
@@ -93,6 +93,9 @@ final class SSHTerminalSession: ObservableObject {
     private func restartPTY() {
         ptyTask?.cancel()
         guard client != nil else { return }
+        // Agents run full-screen in tmux → two-finger swipe scrolls them via wheel events.
+        // The plain shell uses the native scroll view, so leave wheel forwarding off there.
+        terminalView?.wheelScrollEnabled = (target != .terminal)
         // Clear the screen so the previous surface doesn't linger under the new one.
         feed(Array("\u{1b}c".utf8))
         let t = target

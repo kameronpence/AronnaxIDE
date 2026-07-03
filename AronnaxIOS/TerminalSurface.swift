@@ -31,22 +31,28 @@ final class KeyBar: UIView {
 struct TerminalSurface: UIViewRepresentable {
     let session: SSHTerminalSession
 
-    func makeUIView(context: Context) -> TerminalView {
-        let tv = TerminalView(frame: .zero)
+    func makeUIView(context: Context) -> AronnaxTerminalView {
+        let tv = AronnaxTerminalView(frame: .zero)
         // Light theme — matches the macOS app (plain shell honors it; full-screen TUIs
         // like Claude/Codex paint their own colors).
         tv.nativeBackgroundColor = UIColor(white: 0.99, alpha: 1)
         tv.nativeForegroundColor = UIColor(white: 0.15, alpha: 1)
         tv.caretColor = .systemBlue
+        // Off = a pan selects text locally (for copy) instead of being reported to the
+        // app; also lets the scroll view own the plain shell's scrollback. Matches macOS.
+        tv.allowMouseReporting = false
         tv.terminalDelegate = context.coordinator
         tv.inputAccessoryView = KeyBar(terminal: tv)
+        tv.installAronnaxGestures()
+        // Two-finger swipe → wheel events to the remote (see AronnaxTerminalView).
+        tv.sendToRemote = { bytes in MainActor.assumeIsolated { session.sendInput(bytes) } }
         session.terminalView = tv
         // Focus so the key bar docks (and you can type immediately).
         DispatchQueue.main.async { _ = tv.becomeFirstResponder() }
         return tv
     }
 
-    func updateUIView(_ uiView: TerminalView, context: Context) {}
+    func updateUIView(_ uiView: AronnaxTerminalView, context: Context) {}
 
     func makeCoordinator() -> Coordinator { Coordinator(session: session) }
 
