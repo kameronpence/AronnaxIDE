@@ -2,10 +2,32 @@ import SwiftUI
 import SwiftTerm
 import UIKit
 
+/// A plain (non-input) container that hosts SwiftTerm's key toolbar pinned to the
+/// safe-area edges, so its end buttons don't fall into the display's rounded corners.
+/// An explicit intrinsic height keeps it from collapsing the way a nested UIInputView did.
+final class KeyBar: UIView {
+    static let barHeight: CGFloat = 40
+    override var intrinsicContentSize: CGSize { CGSize(width: UIView.noIntrinsicMetric, height: KeyBar.barHeight) }
+
+    init(terminal: TerminalView) {
+        super.init(frame: CGRect(x: 0, y: 0, width: terminal.bounds.width, height: KeyBar.barHeight))
+        autoresizingMask = .flexibleWidth
+        backgroundColor = .clear
+        let ta = TerminalAccessory(frame: bounds, inputViewStyle: .keyboard, container: terminal)
+        ta.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(ta)
+        NSLayoutConstraint.activate([
+            ta.topAnchor.constraint(equalTo: topAnchor),
+            ta.bottomAnchor.constraint(equalTo: bottomAnchor),
+            ta.leadingAnchor.constraint(equalTo: safeAreaLayoutGuide.leadingAnchor, constant: 6),
+            ta.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor, constant: -6),
+        ])
+    }
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+}
+
 /// Hosts SwiftTerm's iOS `TerminalView` in SwiftUI and wires it to the SSH session:
-/// keystrokes go out via `send`, remote output is fed in by the session. Uses
-/// SwiftTerm's built-in key toolbar (esc/ctrl/tab/arrows); a custom, safe-area-inset
-/// key bar is a follow-up.
+/// keystrokes go out via `send`, remote output is fed in by the session.
 struct TerminalSurface: UIViewRepresentable {
     let session: SSHTerminalSession
 
@@ -17,7 +39,10 @@ struct TerminalSurface: UIViewRepresentable {
         tv.nativeForegroundColor = UIColor(white: 0.15, alpha: 1)
         tv.caretColor = .systemBlue
         tv.terminalDelegate = context.coordinator
+        tv.inputAccessoryView = KeyBar(terminal: tv)
         session.terminalView = tv
+        // Focus so the key bar docks (and you can type immediately).
+        DispatchQueue.main.async { _ = tv.becomeFirstResponder() }
         return tv
     }
 
