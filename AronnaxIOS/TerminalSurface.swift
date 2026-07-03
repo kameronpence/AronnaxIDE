@@ -2,30 +2,10 @@ import SwiftUI
 import SwiftTerm
 import UIKit
 
-/// Wraps SwiftTerm's built-in key toolbar so it insets to the safe area — otherwise its
-/// end buttons (esc / keyboard) fall into the display's rounded corners and get clipped.
-final class InsetTerminalAccessory: UIInputView {
-    private let inner: TerminalAccessory
-    init(terminal: TerminalView) {
-        inner = TerminalAccessory(frame: CGRect(x: 0, y: 0, width: terminal.bounds.width, height: 36),
-                                  inputViewStyle: .keyboard, container: terminal)
-        super.init(frame: CGRect(x: 0, y: 0, width: terminal.bounds.width, height: 36),
-                   inputViewStyle: .keyboard)
-        allowsSelfSizing = true
-        addSubview(inner)
-        inner.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            inner.topAnchor.constraint(equalTo: topAnchor),
-            inner.bottomAnchor.constraint(equalTo: bottomAnchor),
-            inner.leadingAnchor.constraint(equalTo: safeAreaLayoutGuide.leadingAnchor, constant: 8),
-            inner.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor, constant: -8),
-        ])
-    }
-    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-}
-
 /// Hosts SwiftTerm's iOS `TerminalView` in SwiftUI and wires it to the SSH session:
-/// keystrokes go out via `send`, remote output is fed in by the session.
+/// keystrokes go out via `send`, remote output is fed in by the session. Uses
+/// SwiftTerm's built-in key toolbar (esc/ctrl/tab/arrows); a custom, safe-area-inset
+/// key bar is a follow-up.
 struct TerminalSurface: UIViewRepresentable {
     let session: SSHTerminalSession
 
@@ -37,7 +17,6 @@ struct TerminalSurface: UIViewRepresentable {
         tv.nativeForegroundColor = UIColor(white: 0.15, alpha: 1)
         tv.caretColor = .systemBlue
         tv.terminalDelegate = context.coordinator
-        tv.inputAccessoryView = InsetTerminalAccessory(terminal: tv)
         session.terminalView = tv
         return tv
     }
