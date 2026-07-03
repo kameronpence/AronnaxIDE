@@ -1,4 +1,4 @@
-# Plan: "MiniIDE" — a native macOS SwiftUI IDE that drives a headless Mac mini
+# Plan: "AronnaxIDE" — a native macOS SwiftUI IDE that drives a headless Mac mini
 
 ## Context
 
@@ -145,7 +145,7 @@ is never the source of truth and detach/reattach is lossless.
     repo path, log sources, and port-forwards. Stored in `UserDefaults` + a small
     config file (and read from `~/.ssh/config` where available).
 
-## Development workflow (how we build MiniIDE)
+## Development workflow (how we build AronnaxIDE)
 
 The app is **built and used on this MacBook Pro** (Xcode 26.5 is here; a macOS GUI
 app needs it). Two agents collaborate: **Claude Code** and **Codex CLI**, both
@@ -191,8 +191,8 @@ local, coordinating through **beads**.
 
 ## Key files (new project)
 
-- `MiniIDE.xcodeproj` + `Info.plist` + `MiniIDE.entitlements`
-- `MiniIDEApp.swift` — `@main` App entry, window setup
+- `AronnaxIDE.xcodeproj` + `Info.plist` + `AronnaxIDE.entitlements`
+- `AronnaxIDEApp.swift` — `@main` App entry, window setup
 - `ContentView.swift` — sidebar + tabbed workspace + reconnect/sync status bar
 - `HostRegistry.swift` + `Project.swift` + `GitHubAccount.swift` — fleet model,
   ssh-config import, project↔account mapping
@@ -243,7 +243,7 @@ local, coordinating through **beads**.
     plan. Later install it on the mini too for the in-app agent.
   - **Set up `bd` for this project.** beads was only initialized for another
     project; confirm the `bd` binary (install if missing), then `bd init` here so
-    MiniIDE gets its own `.beads/` db.
+    AronnaxIDE gets its own `.beads/` db.
 - The mini's SSH hostname/alias (and confirmation key-based `ssh <mini>` works),
   plus the EC2/Lightsail host aliases and that the **mini can `ssh` to each**
   (ProxyJump relies on the mini's existing access).

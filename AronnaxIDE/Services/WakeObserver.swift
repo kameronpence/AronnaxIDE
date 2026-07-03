@@ -16,7 +16,7 @@ final class WakeObserver: ObservableObject {
     @Published private(set) var reconnectSignal: Int = 0
 
     private let pathMonitor = NWPathMonitor()
-    private let monitorQueue = DispatchQueue(label: "com.kameronpence.MiniIDE.pathmonitor")
+    private let monitorQueue = DispatchQueue(label: "com.kameronpence.AronnaxIDE.pathmonitor")
     private var wakeObservation: NSObjectProtocol?
     /// Identity of the last network path we saw, to detect real route changes.
     private var lastPathSignature: String?

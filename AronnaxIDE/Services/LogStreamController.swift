@@ -24,7 +24,7 @@ final class LogStreamController: ObservableObject {
     private var pending: [LogLine] = []   // held while paused (main thread)
 
     private let maxLines = 5000
-    private let parseQueue = DispatchQueue(label: "com.kameronpence.MiniIDE.logstream")
+    private let parseQueue = DispatchQueue(label: "com.kameronpence.AronnaxIDE.logstream")
 
     private var process: Process?
     private var outHandle: FileHandle?

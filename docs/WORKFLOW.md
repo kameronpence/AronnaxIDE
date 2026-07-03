@@ -1,6 +1,6 @@
-# MiniIDE development workflow — Claude creates, Codex verifies
+# AronnaxIDE development workflow — Claude creates, Codex verifies
 
-Two agents build MiniIDE together, coordinating through **beads** (`.beads/`,
+Two agents build AronnaxIDE together, coordinating through **beads** (`.beads/`,
 synced via git) and the shared backlog (`bd ready`, milestones `M0`–`M12`).
 
 - **Claude Code** — implements tasks (writes the code).

@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct MiniIDEApp: App {
+struct AronnaxIDEApp: App {
     @StateObject private var settings = AppSettings()
     @StateObject private var wakeObserver = WakeObserver()
 

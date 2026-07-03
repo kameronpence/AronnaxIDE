@@ -2,7 +2,7 @@
 
 ## Codex = the verifier
 
-On MiniIDE, **Claude Code writes the code; Codex (you) verifies it.** When invoked
+On AronnaxIDE, **Claude Code writes the code; Codex (you) verifies it.** When invoked
 for review (typically `codex review --uncommitted --title "<task-id>: <title>"`),
 review the in-scope diff **adversarially** for bugs, correctness issues, race
 conditions, Swift 6 concurrency problems, resource leaks, weak error handling, and
