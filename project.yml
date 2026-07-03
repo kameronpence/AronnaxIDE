@@ -3,6 +3,7 @@ options:
   bundleIdPrefix: com.kameronpence
   deploymentTarget:
     macOS: "14.0"
+    iOS: "17.0"
   createIntermediateGroups: true
   groupSortPosition: top
 
@@ -17,6 +18,9 @@ packages:
   SwiftTerm:
     url: https://github.com/migueldeicaza/SwiftTerm
     from: "1.13.0"
+  Citadel:
+    url: https://github.com/orlandos-nl/Citadel
+    from: "0.7.0"
 
 targets:
   MiniIDE:
@@ -53,4 +57,39 @@ targets:
         ENABLE_HARDENED_RUNTIME: "NO"
         CODE_SIGN_STYLE: Automatic
         CODE_SIGN_IDENTITY: "-"
+        SWIFT_VERSION: "5.0"
+
+  # iOS companion — Terminal + Coding only, over Citadel (pure-Swift SSH) to kepler
+  # via Tailscale. iOS can't shell out to /usr/bin/ssh, so transport differs from the
+  # macOS target; UI is iOS-native. Shared logic gets factored out as milestones land.
+  AronnaxIOS:
+    type: application
+    platform: iOS
+    sources:
+      - path: AronnaxIOS
+    dependencies:
+      - package: SwiftTerm
+      - package: Citadel
+    info:
+      path: AronnaxIOS/Info.plist
+      properties:
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        CFBundleDisplayName: Aronnax
+        CFBundleName: Aronnax
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.kameronpence.AronnaxIOS
+        PRODUCT_NAME: Aronnax
+        TARGETED_DEVICE_FAMILY: "1,2"
+        GENERATE_INFOPLIST_FILE: "NO"
         SWIFT_VERSION: "5.0"

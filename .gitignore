@@ -26,3 +26,4 @@ MiniIDE/Info.plist
 # local scratch handoff notes (not project files)
 AronnaxIDE-handoff.md
 agent-memory-setup.md
+AronnaxIOS/Secrets.swift
