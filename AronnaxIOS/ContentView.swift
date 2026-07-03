@@ -59,6 +59,9 @@ struct ContentView: View {
 
             Divider()
             TerminalSurface(session: session)
+                .padding(.horizontal, 12)
+                .padding(.top, 8)
+                .padding(.bottom, 4)
         }
         .onAppear { session.start() }
         .preferredColorScheme(.light)
