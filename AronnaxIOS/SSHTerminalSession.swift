@@ -5,42 +5,49 @@ import NIOCore
 import NIOSSH
 import Crypto
 
-/// Milestone 0 spike: open an interactive PTY shell on kepler over Citadel (pure-Swift
-/// SSH) and bridge it to a SwiftTerm `TerminalView` — output bytes feed the terminal,
-/// keyboard bytes go back over the channel. Proves the hard part of the iOS app.
+/// One SSH connection to kepler; a single PTY at a time bound to the selected target
+/// (Terminal / Claude / Codex). Switching tears down the current PTY channel and opens
+/// a fresh one — no split, one surface at a time. Output feeds SwiftTerm; keystrokes go
+/// back over the active channel.
 @MainActor
 final class SSHTerminalSession: ObservableObject {
     @Published var status = "Idle"
+    @Published var target: AgentTarget = .terminal
     weak var terminalView: TerminalView?
 
-    private var task: Task<Void, Never>?
+    let projectDir: String
+
+    private var client: SSHClient?
+    private var connectTask: Task<Void, Never>?
+    private var ptyTask: Task<Void, Never>?
     private var inputContinuation: AsyncStream<[UInt8]>.Continuation?
 
+    init(projectDir: String) { self.projectDir = projectDir }
+
     func start() {
-        guard task == nil else { return }
+        guard connectTask == nil else { return }
         status = "Connecting…"
-        let (stream, cont) = AsyncStream<[UInt8]>.makeStream()
-        inputContinuation = cont
-        task = Task { [weak self] in await self?.run(input: stream) }
+        connectTask = Task { [weak self] in await self?.connect() }
     }
 
-    /// Keyboard input from the terminal view → queued for the writer task.
-    func sendInput(_ bytes: [UInt8]) {
-        inputContinuation?.yield(bytes)
+    /// Keyboard input → the active PTY's stdin.
+    func sendInput(_ bytes: [UInt8]) { inputContinuation?.yield(bytes) }
+
+    /// Switch which surface the terminal shows.
+    func select(_ newTarget: AgentTarget) {
+        guard newTarget != target else { return }
+        target = newTarget
+        restartPTY()
     }
 
-    private func feed(_ bytes: [UInt8]) {
-        terminalView?.feed(byteArray: bytes[...])
-    }
+    private func feed(_ bytes: [UInt8]) { terminalView?.feed(byteArray: bytes[...]) }
 
     private func initialSize() -> (cols: Int, rows: Int) {
-        if let t = terminalView?.getTerminal() {
-            return (max(t.cols, 20), max(t.rows, 10))
-        }
+        if let t = terminalView?.getTerminal() { return (max(t.cols, 20), max(t.rows, 10)) }
         return (80, 24)
     }
 
-    private func run(input: AsyncStream<[UInt8]>) async {
+    private func connect() async {
         do {
             let key = try Curve25519.Signing.PrivateKey(sshEd25519: aronnaxPrivateKey)
             let settings = SSHClientSettings(
@@ -49,9 +56,30 @@ final class SSHTerminalSession: ObservableObject {
                 authenticationMethod: { .ed25519(username: keplerUser, privateKey: key) },
                 hostKeyValidator: .acceptAnything()
             )
-            let client = try await SSHClient.connect(to: settings)
+            client = try await SSHClient.connect(to: settings)
             status = "Connected"
-            let size = initialSize()
+            restartPTY()
+        } catch {
+            status = "Error: \(error)"
+        }
+    }
+
+    private func restartPTY() {
+        ptyTask?.cancel()
+        guard client != nil else { return }
+        // Clear the screen so the previous surface doesn't linger under the new one.
+        feed(Array("\u{1b}c".utf8))
+        let t = target
+        ptyTask = Task { [weak self] in await self?.runPTY(target: t) }
+    }
+
+    private func runPTY(target: AgentTarget) async {
+        guard let client else { return }
+        let (input, cont) = AsyncStream<[UInt8]>.makeStream()
+        inputContinuation = cont
+        let size = initialSize()
+        let command = AgentCommands.attachCommand(target: target, workdir: projectDir)
+        do {
             try await client.withPTY(
                 SSHChannelRequestEvent.PseudoTerminalRequest(
                     wantReply: true,
@@ -63,8 +91,13 @@ final class SSHTerminalSession: ObservableObject {
                     terminalModes: .init([.ECHO: 1])
                 )
             ) { output, writer in
+                // Terminal = plain login shell (nil). Claude/Codex = attach to tmux.
+                if let command {
+                    var cmd = ByteBuffer()
+                    cmd.writeString(command + "\n")
+                    try await writer.write(cmd)
+                }
                 try await withThrowingTaskGroup(of: Void.self) { group in
-                    // Remote output → terminal.
                     group.addTask {
                         for try await chunk in output {
                             let bytes: [UInt8]
@@ -75,7 +108,6 @@ final class SSHTerminalSession: ObservableObject {
                             await self.feed(bytes)
                         }
                     }
-                    // Keyboard → remote stdin.
                     group.addTask {
                         for await data in input {
                             var buf = ByteBuffer()
@@ -87,9 +119,11 @@ final class SSHTerminalSession: ObservableObject {
                     group.cancelAll()
                 }
             }
-            status = "Session ended"
         } catch {
-            status = "Error: \(error)"
+            // Cancellation (a surface switch) is expected; only surface real errors.
+            if !Task.isCancelled {
+                status = "\(target.label) ended"
+            }
         }
     }
 }

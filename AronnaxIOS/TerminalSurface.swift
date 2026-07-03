@@ -8,6 +8,11 @@ struct TerminalSurface: UIViewRepresentable {
 
     func makeUIView(context: Context) -> TerminalView {
         let tv = TerminalView(frame: .zero)
+        // Light theme — matches the macOS app (plain shell honors it; full-screen TUIs
+        // like Claude/Codex paint their own colors).
+        tv.nativeBackgroundColor = UIColor(white: 0.99, alpha: 1)
+        tv.nativeForegroundColor = UIColor(white: 0.15, alpha: 1)
+        tv.caretColor = .systemBlue
         tv.terminalDelegate = context.coordinator
         session.terminalView = tv
         return tv

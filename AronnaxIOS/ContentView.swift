@@ -1,9 +1,9 @@
 import SwiftUI
 
-/// Milestone 0 — a live kepler terminal on the phone. Connects on appear and shows the
-/// SSH shell. Once this works, the Coding pane + key-accessory bar build on top.
+/// One terminal surface with a Terminal / Claude / Codex switcher (one at a time — no
+/// split). Connects to kepler on appear.
 struct ContentView: View {
-    @StateObject private var session = SSHTerminalSession()
+    @StateObject private var session = SSHTerminalSession(projectDir: defaultProjectDir)
 
     var body: some View {
         VStack(spacing: 0) {
@@ -17,10 +17,22 @@ struct ContentView: View {
                     .lineLimit(1)
             }
             .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.top, 6)
+
+            Picker("Surface", selection: Binding(
+                get: { session.target },
+                set: { session.select($0) }
+            )) {
+                ForEach(AgentTarget.allCases) { Text($0.label).tag($0) }
+            }
+            .pickerStyle(.segmented)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+
             Divider()
             TerminalSurface(session: session)
         }
         .onAppear { session.start() }
+        .preferredColorScheme(.light)
     }
 }
