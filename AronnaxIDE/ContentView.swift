@@ -176,6 +176,11 @@ private struct SidebarView: View {
                 }
                 Section {
                     if settings.activeHost?.isHub ?? true {
+                        // "kepler root" — deselect any project so every pane operates in the
+                        // host home (/Users/kepler) instead of a project dir. Lets you run
+                        // the agents on the machine itself, no host-toggle hack.
+                        projectRow(name: "kepler root", path: settings.hostHome,
+                                   subtitle: "Host home — no project", icon: "house")
                         // Hub: the projects discovered under the vault's Projects/ folder,
                         // minus any the user has hidden (unless "show hidden" is on).
                         let visible = projects.projects.filter {
@@ -246,6 +251,9 @@ private struct SidebarView: View {
         .onChange(of: projects.projects) { _, list in
             // Hub only: auto-select the first *visible* project (and recover if it vanished).
             guard settings.activeHost?.isHub ?? true else { return }
+            // "kepler root" is a deliberate selection that isn't in the scanned list — leave
+            // it pinned so a rescan doesn't snap the panes back to a project.
+            if settings.selectedProjectPath == settings.hostHome { return }
             if settings.selectedProjectPath == nil
                 || !list.contains(where: { $0.path == settings.selectedProjectPath }) {
                 settings.selectedProjectPath = list.first { !settings.isProjectHidden($0.path) }?.path
@@ -271,11 +279,11 @@ private struct SidebarView: View {
     /// project). `isHidden` only applies to hub projects revealed via "show hidden" —
     /// the row is dimmed and marked so it reads as hidden.
     @ViewBuilder
-    private func projectRow(name: String, path: String, subtitle: String?, isHidden: Bool = false) -> some View {
+    private func projectRow(name: String, path: String, subtitle: String?, isHidden: Bool = false, icon: String = "folder") -> some View {
         Button { settings.selectedProjectPath = path } label: {
             HStack {
                 VStack(alignment: .leading, spacing: 1) {
-                    Label(name, systemImage: isHidden ? "eye.slash" : "folder")
+                    Label(name, systemImage: isHidden ? "eye.slash" : icon)
                     if let subtitle {
                         Text(subtitle).font(.callout).foregroundStyle(.secondary).padding(.leading, 24)
                     }

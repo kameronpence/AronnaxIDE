@@ -27,3 +27,6 @@ AronnaxIDE/Info.plist
 AronnaxIDE-handoff.md
 agent-memory-setup.md
 AronnaxIOS/Secrets.swift
+
+# per-session logs — local vault notes, not for the public repo
+logs/
