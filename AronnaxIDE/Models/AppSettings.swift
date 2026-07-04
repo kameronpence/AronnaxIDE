@@ -71,6 +71,7 @@ final class AppSettings: ObservableObject {
         static let activeHost = "settings.activeHost"
         static let hostVaultPaths = "settings.hostVaultPaths"
         static let hostProjectPaths = "settings.hostProjectPaths"
+        static let hiddenProjects = "settings.hiddenProjects"
     }
 
     /// Add (or replace by id) a user-defined host and persist it.
@@ -120,6 +121,17 @@ final class AppSettings: ObservableObject {
     /// and Git panes all operate in. `nil` means "no project picked yet" (panes fall
     /// back to the agent workdir).
     @Published var selectedProjectPath: String?
+
+    /// Project folder paths the user has hidden from the sidebar list (e.g. finished
+    /// projects). The folders stay on disk under `projectsRoot` — they're just filtered
+    /// out of the list until unhidden. Persisted.
+    @Published private(set) var hiddenProjectPaths: Set<String> = []
+
+    func isProjectHidden(_ path: String) -> Bool { hiddenProjectPaths.contains(path) }
+    func setProjectHidden(_ path: String, _ hidden: Bool) {
+        if hidden { hiddenProjectPaths.insert(path) } else { hiddenProjectPaths.remove(path) }
+        UserDefaults.standard.set(Array(hiddenProjectPaths), forKey: Keys.hiddenProjects)
+    }
 
     /// The host the project panes (Coding, Vault, Beads, Git) operate on. Defaults to
     /// the hub; switch it to run agents on / read from a server instead — a project
@@ -203,6 +215,7 @@ final class AppSettings: ObservableObject {
         if let id = defaults.string(forKey: Keys.activeHost) { activeHostID = id }
         if let d = defaults.dictionary(forKey: Keys.hostVaultPaths) as? [String: String] { hostVaultPaths = d }
         if let d = defaults.dictionary(forKey: Keys.hostProjectPaths) as? [String: String] { hostProjectPaths = d }
+        hiddenProjectPaths = Set(defaults.stringArray(forKey: Keys.hiddenProjects) ?? [])
         rebuildHosts()   // hosts = discovered + custom
     }
 

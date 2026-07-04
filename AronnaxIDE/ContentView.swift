@@ -157,6 +157,10 @@ private struct SidebarView: View {
     @ObservedObject var usage: UsageService
     @ObservedObject var projects: ProjectService
 
+    /// When on, hidden projects are revealed in the list (dimmed, with an "unhide"
+    /// action) so you can bring them back. Off by default — hidden means hidden.
+    @State private var showHidden = false
+
     var body: some View {
         VStack(spacing: 0) {
             List {
@@ -172,14 +176,26 @@ private struct SidebarView: View {
                 }
                 Section {
                     if settings.activeHost?.isHub ?? true {
-                        // Hub: the projects discovered under the vault's Projects/ folder.
-                        if projects.projects.isEmpty {
-                            Text(projects.isLoading ? "Scanning…" : "No projects found")
+                        // Hub: the projects discovered under the vault's Projects/ folder,
+                        // minus any the user has hidden (unless "show hidden" is on).
+                        let visible = projects.projects.filter {
+                            showHidden || !settings.isProjectHidden($0.path)
+                        }
+                        if visible.isEmpty {
+                            Text(emptyProjectsText)
                                 .foregroundStyle(.secondary).font(.callout)
                         } else {
-                            ForEach(projects.projects) { project in
+                            ForEach(visible) { project in
+                                let hidden = settings.isProjectHidden(project.path)
                                 projectRow(name: project.name, path: project.path,
-                                           subtitle: project.branch.map { $0 + (project.owner.map { o in " · \(o)" } ?? "") })
+                                           subtitle: project.branch.map { $0 + (project.owner.map { o in " · \(o)" } ?? "") },
+                                           isHidden: hidden)
+                                    .contextMenu {
+                                        Button(hidden ? "Show in List" : "Hide from List",
+                                               systemImage: hidden ? "eye" : "eye.slash") {
+                                            toggleHidden(project.path, to: !hidden)
+                                        }
+                                    }
                             }
                         }
                     } else if let path = settings.serverProjectPath {
@@ -190,10 +206,19 @@ private struct SidebarView: View {
                             .foregroundStyle(.secondary).font(.callout)
                     }
                 } header: {
-                    HStack {
+                    HStack(spacing: 8) {
                         Text((settings.activeHost?.isHub ?? true) ? "Projects" : "Project")
                         Spacer()
                         if settings.activeHost?.isHub ?? true {
+                            if hiddenCount > 0 {
+                                Button { showHidden.toggle() } label: {
+                                    Image(systemName: showHidden ? "eye" : "eye.slash")
+                                }
+                                .buttonStyle(.borderless).controlSize(.small)
+                                .help(showHidden
+                                      ? "Hide finished projects"
+                                      : "Show \(hiddenCount) hidden project\(hiddenCount == 1 ? "" : "s")")
+                            }
                             if projects.isLoading {
                                 ProgressView().controlSize(.mini)
                             } else {
@@ -219,11 +244,11 @@ private struct SidebarView: View {
             }
         }
         .onChange(of: projects.projects) { _, list in
-            // Hub only: auto-select the first project (and recover if it vanished).
+            // Hub only: auto-select the first *visible* project (and recover if it vanished).
             guard settings.activeHost?.isHub ?? true else { return }
             if settings.selectedProjectPath == nil
                 || !list.contains(where: { $0.path == settings.selectedProjectPath }) {
-                settings.selectedProjectPath = list.first?.path
+                settings.selectedProjectPath = list.first { !settings.isProjectHidden($0.path) }?.path
             }
         }
         .onChange(of: settings.activeHostID) { _, _ in
@@ -242,13 +267,15 @@ private struct SidebarView: View {
         }
     }
 
-    /// One selectable project row (used for both hub-discovered projects + the server's project).
+    /// One selectable project row (used for both hub-discovered projects + the server's
+    /// project). `isHidden` only applies to hub projects revealed via "show hidden" —
+    /// the row is dimmed and marked so it reads as hidden.
     @ViewBuilder
-    private func projectRow(name: String, path: String, subtitle: String?) -> some View {
+    private func projectRow(name: String, path: String, subtitle: String?, isHidden: Bool = false) -> some View {
         Button { settings.selectedProjectPath = path } label: {
             HStack {
                 VStack(alignment: .leading, spacing: 1) {
-                    Label(name, systemImage: "folder")
+                    Label(name, systemImage: isHidden ? "eye.slash" : "folder")
                     if let subtitle {
                         Text(subtitle).font(.callout).foregroundStyle(.secondary).padding(.leading, 24)
                     }
@@ -261,6 +288,31 @@ private struct SidebarView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .opacity(isHidden ? 0.5 : 1)
+    }
+
+    /// Count of discovered projects the user has hidden (hub only).
+    private var hiddenCount: Int {
+        projects.projects.reduce(0) { $0 + (settings.isProjectHidden($1.path) ? 1 : 0) }
+    }
+
+    /// Sidebar text when nothing is shown — distinguishes "none exist" from "all hidden".
+    private var emptyProjectsText: String {
+        if projects.isLoading { return "Scanning…" }
+        if !projects.projects.isEmpty && hiddenCount == projects.projects.count {
+            return "All projects hidden"
+        }
+        return "No projects found"
+    }
+
+    /// Hide/show a project. When hiding the currently-selected one, move the selection
+    /// to the first still-visible project so the panes don't point at a hidden folder.
+    private func toggleHidden(_ path: String, to hidden: Bool) {
+        settings.setProjectHidden(path, hidden)
+        if hidden, settings.selectedProjectPath == path {
+            settings.selectedProjectPath = projects.projects
+                .first { !settings.isProjectHidden($0.path) }?.path
+        }
     }
 }
 
