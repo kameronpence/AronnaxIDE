@@ -167,6 +167,13 @@ final class AppSettings: ObservableObject {
         return p.isEmpty ? nil : p
     }
 
+    /// The hub's home directory — the "kepler root" the sidebar can select to deselect any
+    /// project. Picking it points every project pane (Terminal, Coding, Browser, Beads,
+    /// Git) at the hub home instead of a project folder, so you can run the agents on the
+    /// machine itself. The Vault pane still shows the vault. Tied to the hub (not the
+    /// active host) — the row is only offered on the hub, which is a Mac (`/Users/<user>`).
+    var hostHome: String { "/Users/" + (hub?.user ?? "kepler") }
+
     /// The directory the panes work in: the selected project, else the active server's
     /// project, else the active vault.
     var activePath: String { selectedProjectPath ?? serverProjectPath ?? activeVaultPath }
