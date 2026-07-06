@@ -46,9 +46,8 @@ struct TerminalSurface: UIViewRepresentable {
         // auto-layout against the safe area inside a UIInputView intermittently wedged the
         // main thread whenever the keyboard tried to present it → a blank screen at launch.
         // Plain keyboard for now; a stable key toolbar is a separate follow-up.
-        tv.installAronnaxGestures()
-        // Two-finger swipe → wheel events to the remote (see AronnaxTerminalView).
-        tv.sendToRemote = { bytes in MainActor.assumeIsolated { session.sendInput(bytes) } }
+        // Agent scrollback is driven by the on-screen scroll buttons (ContentView →
+        // SSHTerminalSession.scrollAgent), not a touch gesture — see AronnaxTerminalView.
         session.terminalView = tv
         // NOTE: focus is taken in AronnaxTerminalView.didMoveToWindow, NOT here. Calling
         // becomeFirstResponder() during makeUIView forces the keyboard + input-accessory
