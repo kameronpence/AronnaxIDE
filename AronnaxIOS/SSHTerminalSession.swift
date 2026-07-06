@@ -154,9 +154,9 @@ final class SSHTerminalSession: ObservableObject {
     private func restartPTY() {
         ptyTask?.cancel()
         guard client != nil else { return }
-        // Agents run full-screen in tmux → two-finger swipe scrolls them via wheel events.
-        // The plain shell uses the native scroll view, so leave wheel forwarding off there.
-        terminalView?.wheelScrollEnabled = (target != .terminal)
+        // Agents run in tmux → a one-finger drag scrolls their history via wheel events.
+        // The plain shell uses the native scroll view, so leave agent scroll off there.
+        terminalView?.setAgentScroll(target != .terminal)
         // Clear the screen so the previous surface doesn't linger under the new one.
         feed(Array("\u{1b}c".utf8))
         let t = target
