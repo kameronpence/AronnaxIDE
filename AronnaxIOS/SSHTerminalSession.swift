@@ -43,18 +43,6 @@ final class SSHTerminalSession: ObservableObject {
     /// Keyboard input → the active PTY's stdin.
     func sendInput(_ bytes: [UInt8]) { inputContinuation?.yield(bytes) }
 
-    /// Scroll the agent's tmux scrollback by emitting SGR mouse-wheel events straight to
-    /// the PTY — the same input path as keystrokes. tmux (mouse on) enters copy-mode and
-    /// scrolls its history on these. Only meaningful for tmux-backed targets; the plain
-    /// shell uses the native scroll view. Driven by the on-screen scroll buttons because
-    /// touch-gesture arbitration against SwiftTerm's own scroll view proved unreliable.
-    func scrollAgent(up: Bool, lines: Int = 3) {
-        guard target != .terminal else { return }
-        let button = up ? 64 : 65   // SGR wheel-up / wheel-down
-        let seq = Array("\u{1b}[<\(button);1;1M".utf8)
-        for _ in 0..<max(1, lines) { sendInput(seq) }
-    }
-
     /// Switch which surface the terminal shows.
     func select(_ newTarget: AgentTarget) {
         guard newTarget != target else { return }
@@ -166,6 +154,9 @@ final class SSHTerminalSession: ObservableObject {
     private func restartPTY() {
         ptyTask?.cancel()
         guard client != nil else { return }
+        // Agents run in tmux → a one-finger drag scrolls their history via wheel events.
+        // The plain shell uses SwiftTerm's native scrollback, so leave agent scroll off.
+        terminalView?.agentScrollEnabled = (target != .terminal)
         // Clear the screen so the previous surface doesn't linger under the new one.
         feed(Array("\u{1b}c".utf8))
         let t = target
