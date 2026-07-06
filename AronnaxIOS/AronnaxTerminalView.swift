@@ -28,6 +28,23 @@ final class AronnaxTerminalView: TerminalView {
     /// Points of vertical travel per emitted wheel step. ~2 lines feels right on a phone.
     private let wheelStep: CGFloat = 22
 
+    /// Takes focus (raising the keyboard + key bar) once the view is actually in a window.
+    /// Doing this off the initial `makeUIView` path avoids an intermittent main-thread hang
+    /// at launch (blank screen) caused by laying the keyboard out before the view is ready.
+    private var hasTakenFocus = false
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        guard window != nil, !hasTakenFocus else { return }
+        hasTakenFocus = true
+        // Raise the keyboard shortly AFTER the first frame is on screen. Immediately (or in
+        // makeUIView) it wedges the launch → blank screen; a brief beat lets the UI draw
+        // first, then the keyboard + key bar come up.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
+            guard let self, self.window != nil else { return }
+            _ = self.becomeFirstResponder()
+        }
+    }
+
     /// Adds the two-finger scroll gesture. One-finger pans are left to the scroll view
     /// (shell scrollback) and to SwiftTerm's own selection handling.
     func installAronnaxGestures() {

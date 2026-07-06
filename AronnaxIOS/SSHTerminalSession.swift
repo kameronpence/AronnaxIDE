@@ -13,13 +13,20 @@ import Crypto
 final class SSHTerminalSession: ObservableObject {
     @Published var status = "Idle"
     @Published var target: AgentTarget = .terminal
-    @Published var projects: [String] = []
-    @Published var selectedProject = ""
+    @Published var projects: [String] = [SSHTerminalSession.keplerRootLabel]
+    @Published var selectedProject = SSHTerminalSession.keplerRootLabel
     weak var terminalView: AronnaxTerminalView?
+
+    /// The "kepler root" pseudo-project — top of the picker and the default on launch. The
+    /// agents run at the machine root (`/Users/kepler`) instead of inside a project folder.
+    /// Mirrors the macOS app's "kepler root" row.
+    static let keplerRootLabel = "kepler root"
+    private let keplerHome = "/Users/kepler"
 
     private let projectsRoot = "/Users/kepler/Documents/AI_OS/Projects"
     private var projectDir: String {
-        selectedProject.isEmpty ? projectsRoot : projectsRoot + "/" + selectedProject
+        if selectedProject == Self.keplerRootLabel || selectedProject.isEmpty { return keplerHome }
+        return projectsRoot + "/" + selectedProject
     }
 
     private var client: SSHClient?
@@ -51,21 +58,74 @@ final class SSHTerminalSession: ObservableObject {
     }
 
     private func connect() async {
+        // Build the SSH key once — a bad key is fatal, not worth retrying.
+        let key: Curve25519.Signing.PrivateKey
         do {
-            let key = try Curve25519.Signing.PrivateKey(sshEd25519: aronnaxPrivateKey)
-            let settings = SSHClientSettings(
-                host: keplerHost,
-                port: 22,
-                authenticationMethod: { .ed25519(username: keplerUser, privateKey: key) },
-                hostKeyValidator: .acceptAnything()
-            )
-            client = try await SSHClient.connect(to: settings)
-            status = "Connected"
-            restartPTY()
-            await fetchProjects()
+            key = try Curve25519.Signing.PrivateKey(sshEd25519: aronnaxPrivateKey)
         } catch {
-            status = "Error: \(error)"
+            status = "Bad SSH key"
+            return
         }
+        // Keep retrying until we connect (or the view goes away). On Wi-Fi Tailscale goes
+        // direct and the first try lands; on cellular (carrier CGNAT) there's no direct
+        // path, so the early tries warm up the DERP relay and a later one succeeds. A
+        // single attempt would just time out, which is the bug this fixes.
+        var attempt = 0
+        while !Task.isCancelled {
+            attempt += 1
+            status = attempt == 1 ? "Connecting…" : "Connecting… (\(attempt))"
+            do {
+                var settings = SSHClientSettings(
+                    host: keplerHost,
+                    port: 22,
+                    authenticationMethod: { .ed25519(username: keplerUser, privateKey: key) },
+                    hostKeyValidator: .acceptAnything()
+                )
+                // Shorter per-try timeout so a cold path fails fast and we retry, instead
+                // of hanging the whole 30s on one doomed attempt.
+                settings.connectTimeout = .seconds(12)
+                let c = try await SSHClient.connect(to: settings)
+                guard !Task.isCancelled else { return }
+                client = c
+                status = "Connected"
+                restartPTY()
+                await fetchProjects()
+                return
+            } catch {
+                if Task.isCancelled { return }
+                // Auth/config failures (bad key, wrong user, rejected credentials) can't be
+                // fixed by retrying — surface the real error and stop instead of hammering
+                // the server every 1.5s forever behind a "Reconnecting…" label. Only
+                // transient network failures (a cold cellular path) are worth retrying to
+                // warm up the Tailscale DERP relay.
+                if Self.isFatalConnectError(error) {
+                    status = "Auth failed — check SSH key / user"
+                    return
+                }
+                status = "Reconnecting…"
+                try? await Task.sleep(nanoseconds: 1_500_000_000)   // brief backoff, then retry
+            }
+        }
+    }
+
+    /// True for connect errors where retrying can't help: rejected credentials, an
+    /// unauthorized session, or an unsupported/failed auth method. Network timeouts and
+    /// connection refusals — the cellular case the retry loop exists for — are NOT fatal.
+    private static func isFatalConnectError(_ error: Error) -> Bool {
+        if error is AuthenticationFailed { return true }
+        if let e = error as? SSHClientError {
+            switch e {
+            case .allAuthenticationOptionsFailed,
+                 .unsupportedPasswordAuthentication,
+                 .unsupportedPrivateKeyAuthentication,
+                 .unsupportedHostBasedAuthentication:
+                return true
+            case .channelCreationFailed:
+                return false   // post-connect channel hiccup — transient, worth a retry
+            }
+        }
+        if let e = error as? CitadelError, case .unauthorized = e { return true }
+        return false
     }
 
     /// Switch which kepler project the Claude/Codex sessions attach to.
@@ -83,8 +143,9 @@ final class SSHTerminalSession: ObservableObject {
                 .split(separator: "\n")
                 .map { String($0).trimmingCharacters(in: .whitespaces) }
                 .filter { !$0.isEmpty }
-            projects = list
-            if selectedProject.isEmpty { selectedProject = list.first ?? "" }
+            // "kepler root" always sits at the top of the list and is the default.
+            projects = [Self.keplerRootLabel] + list
+            if selectedProject.isEmpty { selectedProject = Self.keplerRootLabel }
         } catch {
             // Terminal still works even if the project list can't be fetched.
         }
