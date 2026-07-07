@@ -48,6 +48,14 @@ struct GitDeployPanel: View {
     /// repo's owner. The convention is that each repo pushes under its own owner
     /// (personal repos as the personal account, org repos as the org), so a difference
     /// is a strong signal the wrong account is configured.
+    ///
+    /// This is a best-effort *secondary* check: it only fires when the account is nameable
+    /// from the remote — a `github-<x>`/`github.com-<x>` SSH alias suffix, or HTTPS userinfo
+    /// (see `GitController.identity`). Bare `github.com` and arbitrarily-named aliases (e.g.
+    /// `Host gatsa`) return no identity and never warn — deliberately, since an alias name
+    /// isn't reliably the owner's name and warning on it would cry wolf on correct pushes.
+    /// The primary safeguard is the explicit account picker + the push-confirmation dialog,
+    /// which name the exact account regardless of alias naming.
     private func accountMismatch(_ s: GitStatus) -> (identity: String, owner: String)? {
         guard let identity = GitController.identity(remote: s.remote),
               let owner = s.owner,
@@ -60,8 +68,10 @@ struct GitDeployPanel: View {
     /// is caught at confirm time.
     private var pushWarning: String {
         let branch = model.status?.branch ?? "the branch"
-        let account = GitController.identity(remote: model.status?.remote)
-            .map { " as \($0)" } ?? ""
+        // Only name the account for SSH remotes, where the host alias truly picks the key.
+        // HTTPS remotes authenticate via gh/credentials, so the URL doesn't reveal the account.
+        let ref = GitController.parseRemote(model.status?.remote)
+        let account = (ref?.isSSH == true) ? " as \(accountLabel(ref!.host))" : ""
         let remote = model.status?.remote.map { " (\(maskedRemote($0)))" } ?? ""
         var prefix = ""
         if let s = model.status, let mismatch = accountMismatch(s) {
@@ -157,12 +167,10 @@ struct GitDeployPanel: View {
                 }
 
                 if let remote = s.remote {
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: 6) {
                         Text("origin").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
                         Text(maskedRemote(remote)).font(.callout.monospaced()).textSelection(.enabled)
-                        if let identity = GitController.identity(remote: remote) {
-                            Text("pushes as \(identity)").font(.caption).foregroundStyle(.secondary)
-                        }
+                        accountPicker(s)
                     }
                 }
 
@@ -269,6 +277,62 @@ struct GitDeployPanel: View {
             .background(tint.opacity(0.12), in: Capsule())
     }
 
+    /// Sentinel selection for an HTTPS origin: its account is ambient (gh/credentials), not
+    /// an SSH alias. Picking a real alias converts the remote to SSH. Empty string can't
+    /// collide with a host alias.
+    private static let httpsAccount = ""
+
+    /// The GitHub-account selector for this repo: a picker over the SSH accounts (host
+    /// aliases) available on the host. Changing it rewrites `origin` to push as that account
+    /// (converting HTTPS origins to SSH). Shown for any GitHub origin, SSH or HTTPS; a plain
+    /// label when there's nothing to switch to. Hidden entirely for non-GitHub remotes.
+    @ViewBuilder private func accountPicker(_ s: GitStatus) -> some View {
+        if let ref = GitController.parseRemote(s.remote),
+           GitController.isGitHubHost(ref.host, in: model.accounts) {
+            // SSH → the current alias (guaranteed in `accounts`). HTTPS → the sentinel, plus
+            // the sentinel prepended to the options so the Picker has a valid current tag.
+            let current = ref.isSSH ? ref.host : Self.httpsAccount
+            let options = ref.isSSH ? model.accounts : [Self.httpsAccount] + model.accounts
+            HStack(spacing: 8) {
+                Image(systemName: "person.badge.key").font(.caption).foregroundStyle(.secondary)
+                if options.count > 1 {
+                    Picker("GitHub account", selection: Binding(
+                        get: { current },
+                        set: { alias in
+                            guard alias != current, alias != Self.httpsAccount else { return }
+                            requestWrite("Switch this repo's GitHub account to \(accountLabel(alias))?") {
+                                model.setAccount(alias)
+                            }
+                        }
+                    )) {
+                        ForEach(options, id: \.self) { Text(accountLabel($0)).tag($0) }
+                    }
+                    .labelsHidden()
+                    .fixedSize()
+                    .disabled(hubReadOnly || model.actionBusy)
+                    Text("account").font(.caption).foregroundStyle(.secondary)
+                } else {
+                    Text("pushes as \(accountLabel(current))").font(.caption).foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
+    /// Friendly name for a GitHub account: `github.com` → "Personal", `github-gatsa` →
+    /// "Gatsa (github-gatsa)", the HTTPS sentinel → "HTTPS (via gh)". Display only — the
+    /// alias is what git stores.
+    private func accountLabel(_ alias: String) -> String {
+        if alias == Self.httpsAccount { return "HTTPS (via gh)" }
+        switch alias.lowercased() {
+        case "github.com": return "Personal (github.com)"
+        default:
+            let name = alias
+                .replacingOccurrences(of: "github.com-", with: "")
+                .replacingOccurrences(of: "github-", with: "")
+            return name.isEmpty ? alias : "\(name.capitalized) (\(alias))"
+        }
+    }
+
     /// Strip any `user[:password/token]@` userinfo from an HTTPS remote so embedded
     /// credentials are never shown. SSH remotes (`git@github.com:…`) are unaffected.
     private func maskedRemote(_ remote: String) -> String {
@@ -290,10 +354,11 @@ struct GitDeployPanel: View {
 @MainActor
 final class GitPanelModel: ObservableObject {
     @Published var selectedPath: String? {
-        didSet { if oldValue != selectedPath { status = nil; branches = []; runs = []; commitResults = nil; actionMessage = nil; loadStatus() } }
+        didSet { if oldValue != selectedPath { status = nil; branches = []; accounts = []; runs = []; commitResults = nil; actionMessage = nil; loadStatus() } }
     }
     @Published var status: GitStatus?
     @Published var branches: [String] = []
+    @Published var accounts: [String] = []    // github ssh host aliases available on the host
     @Published var runs: [ActionRun] = []
     @Published var commitResults: [String]?   // nil = show recent commits; set = search results
     @Published var isLoading = false
@@ -329,9 +394,15 @@ final class GitPanelModel: ObservableObject {
         error = nil
         Task {
             do {
-                let s = try await GitController(host: host).status(path: path)
+                let controller = GitController(host: host)
+                let s = try await controller.status(path: path)
                 guard token == statusToken else { return }
                 status = s
+                // Resolve the GitHub accounts before runs, so the Actions slug gate and the
+                // account picker both see the enumerated alias set for this repo/host.
+                let accts = await controller.githubAccounts()
+                guard token == statusToken else { return }
+                accounts = accts
                 loadRuns()
                 loadBranches()
             } catch {
@@ -346,7 +417,7 @@ final class GitPanelModel: ObservableObject {
 
     func loadRuns() {
         guard let host, let path = selectedPath else { runs = []; return }
-        let slug = GitController.repoSlug(from: status?.remote)
+        let slug = GitController.repoSlug(from: status?.remote, accounts: accounts)
         runsToken += 1
         let token = runsToken
         Task {
@@ -363,6 +434,13 @@ final class GitPanelModel: ObservableObject {
             guard selectedPath == path else { return }   // switched away — drop
             branches = b
         }
+    }
+
+    /// Repoint origin at a different GitHub account (ssh host alias) for this project.
+    func setAccount(_ alias: String) {
+        guard alias != GitController.parseRemote(status?.remote)?.host else { return }
+        let remote = status?.remote
+        run { try await $0.setAccount(path: $1, remote: remote, alias: alias) }
     }
 
     /// Check out a different branch on the hub (refreshes status, which the rest of
