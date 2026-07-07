@@ -178,28 +178,148 @@ struct GitController {
         return (try? JSONDecoder().decode([ActionRun].self, from: data)) ?? []
     }
 
-    /// The `owner/repo` slug from an origin URL (alias-host safe), or nil.
-    static func repoSlug(from remote: String?) -> String? {
-        guard let remote,
-              let re = try? NSRegularExpression(pattern: #"github\.com[^/:]*(?::\d+)?[:/]([^/]+/[^/]+)"#),
-              let m = re.firstMatch(in: remote, range: NSRange(remote.startIndex..., in: remote)),
-              m.numberOfRanges > 1, let r = Range(m.range(at: 1), in: remote) else { return nil }
-        var slug = String(remote[r])
-        if slug.hasSuffix(".git") { slug = String(slug.dropLast(4)) }
-        return slug
+    // MARK: - GitHub account selection
+
+    /// The parsed pieces of an origin URL: the SSH host alias (or real host) that decides
+    /// which key/account authenticates, plus the `owner/repo`. Works for scp-style SSH
+    /// (`git@github-gatsa:GATSA/repo.git`), `ssh://`, and HTTPS remotes — unlike the
+    /// `github.com`-literal parsers, this handles arbitrary aliases (`github-gatsa`).
+    struct RemoteRef: Equatable {
+        var host: String       // "github.com", "github-gatsa", …  (the account selector)
+        var owner: String      // "kameronpence", "GATSA"
+        var repo: String       // repo name, no ".git"
+        var isSSH: Bool        // true for scp/ssh:// forms — only then does `host` name the account
+        var slug: String { owner + "/" + repo }
+    }
+
+    static func parseRemote(_ remote: String?) -> RemoteRef? {
+        guard let remote = remote?.trimmingCharacters(in: .whitespacesAndNewlines), !remote.isEmpty else { return nil }
+        // Each pattern captures host, owner, repo (in that order). Tried in order:
+        //   scp-style   git@host:owner/repo[.git]        (SSH — host alias = account)
+        //   ssh://      ssh://git@host[:port]/owner/repo  (SSH — host alias = account)
+        //   https       https://[user@]host/owner/repo   (NOT SSH — auth is via gh/credentials)
+        let patterns: [(String, Bool)] = [
+            (#"^(?:[^@/]+@)?([^:/]+):([^/]+)/([^/]+?)(?:\.git)?/?$"#, true),
+            (#"^ssh://(?:[^@/]+@)?([^:/]+)(?::\d+)?/([^/]+)/([^/]+?)(?:\.git)?/?$"#, true),
+            (#"^https?://(?:[^@/]+@)?([^/]+)/([^/]+)/([^/]+?)(?:\.git)?/?$"#, false),
+        ]
+        for (pattern, isSSH) in patterns {
+            guard let re = try? NSRegularExpression(pattern: pattern),
+                  let m = re.firstMatch(in: remote, range: NSRange(remote.startIndex..., in: remote)),
+                  m.numberOfRanges > 3,
+                  let h = Range(m.range(at: 1), in: remote),
+                  let o = Range(m.range(at: 2), in: remote),
+                  let r = Range(m.range(at: 3), in: remote) else { continue }
+            return RemoteRef(host: String(remote[h]), owner: String(remote[o]), repo: String(remote[r]), isSSH: isSSH)
+        }
+        return nil
+    }
+
+    /// SSH host aliases on the host whose `HostName` is `github.com` — i.e. the GitHub
+    /// accounts available to push as (each alias offers a different key). Always includes
+    /// bare `github.com` (the default account) even if the config doesn't name it.
+    /// Parsed from the host's `~/.ssh/config`, so it stays correct as accounts are added.
+    func githubAccounts() async -> [String] {
+        var aliases = ["github.com"]
+        if let result = try? await SSHManager.shared.runShell(Self.sshConfigDumpCommand, on: host),
+           result.ok {
+            aliases = Self.parseGitHubAliases(result.stdout, existing: aliases)
+        }
+        return aliases
+    }
+
+    /// Emits `~/.ssh/config` followed by the contents of any files it pulls in via an
+    /// `Include` directive (one level, `~`/relative/glob paths expanded) — so aliases kept
+    /// in an included file are enumerated too, not just the ones in the top-level config.
+    static let sshConfigDumpCommand =
+        #"{ cat ~/.ssh/config 2>/dev/null; awk 'tolower($1)=="include"{for(i=2;i<=NF;i++)print $i}' ~/.ssh/config 2>/dev/null | while IFS= read -r p; do case "$p" in "~/"*) p="$HOME/${p#\~/}";; /*) :;; *) p="$HOME/.ssh/$p";; esac; cat $p 2>/dev/null; done; }"#
+
+    /// From an ssh-config body, the `Host` aliases whose block resolves `HostName github.com`.
+    static func parseGitHubAliases(_ config: String, existing: [String] = ["github.com"]) -> [String] {
+        var result = existing
+        var current: [String] = []          // aliases declared by the open `Host` line
+        var hostName: String?                // this block's HostName, if any
+        func flush() {
+            if hostName?.caseInsensitiveCompare("github.com") == .orderedSame {
+                for a in current where !result.contains(a) { result.append(a) }
+            }
+            current = []; hostName = nil
+        }
+        for raw in config.split(separator: "\n", omittingEmptySubsequences: false) {
+            let line = raw.trimmingCharacters(in: .whitespaces)
+            if line.isEmpty || line.hasPrefix("#") { continue }
+            let parts = line.split(whereSeparator: { $0 == " " || $0 == "\t" }).map(String.init)
+            guard let key = parts.first else { continue }
+            if key.caseInsensitiveCompare("Host") == .orderedSame {
+                flush()                       // close the previous block
+                // Aliases up to an inline comment; skip wildcard patterns.
+                current = parts.dropFirst()
+                    .prefix { !$0.hasPrefix("#") }
+                    .filter { !$0.contains("*") }
+            } else if key.caseInsensitiveCompare("HostName") == .orderedSame, parts.count > 1,
+                      !parts[1].hasPrefix("#") {
+                hostName = parts[1]
+            }
+        }
+        flush()
+        return result
+    }
+
+    /// Points `origin` at `alias` (an SSH host alias for github.com), preserving
+    /// `owner/repo`, so pushes authenticate as that account. Rewrites HTTPS remotes to the
+    /// SSH form too. Returns a short confirmation. A write — respects the caller's guards.
+    @discardableResult
+    func setAccount(path: String, remote: String?, alias: String) async throws -> String {
+        guard let ref = Self.parseRemote(remote) else {
+            throw GitError.command("Couldn't parse the origin remote — set it manually.")
+        }
+        let url = "git@\(alias):\(ref.owner)/\(ref.repo).git"
+        let p = SSHManager.shellEscaped(path)
+        let u = SSHManager.shellEscaped(url)
+        _ = try await runGit("git -C \(p) remote set-url origin \(u)")
+        return "origin now pushes via \(alias) (\(ref.slug))."
+    }
+
+    /// True when a remote's host is GitHub: literal `github.com`, or an SSH alias among
+    /// `accounts` — the aliases `githubAccounts()` enumerated because their `HostName`
+    /// resolves to github.com. Membership-based, not a name convention, so an alias like
+    /// `gatsa` (HostName github.com) still counts. Keeps GitHub-only features (account
+    /// picker, `gh` Actions) off non-GitHub remotes like GitLab.
+    static func isGitHubHost(_ host: String?, in accounts: [String]) -> Bool {
+        guard let host else { return false }
+        if host.caseInsensitiveCompare("github.com") == .orderedSame { return true }
+        return accounts.contains { $0.caseInsensitiveCompare(host) == .orderedSame }
+    }
+
+    /// The `owner/repo` slug from a GitHub origin URL (alias-host safe), or nil for
+    /// non-GitHub remotes. Uses the shared `parseRemote`, so it resolves SSH host aliases
+    /// (`git@github-gatsa:GATSA/repo.git`) that the `github.com`-literal parser missed —
+    /// `gh --repo <slug>` then works even when the remote uses a non-github.com alias.
+    /// `accounts` is the enumerated GitHub-alias set used to decide the host is GitHub.
+    static func repoSlug(from remote: String?, accounts: [String]) -> String? {
+        guard let ref = parseRemote(remote), isGitHubHost(ref.host, in: accounts) else { return nil }
+        return ref.slug
     }
 
     /// The GitHub identity a push authenticates as: the SSH host-alias suffix
-    /// (`github.com-work` → `work`) or the https userinfo username
+    /// (`github.com-work` → `work`, `github-gatsa` → `gatsa`) or the https userinfo username
     /// (`https://kameronpence@github.com` → `kameronpence`). Returns nil when it can't
-    /// be determined — never guesses from the repo owner, which isn't the account.
+    /// be determined — never guesses from the repo owner, which isn't the account. Bare
+    /// `github.com` (no suffix) stays nil, so the common personal remote never false-warns.
     static func identity(remote: String?) -> String? {
-        guard let remote else { return nil }
-        if let re = try? NSRegularExpression(pattern: #"github\.com-([A-Za-z0-9_-]+)"#),
-           let m = re.firstMatch(in: remote, range: NSRange(remote.startIndex..., in: remote)),
-           m.numberOfRanges > 1, let r = Range(m.range(at: 1), in: remote) {
-            return String(remote[r])
+        guard let remote, let ref = parseRemote(remote) else { return nil }
+        // SSH: the account is the suffix of the HOST ALIAS ONLY — `github.com-<x>` or
+        // `github-<x>` (the `.com` is optional, so `github-gatsa` is covered). Anchored to
+        // `ref.host` so a repo path like `owner/github-work.git` can't be misread as the
+        // account. Bare `github.com` has no trailing `-<x>`, so it stays nil — no false warning.
+        if ref.isSSH {
+            guard let re = try? NSRegularExpression(pattern: #"^github(?:\.com)?-([A-Za-z0-9_-]+)$"#),
+                  let m = re.firstMatch(in: ref.host, range: NSRange(ref.host.startIndex..., in: ref.host)),
+                  m.numberOfRanges > 1, let r = Range(m.range(at: 1), in: ref.host) else { return nil }
+            return String(ref.host[r])
         }
+        // HTTPS: the userinfo username, anchored at `@github.com` (so it reads the credential,
+        // not a repo name), with tokens filtered out below.
         if let re = try? NSRegularExpression(pattern: #"://([^:/@]+)(?::[^@]*)?@github\.com"#),
            let m = re.firstMatch(in: remote, range: NSRange(remote.startIndex..., in: remote)),
            m.numberOfRanges > 1, let r = Range(m.range(at: 1), in: remote) {
@@ -217,11 +337,11 @@ struct GitController {
         return nil
     }
 
+    /// The repo owner from an origin URL. Uses the shared `parseRemote` so it resolves SSH
+    /// host aliases (`git@github-gatsa:GATSA/repo.git` → `GATSA`) that the `github.com`-literal
+    /// pattern missed — otherwise `GitStatus.owner` goes nil for alias remotes and the
+    /// owner capsule + wrong-account check silently vanish after switching accounts.
     private static func owner(from remote: String) -> String? {
-        guard let re = try? NSRegularExpression(pattern: #"github\.com[^/:]*(?::\d+)?[:/]([^/]+)/"#),
-              let m = re.firstMatch(in: remote, range: NSRange(remote.startIndex..., in: remote)),
-              m.numberOfRanges > 1,
-              let r = Range(m.range(at: 1), in: remote) else { return nil }
-        return String(remote[r])
+        parseRemote(remote)?.owner
     }
 }
