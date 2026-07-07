@@ -101,3 +101,7 @@ targets:
         # Xcode-beta's explicit-modules scanner can't resolve swift-nio's
         # DequeModule/Atomics deps; disable it so swift-nio compiles.
         SWIFT_ENABLE_EXPLICIT_MODULES: "NO"
+        # Ship a single binary instead of Xcode's Debug "debug dylib" split. On device the
+        # separate Aronnax.debug.dylib must be signed/loaded, and when it doesn't the app
+        # stub launches to a blank screen (works in the Simulator, which needs no signing).
+        ENABLE_DEBUG_DYLIB: "NO"

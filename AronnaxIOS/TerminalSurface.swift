@@ -48,7 +48,6 @@ struct TerminalSurface: UIViewRepresentable {
         // Plain keyboard for now; a stable key toolbar is a separate follow-up.
         // Agent scroll: a one-finger drag emits wheel events to tmux (see AronnaxTerminalView).
         tv.installAronnaxGestures()
-        tv.sendToRemote = { bytes in MainActor.assumeIsolated { session.sendInput(bytes) } }
         session.terminalView = tv
         // NOTE: focus is taken in AronnaxTerminalView.didMoveToWindow, NOT here. Calling
         // becomeFirstResponder() during makeUIView forces the keyboard + input-accessory

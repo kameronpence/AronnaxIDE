@@ -25,18 +25,19 @@ final class AronnaxTerminalView: TerminalView {
         }
     }
 
-    /// Sends raw bytes to the remote PTY (wired to the SSH session in `TerminalSurface`).
-    var sendToRemote: (([UInt8]) -> Void)?
-
     private var wheelAccum: CGFloat = 0
     /// Points of vertical drag per emitted wheel step. ~1 line feels responsive on a phone.
     private let wheelStep: CGFloat = 16
 
-    /// Hooks SwiftTerm's own scroll-view pan so a one-finger drag can drive agent scroll.
-    /// Adding a *target* to the existing recognizer (rather than a new recognizer) means we
-    /// never lose gesture arbitration to it — we ride along with every drag it recognizes.
+    /// Adds a one-finger pan for agent scroll. It's our OWN recognizer with a delegate that
+    /// allows simultaneous recognition, so SwiftTerm's scroll-view pan can't starve it
+    /// (riding the scroll view's own pan via addTarget never fired — verified p=0 on device).
     func installAronnaxGestures() {
-        panGestureRecognizer.addTarget(self, action: #selector(agentScrollPan(_:)))
+        let pan = UIPanGestureRecognizer(target: self, action: #selector(agentScrollPan(_:)))
+        pan.minimumNumberOfTouches = 1
+        pan.maximumNumberOfTouches = 1
+        pan.delegate = self
+        addGestureRecognizer(pan)
     }
 
     @objc private func agentScrollPan(_ g: UIPanGestureRecognizer) {
@@ -57,11 +58,12 @@ final class AronnaxTerminalView: TerminalView {
         }
     }
 
-    /// SGR mouse-wheel event (button 64 = up, 65 = down) at the top-left cell. tmux
-    /// (mouse on) enters copy-mode and scrolls its scrollback on these.
+    /// Wheel up (64) / down (65) via SwiftTerm's own `sendEvent`, exactly like the macOS
+    /// app's ClipboardTerminalView — it encodes the event in whatever mouse mode tmux
+    /// negotiated and routes it through the terminal's send delegate to the PTY. (Sending a
+    /// hardcoded SGR escape string assumed one encoding and is why raw bytes didn't scroll.)
     private func sendWheel(up: Bool) {
-        let seq = "\u{1b}[<\(up ? 64 : 65);1;1M"
-        sendToRemote?(Array(seq.utf8))
+        getTerminal().sendEvent(buttonFlags: up ? 64 : 65, x: 0, y: 0)
     }
 
     /// Takes focus (raising the keyboard) once the view is actually in a window. Doing this
@@ -83,5 +85,14 @@ final class AronnaxTerminalView: TerminalView {
             UIKeyCommand(input: "v", modifierFlags: .command, action: #selector(paste(_:))),
             UIKeyCommand(input: "a", modifierFlags: .command, action: #selector(selectAll(_:))),
         ]
+    }
+}
+
+extension AronnaxTerminalView: UIGestureRecognizerDelegate {
+    /// Recognize our scroll pan alongside SwiftTerm's own recognizers instead of being
+    /// starved by the scroll view's pan.
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
+                           shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool {
+        true
     }
 }
