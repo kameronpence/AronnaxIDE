@@ -318,19 +318,16 @@ struct GitDeployPanel: View {
         }
     }
 
-    /// Friendly name for a GitHub account: `github.com` → "Personal", `github-gatsa` →
-    /// "Gatsa (github-gatsa)", the HTTPS sentinel → "HTTPS (via gh)". Display only — the
-    /// alias is what git stores.
+    /// Label for a GitHub account: the real account it authenticates as when resolved
+    /// (`github.com` → "kameronpence", `github-gatsa` → "GATSA"), else the raw alias until
+    /// `ssh -T` resolves it. The HTTPS sentinel → "HTTPS (via gh)". Display only.
     private func accountLabel(_ alias: String) -> String {
         if alias == Self.httpsAccount { return "HTTPS (via gh)" }
-        switch alias.lowercased() {
-        case "github.com": return "Personal (github.com)"
-        default:
-            let name = alias
-                .replacingOccurrences(of: "github.com-", with: "")
-                .replacingOccurrences(of: "github-", with: "")
-            return name.isEmpty ? alias : "\(name.capitalized) (\(alias))"
-        }
+        guard let name = model.accountNames[alias], !name.isEmpty else { return alias }
+        // If two aliases authenticate as the same user, the name alone is ambiguous about
+        // which alias gets written to origin — append the alias to disambiguate.
+        let collides = model.accountNames.values.filter { $0 == name }.count > 1
+        return collides ? "\(name) (\(alias))" : name
     }
 
     /// Strip any `user[:password/token]@` userinfo from an HTTPS remote so embedded
@@ -359,6 +356,7 @@ final class GitPanelModel: ObservableObject {
     @Published var status: GitStatus?
     @Published var branches: [String] = []
     @Published var accounts: [String] = []    // github ssh host aliases available on the host
+    @Published var accountNames: [String: String] = [:]   // alias -> real account (ssh -T "Hi <x>!")
     @Published var runs: [ActionRun] = []
     @Published var commitResults: [String]?   // nil = show recent commits; set = search results
     @Published var isLoading = false
@@ -370,6 +368,7 @@ final class GitPanelModel: ObservableObject {
     private var started = false
     private var statusToken = 0
     private var runsToken = 0
+    private var resolvedAccountsHostID: String?   // host whose account names are already resolved
 
     func start(host: Host?) {
         guard !started else { return }
@@ -403,6 +402,7 @@ final class GitPanelModel: ObservableObject {
                 let accts = await controller.githubAccounts()
                 guard token == statusToken else { return }
                 accounts = accts
+                resolveAccountNames(host: host, aliases: accts)
                 loadRuns()
                 loadBranches()
             } catch {
@@ -438,9 +438,30 @@ final class GitPanelModel: ObservableObject {
 
     /// Repoint origin at a different GitHub account (ssh host alias) for this project.
     func setAccount(_ alias: String) {
-        guard alias != GitController.parseRemote(status?.remote)?.host else { return }
+        // No-op only when the origin is ALREADY an SSH remote on this exact alias. An HTTPS
+        // origin shares the host name `github.com` with the SSH alias but isn't using it, so
+        // it must still convert — comparing host alone wrongly blocked switching HTTPS repos.
+        let ref = GitController.parseRemote(status?.remote)
+        if let ref, ref.isSSH, ref.host == alias { return }
         let remote = status?.remote
         run { try await $0.setAccount(path: $1, remote: remote, alias: alias) }
+    }
+
+    /// Resolve each alias to the real GitHub account it authenticates as (`ssh -T` → "Hi <x>!"),
+    /// so the picker shows `kameronpence`/`GATSA` instead of the alias. Cached per host — the
+    /// mapping is host-wide, so it survives project switches and only re-runs on a host change.
+    func resolveAccountNames(host: Host, aliases: [String]) {
+        guard resolvedAccountsHostID != host.id else { return }
+        resolvedAccountsHostID = host.id
+        accountNames = [:]
+        Task {
+            var names: [String: String] = [:]
+            for a in aliases {
+                if let n = await GitController(host: host).githubIdentity(alias: a) { names[a] = n }
+            }
+            guard self.host?.id == host.id else { return }   // host changed mid-resolve — drop
+            accountNames = names
+        }
     }
 
     /// Check out a different branch on the hub (refreshes status, which the rest of

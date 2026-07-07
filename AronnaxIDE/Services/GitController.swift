@@ -265,6 +265,28 @@ struct GitController {
         return result
     }
 
+    /// The GitHub account an SSH alias authenticates as, via `ssh -T git@<alias>` — GitHub
+    /// answers "Hi <user>! You've successfully authenticated…". This is the real account
+    /// name (`kameronpence`, `GATSA`), not a guess. Best-effort: nil on failure/timeout, and
+    /// a deploy-key alias reports "owner/repo" (caller can spot the `/`).
+    func githubIdentity(alias: String) async -> String? {
+        let a = SSHManager.shellEscaped(alias)
+        // BatchMode so it never prompts; accept-new so an unknown host key doesn't hang; short
+        // timeout so a dead alias fails fast. `ssh -T` to GitHub always exits non-zero, so the
+        // greeting comes back on stderr — `|| true` keeps runShell from treating that as failure.
+        let cmd = "ssh -T -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=8 git@\(a) 2>&1 || true"
+        guard let result = try? await SSHManager.shared.runShell(cmd, on: host) else { return nil }
+        return Self.parseGreetingUser(result.stdout)
+    }
+
+    /// The username from GitHub's SSH greeting ("Hi kameronpence! You've successfully…"), or nil.
+    static func parseGreetingUser(_ text: String) -> String? {
+        guard let re = try? NSRegularExpression(pattern: #"Hi ([^!]+)! You've successfully authenticated"#),
+              let m = re.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)),
+              m.numberOfRanges > 1, let r = Range(m.range(at: 1), in: text) else { return nil }
+        return String(text[r]).trimmingCharacters(in: .whitespaces)
+    }
+
     /// Points `origin` at `alias` (an SSH host alias for github.com), preserving
     /// `owner/repo`, so pushes authenticate as that account. Rewrites HTTPS remotes to the
     /// SSH form too. Returns a short confirmation. A write — respects the caller's guards.
