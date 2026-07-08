@@ -81,6 +81,31 @@ final class ServerOnboarding: ObservableObject {
     func startRetry()   { work = Task { await retryCurrent() } }
     func cancel() { work?.cancel(); work = nil }
 
+    /// Non-interactive git for every remote git call: never prompt (so a missing key or
+    /// unknown host fails fast instead of blocking on a prompt no TTY can answer), and give
+    /// the git→GitHub SSH connection a connect timeout + keepalives so a *stalled* transfer
+    /// aborts in ~30s rather than spinning forever — the root of the "clone hangs" bug (the
+    /// handshake/ls-remote succeeds, then the bulk transfer stalls with nothing to time it out).
+    private static let gitEnv =
+        "GIT_TERMINAL_PROMPT=0 "
+        + #"GIT_SSH_COMMAND='ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15 -o ServerAliveInterval=10 -o ServerAliveCountMax=3' "#
+
+    /// Runs a remote command but never lets a step hang the wizard forever: if it doesn't
+    /// finish within `seconds`, the ssh process is cancelled (SSHManager terminates it) and
+    /// this returns nil, so the caller surfaces a failure + Retry instead of an endless spinner.
+    private func runStep(_ command: String, input: String? = nil, seconds: UInt64 = 120) async -> CommandResult? {
+        await withTaskGroup(of: CommandResult?.self) { group in
+            group.addTask { try? await SSHManager.shared.runShell(command, input: input, on: self.host) }
+            group.addTask {
+                try? await Task.sleep(nanoseconds: seconds * 1_000_000_000)
+                return nil   // timeout sentinel
+            }
+            let first = await group.next() ?? nil
+            group.cancelAll()   // cancel the loser — if the timeout won, this terminates the ssh
+            return first
+        }
+    }
+
     // MARK: - Step 1: foothold key to paste onto the box
     /// Loads the public key Kameron must add to the fresh box's authorized_keys.
     /// This is always THIS Mac's key: the app connects from here, and even when the
@@ -157,8 +182,8 @@ final class ServerOnboarding: ObservableObject {
     // MARK: - Step 4 (you confirm): verify the deploy key reaches the vault
     func verifyDeployKey() async {
         set(4, .running, "Checking the deploy key…")
-        let r = try? await SSHManager.shared.runShell(
-            "git ls-remote \(vaultRepoSSH) >/dev/null 2>&1 && echo OK", on: host)
+        let r = await runStep(
+            "\(Self.gitEnv)git ls-remote \(vaultRepoSSH) >/dev/null 2>&1 && echo OK", seconds: 40)
         if r?.stdout.contains("OK") == true {
             set(4, .done, "Deploy key works.")
             await cloneVault()
@@ -173,7 +198,7 @@ final class ServerOnboarding: ObservableObject {
         current = 5
         set(5, .running, "Cloning the vault + writing memory rules…")
         // Resolve the box user's home so the paths work for non-root users too.
-        if let h = try? await SSHManager.shared.runShell("echo $HOME", on: host), h.ok {
+        if let h = await runStep("echo $HOME", seconds: 30), h.ok {
             let home = h.stdout.trimmingCharacters(in: .whitespacesAndNewlines)
             if !home.isEmpty { resolvedHome = home }
         }
@@ -181,18 +206,21 @@ final class ServerOnboarding: ObservableObject {
         let vd = SSHManager.shellEscaped(vaultDir)
         let cd = SSHManager.shellEscaped(claudeDir)
         let cm = SSHManager.shellEscaped(globalClaudeMd)
-        let prep = "set -e; [ -d \(vd)/.git ] || git clone -q \(vaultRepoSSH) \(vd); "
+        // `gitEnv` makes the clone non-interactive + keepalive-bounded so it fails fast
+        // instead of hanging; `runStep` is a hard client-side backstop against a stall.
+        let prep = "set -e; export \(Self.gitEnv); [ -d \(vd)/.git ] || git clone -q \(vaultRepoSSH) \(vd); "
             + "mkdir -p \(cd); "
             + "grep -q 'Shared Memory — AI_OS Vault' \(cm) 2>/dev/null && echo ALREADY || echo NEEDWRITE"
-        guard let r = try? await SSHManager.shared.runShell(prep, on: host), r.ok else {
-            set(5, .failed, "Couldn't clone the vault onto the box."); return
+        guard let r = await runStep(prep, seconds: 120), r.ok else {
+            set(5, .failed, "Couldn't clone the vault onto the box — it timed out or the box "
+                + "can't reach github.com (a stalled transfer). Confirm the box has outbound "
+                + "access to github.com, then Retry."); return
         }
         if r.stdout.contains("NEEDWRITE") {
             // Append via stdin — avoids a fragile remote heredoc. Point the rules at the
             // resolved vault dir (matters when home isn't /root).
             let rules = Self.memoryRules.replacingOccurrences(of: "/root/AI_OS", with: vaultDir)
-            let w = try? await SSHManager.shared.runShell(
-                "cat >> \(cm)", input: "\n" + rules + "\n", on: host)
+            let w = await runStep("cat >> \(cm)", input: "\n" + rules + "\n", seconds: 30)
             guard w?.ok == true else { set(5, .failed, "Cloned, but couldn't write the memory rules."); return }
         }
         // Install the real slash commands / skills so /resumeproject + /save actually
@@ -308,10 +336,10 @@ final class ServerOnboarding: ObservableObject {
         // current HEAD to a throwaway ref exercises receive-pack (which a read-only
         // deploy key can't) without creating a commit, touching the working tree, or
         // modifying the remote — so an existing vault with local work is never disturbed.
-        let verify = "cd \(SSHManager.shellEscaped(vaultDir)) || exit 1; "
+        let verify = "export \(Self.gitEnv); cd \(SSHManager.shellEscaped(vaultDir)) || exit 1; "
             + "git pull --ff-only >/dev/null 2>&1 || exit 2; "
             + "git push --dry-run origin HEAD:refs/heads/onboard-write-check >/dev/null 2>&1"
-        let r = try? await SSHManager.shared.runShell(verify, on: host)
+        let r = await runStep(verify, seconds: 60)
         guard !Task.isCancelled else { return }
         if r?.ok == true {
             settings.addHost(host)            // now the app knows about it
