@@ -292,7 +292,8 @@ struct GitDeployPanel: View {
             // SSH → the current alias (guaranteed in `accounts`). HTTPS → the sentinel, plus
             // the sentinel prepended to the options so the Picker has a valid current tag.
             let current = ref.isSSH ? ref.host : Self.httpsAccount
-            let options = ref.isSSH ? model.accounts : [Self.httpsAccount] + model.accounts
+            let usable = selectableAccounts(current: current, currentSlug: ref.slug)
+            let options = ref.isSSH ? usable : [Self.httpsAccount] + usable
             HStack(spacing: 8) {
                 Image(systemName: "person.badge.key").font(.caption).foregroundStyle(.secondary)
                 if options.count > 1 {
@@ -315,6 +316,21 @@ struct GitDeployPanel: View {
                     Text("pushes as \(accountLabel(current))").font(.caption).foregroundStyle(.secondary)
                 }
             }
+        }
+    }
+
+    /// The aliases worth offering as push accounts. Drops deploy-key aliases — those whose
+    /// `ssh -T` identity is an `owner/repo` (contains `/`), not a user — but ONLY when they're
+    /// for a *different* repo, since a deploy key can be write-enabled for its own repo and is
+    /// then a valid credential. Unresolved aliases are kept (we can't tell yet), and the
+    /// current selection is always kept so the Picker has a valid tag.
+    private func selectableAccounts(current: String, currentSlug: String?) -> [String] {
+        model.accounts.filter { alias in
+            if alias == current { return true }
+            guard let name = model.accountNames[alias] else { return true }
+            guard name.contains("/") else { return true }   // real user account
+            // Deploy key: keep only if it belongs to this repo.
+            return currentSlug.map { name.caseInsensitiveCompare($0) == .orderedSame } ?? false
         }
     }
 
