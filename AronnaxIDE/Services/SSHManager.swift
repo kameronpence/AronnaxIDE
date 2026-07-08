@@ -1,3 +1,4 @@
+import Darwin
 import Foundation
 
 /// Result of running a remote command over SSH.
@@ -147,9 +148,9 @@ final class SSHManager {
     /// `input`, if given, is written to the command's stdin and then closed — e.g.
     /// for `cat > file` atomic writes.
     @discardableResult
-    func runShell(_ command: String, input: String? = nil, on host: Host) async throws -> CommandResult {
+    func runShell(_ command: String, input: String? = nil, on host: Host, timeoutSeconds: TimeInterval? = nil) async throws -> CommandResult {
         let args = sshArguments(for: host, interactive: false, remoteCommand: [command])
-        return try await launch(arguments: args, input: input)
+        return try await launch(arguments: args, input: input, timeoutSeconds: timeoutSeconds)
     }
 
     /// Lightweight reachability probe used by status/health views.
@@ -269,7 +270,7 @@ final class SSHManager {
 
     // MARK: - Process plumbing
 
-    private func launch(arguments: [String], input: String? = nil) async throws -> CommandResult {
+    private func launch(arguments: [String], input: String? = nil, timeoutSeconds: TimeInterval? = nil) async throws -> CommandResult {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: sshPath)
         process.arguments = arguments
@@ -285,6 +286,27 @@ final class SSHManager {
             try process.run()
         } catch {
             throw SSHError.launchFailed(error.localizedDescription)
+        }
+
+        var timedOut = false
+        let timeoutTimer: DispatchSourceTimer?
+        if let timeoutSeconds {
+            let timer = DispatchSource.makeTimerSource(queue: DispatchQueue.global(qos: .userInitiated))
+            timer.schedule(deadline: .now() + timeoutSeconds)
+            timer.setEventHandler { [process] in
+                guard process.isRunning else { return }
+                timedOut = true
+                process.terminate()
+                DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 2) {
+                    if process.isRunning {
+                        Darwin.kill(process.processIdentifier, SIGKILL)
+                    }
+                }
+            }
+            timer.resume()
+            timeoutTimer = timer
+        } else {
+            timeoutTimer = nil
         }
 
         // Feed stdin (if any) off the calling thread, then close so the remote
@@ -310,12 +332,13 @@ final class SSHManager {
             let (out, err) = await (outData, errData)
 
             process.waitUntilExit()
+            timeoutTimer?.cancel()
             try Task.checkCancellation()
 
             return CommandResult(
                 stdout: String(decoding: out, as: UTF8.self),
                 stderr: String(decoding: err, as: UTF8.self),
-                exitCode: process.terminationStatus
+                exitCode: timedOut ? 124 : process.terminationStatus
             )
         } onCancel: {
             // Don't leave a stuck remote command running in the background.

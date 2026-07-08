@@ -90,20 +90,16 @@ final class ServerOnboarding: ObservableObject {
         "GIT_TERMINAL_PROMPT=0 "
         + #"GIT_SSH_COMMAND='ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15 -o ServerAliveInterval=10 -o ServerAliveCountMax=3' "#
 
-    /// Runs a remote command but never lets a step hang the wizard forever: if it doesn't
-    /// finish within `seconds`, the ssh process is cancelled (SSHManager terminates it) and
-    /// this returns nil, so the caller surfaces a failure + Retry instead of an endless spinner.
+    /// Runs a remote command but never lets a step hang the wizard forever: SSHManager
+    /// kills the ssh process if it exceeds `seconds`, then returns a non-ok result so the
+    /// caller surfaces a failure + Retry instead of an endless spinner.
     private func runStep(_ command: String, input: String? = nil, seconds: UInt64 = 120) async -> CommandResult? {
-        await withTaskGroup(of: CommandResult?.self) { group in
-            group.addTask { try? await SSHManager.shared.runShell(command, input: input, on: self.host) }
-            group.addTask {
-                try? await Task.sleep(nanoseconds: seconds * 1_000_000_000)
-                return nil   // timeout sentinel
-            }
-            let first = await group.next() ?? nil
-            group.cancelAll()   // cancel the loser — if the timeout won, this terminates the ssh
-            return first
-        }
+        try? await SSHManager.shared.runShell(
+            command,
+            input: input,
+            on: host,
+            timeoutSeconds: TimeInterval(seconds)
+        )
     }
 
     // MARK: - Step 1: foothold key to paste onto the box
