@@ -206,6 +206,7 @@ final class ServerOnboarding: ObservableObject {
         // instead of hanging; `runStep` is a hard client-side backstop against a stall.
         let prep = "set -e; export \(Self.gitEnv); [ -d \(vd)/.git ] || git clone -q \(vaultRepoSSH) \(vd); "
             + "mkdir -p \(cd); "
+            + "git -C \(vd) rev-parse --short HEAD 2>/dev/null | sed 's/^/VAULT_HEAD=/'; "
             + "grep -q 'Shared Memory — AI_OS Vault' \(cm) 2>/dev/null && echo ALREADY || echo NEEDWRITE"
         guard let r = await runStep(prep, seconds: 120), r.ok else {
             set(5, .failed, "Couldn't clone the vault onto the box — it timed out or the box "
@@ -226,7 +227,10 @@ final class ServerOnboarding: ObservableObject {
             return
         }
         await setClaudeRetention()   // stop Claude's 30-day auto-prune of /resume history
-        set(5, .done, "Vault cloned + memory rules + slash commands in place.")
+        let head = r.stdout.split(separator: "\n")
+            .first { $0.hasPrefix("VAULT_HEAD=") }?
+            .replacingOccurrences(of: "VAULT_HEAD=", with: "") ?? "present"
+        set(5, .done, "Vault \(head) + memory rules + slash commands in place.")
         await checkTools()
     }
 
@@ -275,17 +279,21 @@ final class ServerOnboarding: ObservableObject {
     private func installTools(_ missing: [String]) async {
         guard !Task.isCancelled else { return }
         let sys = missing.filter { $0 == "zsh" || $0 == "tmux" }
+        var sysInstall: CommandResult?
         if !sys.isEmpty {
             set(6, .running, "Installing \(sys.joined(separator: " + "))…")
             let pkgs = sys.joined(separator: " ")
-            let sysInstall = await runStep("""
+            sysInstall = await runStep("""
             SUDO=""; [ "$(id -u)" -ne 0 ] && SUDO="sudo "
-            if command -v apt-get >/dev/null 2>&1; then DEBIAN_FRONTEND=noninteractive ${SUDO}apt-get -o Dpkg::Use-Pty=0 -o Acquire::AllowReleaseInfoChange=true -o Acquire::AllowReleaseInfoChange::Label=true --allow-releaseinfo-change update -qq && DEBIAN_FRONTEND=noninteractive ${SUDO}apt-get -o Dpkg::Use-Pty=0 -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold install -y \(pkgs)
-            elif command -v dnf >/dev/null 2>&1; then ${SUDO}dnf install -y \(pkgs)
-            elif command -v yum >/dev/null 2>&1; then ${SUDO}yum install -y \(pkgs)
-            elif command -v apk >/dev/null 2>&1; then ${SUDO}apk add \(pkgs)
+            echo "INSTALL_SYS_BEGIN \(pkgs)"
+            if command -v apt-get >/dev/null 2>&1; then echo "PKG_MANAGER=apt-get"; DEBIAN_FRONTEND=noninteractive ${SUDO}apt-get -o Dpkg::Use-Pty=0 -o Acquire::AllowReleaseInfoChange=true -o Acquire::AllowReleaseInfoChange::Label=true --allow-releaseinfo-change update -qq || true; DEBIAN_FRONTEND=noninteractive ${SUDO}apt-get -o Dpkg::Use-Pty=0 -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold install -y \(pkgs)
+            elif command -v dnf >/dev/null 2>&1; then echo "PKG_MANAGER=dnf"; ${SUDO}dnf install -y \(pkgs)
+            elif command -v yum >/dev/null 2>&1; then echo "PKG_MANAGER=yum"; ${SUDO}yum install -y \(pkgs)
+            elif command -v apk >/dev/null 2>&1; then echo "PKG_MANAGER=apk"; ${SUDO}apk add \(pkgs)
             else echo NO_PKG_MGR; exit 1; fi
             hash -r 2>/dev/null || true
+            for t in \(pkgs); do command -v "$t" && echo "INSTALLED_$t=ok" || { echo "INSTALLED_$t=missing"; exit 20; }; done
+            echo "INSTALL_SYS_DONE \(pkgs)"
             """, seconds: 240)
             guard sysInstall?.ok == true else {
                 set(6, .failed, "Couldn't install \(sys.joined(separator: " + ")) — \(failureTail(sysInstall))")
@@ -306,7 +314,7 @@ final class ServerOnboarding: ObservableObject {
         let nowMissing = await toolStatus() ?? missing
         let sysStill = nowMissing.filter { $0 == "zsh" || $0 == "tmux" }
         if !sysStill.isEmpty {
-            set(6, .failed, "Couldn't install \(sysStill.joined(separator: " + ")) — package command finished, but the tool is still missing. Retry, or check the package-manager output above.")
+            set(6, .failed, "Couldn't install \(sysStill.joined(separator: " + ")) — verify still reports missing after install. \(failureTail(sysInstall))")
             return
         }
         let installed = missing.filter { !nowMissing.contains($0) }
@@ -337,7 +345,8 @@ final class ServerOnboarding: ObservableObject {
             .split(separator: "\n")
             .map { $0.trimmingCharacters(in: .whitespaces) }
             .filter { !$0.isEmpty }
-        return combined.suffix(2).joined(separator: " ")
+        let tail = combined.suffix(8).joined(separator: " ")
+        return tail.isEmpty ? "exit \(result.exitCode)" : "exit \(result.exitCode): \(tail)"
     }
 
     // MARK: - Step 7 (app): verify the round-trip + commit the host to the app
