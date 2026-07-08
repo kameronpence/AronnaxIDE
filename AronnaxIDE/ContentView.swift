@@ -165,14 +165,24 @@ private struct SidebarView: View {
         VStack(spacing: 0) {
             List {
                 Section("Working on") {
-                    Picker("Host", selection: $settings.activeHostID) {
-                        ForEach(settings.hosts) { host in
-                            Label(host.displayName,
-                                  systemImage: host.isHub ? "server.rack" : "cloud").tag(host.id)
+                    ForEach(settings.hosts) { host in
+                        Button { settings.activeHostID = host.id } label: {
+                            HStack {
+                                Label(host.displayName, systemImage: host.isHub ? "server.rack" : "cloud")
+                                Spacer()
+                                if settings.activeHostID == host.id {
+                                    Image(systemName: "checkmark")
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(.tint)
+                                }
+                            }
+                            .contentShape(Rectangle())
                         }
+                        .buttonStyle(.plain)
                     }
-                    .pickerStyle(.inline)
-                    .labelsHidden()
+                    .onMove { source, destination in
+                        settings.moveHosts(from: source, to: destination)
+                    }
                 }
                 Section {
                     if settings.activeHost?.isHub ?? true {
@@ -183,7 +193,7 @@ private struct SidebarView: View {
                                    subtitle: "Host home — no project", icon: "house")
                         // Hub: the projects discovered under the vault's Projects/ folder,
                         // minus any the user has hidden (unless "show hidden" is on).
-                        let visible = projects.projects.filter {
+                        let visible = settings.orderedProjects(projects.projects).filter {
                             showHidden || !settings.isProjectHidden($0.path)
                         }
                         if visible.isEmpty {
@@ -201,6 +211,9 @@ private struct SidebarView: View {
                                             toggleHidden(project.path, to: !hidden)
                                         }
                                     }
+                            }
+                            .onMove { source, destination in
+                                settings.moveProjects(projects.projects, visibleProjects: visible, from: source, to: destination)
                             }
                         }
                     } else if let path = settings.serverProjectPath {
@@ -256,7 +269,8 @@ private struct SidebarView: View {
             if settings.selectedProjectPath == settings.hostHome { return }
             if settings.selectedProjectPath == nil
                 || !list.contains(where: { $0.path == settings.selectedProjectPath }) {
-                settings.selectedProjectPath = list.first { !settings.isProjectHidden($0.path) }?.path
+                settings.selectedProjectPath = settings.orderedProjects(list)
+                    .first { !settings.isProjectHidden($0.path) }?.path
             }
         }
         .onChange(of: settings.activeHostID) { _, _ in
@@ -318,7 +332,7 @@ private struct SidebarView: View {
     private func toggleHidden(_ path: String, to hidden: Bool) {
         settings.setProjectHidden(path, hidden)
         if hidden, settings.selectedProjectPath == path {
-            settings.selectedProjectPath = projects.projects
+            settings.selectedProjectPath = settings.orderedProjects(projects.projects)
                 .first { !settings.isProjectHidden($0.path) }?.path
         }
     }

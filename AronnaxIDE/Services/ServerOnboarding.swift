@@ -81,6 +81,25 @@ final class ServerOnboarding: ObservableObject {
     func startRetry()   { work = Task { await retryCurrent() } }
     func cancel() { work?.cancel(); work = nil }
 
+    func reset() {
+        cancel()
+        name = ""
+        address = ""
+        user = "root"
+        viaHub = false
+        projectDir = ""
+        current = 0
+        bootstrapKey = ""
+        deployKey = ""
+        deployKeyFingerprint = ""
+        finished = false
+        resolvedHome = "/root"
+        for i in steps.indices {
+            steps[i].phase = .idle
+            steps[i].detail = ""
+        }
+    }
+
     /// Non-interactive git for every remote git call: never prompt (so a missing key or
     /// unknown host fails fast instead of blocking on a prompt no TTY can answer), and give
     /// the git→GitHub SSH connection a connect timeout + keepalives so a *stalled* transfer

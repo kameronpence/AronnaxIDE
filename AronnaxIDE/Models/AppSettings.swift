@@ -10,6 +10,8 @@ final class AppSettings: ObservableObject {
     private var discoveredHosts: [Host] = []
     private var customHosts: [Host] = []
     @Published var projects: [Project]
+    @Published private(set) var hostOrder: [String] = []
+    @Published private(set) var projectOrder: [String] = []
 
     // MARK: - SSH write guardrails
     /// Hosts flagged "protected" — the Terminal warns + confirms before connecting.
@@ -72,6 +74,8 @@ final class AppSettings: ObservableObject {
         static let hostVaultPaths = "settings.hostVaultPaths"
         static let hostProjectPaths = "settings.hostProjectPaths"
         static let hiddenProjects = "settings.hiddenProjects"
+        static let hostOrder = "settings.hostOrder"
+        static let projectOrder = "settings.projectOrder"
     }
 
     /// Add (or replace by id) a user-defined host and persist it.
@@ -108,7 +112,58 @@ final class AppSettings: ObservableObject {
         for host in customHosts where !merged.contains(where: { $0.id == host.id }) {
             merged.append(host)
         }
-        hosts = merged
+        hosts = order(merged, by: hostOrder, id: \.id)
+        reconcileHostOrder()
+    }
+
+    func moveHosts(from source: IndexSet, to destination: Int) {
+        var ordered = hosts.map(\.id)
+        ordered.move(fromOffsets: source, toOffset: destination)
+        hostOrder = ordered
+        UserDefaults.standard.set(hostOrder, forKey: Keys.hostOrder)
+        rebuildHosts()
+    }
+
+    func orderedProjects(_ projects: [DiscoveredProject]) -> [DiscoveredProject] {
+        order(projects, by: projectOrder, id: \.path)
+    }
+
+    func moveProjects(_ allProjects: [DiscoveredProject], visibleProjects: [DiscoveredProject], from source: IndexSet, to destination: Int) {
+        var visiblePaths = visibleProjects.map(\.path)
+        visiblePaths.move(fromOffsets: source, toOffset: destination)
+
+        let knownPaths = Set(allProjects.map(\.path))
+        var fullOrder = projectOrder.filter { knownPaths.contains($0) }
+        for path in allProjects.map(\.path) where !fullOrder.contains(path) {
+            fullOrder.append(path)
+        }
+
+        let visibleSet = Set(visibleProjects.map(\.path))
+        var moved = visiblePaths.makeIterator()
+        projectOrder = fullOrder.map { visibleSet.contains($0) ? (moved.next() ?? $0) : $0 }
+        UserDefaults.standard.set(projectOrder, forKey: Keys.projectOrder)
+        objectWillChange.send()
+    }
+
+    private func order<T>(_ items: [T], by order: [String], id: (T) -> String) -> [T] {
+        let rank = Dictionary(uniqueKeysWithValues: order.enumerated().map { ($0.element, $0.offset) })
+        return items.enumerated().sorted { lhs, rhs in
+            let left = rank[id(lhs.element)] ?? (order.count + lhs.offset)
+            let right = rank[id(rhs.element)] ?? (order.count + rhs.offset)
+            return left < right
+        }.map(\.element)
+    }
+
+    private func reconcileHostOrder() {
+        let ids = Set(hosts.map(\.id))
+        var ordered = hostOrder.filter { ids.contains($0) }
+        for id in hosts.map(\.id) where !ordered.contains(id) {
+            ordered.append(id)
+        }
+        if ordered != hostOrder {
+            hostOrder = ordered
+            UserDefaults.standard.set(hostOrder, forKey: Keys.hostOrder)
+        }
     }
 
     private func saveCustomHosts() {
@@ -223,6 +278,8 @@ final class AppSettings: ObservableObject {
         if let d = defaults.dictionary(forKey: Keys.hostVaultPaths) as? [String: String] { hostVaultPaths = d }
         if let d = defaults.dictionary(forKey: Keys.hostProjectPaths) as? [String: String] { hostProjectPaths = d }
         hiddenProjectPaths = Set(defaults.stringArray(forKey: Keys.hiddenProjects) ?? [])
+        hostOrder = defaults.stringArray(forKey: Keys.hostOrder) ?? []
+        projectOrder = defaults.stringArray(forKey: Keys.projectOrder) ?? []
         rebuildHosts()   // hosts = discovered + custom
     }
 

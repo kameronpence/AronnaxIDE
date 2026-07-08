@@ -25,7 +25,7 @@ struct AddServerWizard: View {
                 Image(systemName: "plus.rectangle.on.folder").imageScale(.large)
                 Text("Add Server").font(.headline)
                 Spacer()
-                Button("Close") { dismiss() }
+                Button("Close") { closeWizard(reset: true) }
             }
             .padding(12)
             Divider()
@@ -229,8 +229,14 @@ struct AddServerWizard: View {
                 Text(model.steps[6].detail).font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
-            HStack { Spacer(); Button("Done") { dismiss() }.keyboardShortcut(.defaultAction) }
+            HStack { Spacer(); Button("Done") { closeWizard(reset: true) }.keyboardShortcut(.defaultAction) }
         }
+    }
+
+    private func closeWizard(reset: Bool = false) {
+        if reset { model.reset() }
+        dismiss()
+        NSApp.keyWindow?.close()
     }
 
     private func keyBox(_ key: String) -> some View {
