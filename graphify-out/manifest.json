@@ -1,0 +1,777 @@
+{
+  ".beads/backup/backup_state.json": {
+    "mtime": 1783474208.3249426,
+    "ast_hash": "6096b01b3207db1613b282071a43d209",
+    "semantic_hash": ""
+  },
+  ".beads/export-state.json": {
+    "mtime": 1783474208.623366,
+    "ast_hash": "14fc0a7b0b5695643ac75cdc436ed4c1",
+    "semantic_hash": ""
+  },
+  ".beads/hooks/post-checkout": {
+    "mtime": 1782508857.0,
+    "ast_hash": "c78d5896e6eb7c74065ddc573fae8edd",
+    "semantic_hash": ""
+  },
+  ".beads/hooks/post-merge": {
+    "mtime": 1782508857.0,
+    "ast_hash": "8c07717bcaeabe54d7c30921092f36fb",
+    "semantic_hash": ""
+  },
+  ".beads/hooks/pre-commit": {
+    "mtime": 1782508857.0,
+    "ast_hash": "5f4e7a9bf3883be26898911e4c07d5cb",
+    "semantic_hash": ""
+  },
+  ".beads/hooks/pre-push": {
+    "mtime": 1782508857.0,
+    "ast_hash": "56dd5d0dd23c61057937105785a12a46",
+    "semantic_hash": ""
+  },
+  ".beads/hooks/prepare-commit-msg": {
+    "mtime": 1782508857.0,
+    "ast_hash": "e762b4aabe060b4f4f4eb383fed0e23f",
+    "semantic_hash": ""
+  },
+  ".beads/metadata.json": {
+    "mtime": 1782508857.0,
+    "ast_hash": "d16d6dcc01b903394eea553f72431fdf",
+    "semantic_hash": ""
+  },
+  ".claude/settings.json": {
+    "mtime": 1782508858.0,
+    "ast_hash": "e41fc12aec465e7d715aa58e3dcfe27a",
+    "semantic_hash": ""
+  },
+  ".claude/settings.local.json": {
+    "mtime": 1783140473.4611616,
+    "ast_hash": "e3abe7f0ce079764542c53877f22e6b7",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/AronnaxIDEApp.swift": {
+    "mtime": 1783155322.798205,
+    "ast_hash": "b5f384fd3317381270e32cce1fd88483",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Assets.xcassets/AccentColor.colorset/Contents.json": {
+    "mtime": 1782875700.0,
+    "ast_hash": "d3d402b5b2682dcc86eb6b0f87e2caad",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Assets.xcassets/AppIcon.appiconset/Contents.json": {
+    "mtime": 1782875700.0,
+    "ast_hash": "b7b757fcf541a53293187d1c0384b8c8",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Assets.xcassets/Contents.json": {
+    "mtime": 1782875700.0,
+    "ast_hash": "9deb2ada1cc834bbebf8bbad9c8978a1",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Assets.xcassets/Cream.colorset/Contents.json": {
+    "mtime": 1782875700.0,
+    "ast_hash": "5c1bc170be3893a793cafb5566d739d5",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Assets.xcassets/Ink.colorset/Contents.json": {
+    "mtime": 1782875700.0,
+    "ast_hash": "eb968b5630e1c6d43b74493640185333",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Assets.xcassets/Wordmark.imageset/Contents.json": {
+    "mtime": 1782875700.0,
+    "ast_hash": "99a6a0cb7e412bc9bce8dde0b474d23d",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/ContentView.swift": {
+    "mtime": 1783155322.7985275,
+    "ast_hash": "ac009fd1f117189fba5c77f8c0ee5f88",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Models/AppSettings.swift": {
+    "mtime": 1783155322.7988565,
+    "ast_hash": "c01537098c084a53d8fddda4a3b3d883",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Models/Fleet.swift": {
+    "mtime": 1782511899.0,
+    "ast_hash": "b3b5e3af90f4fb0f1d1ffa3406ba48d7",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Panes/AddServerWizard.swift": {
+    "mtime": 1782875700.0,
+    "ast_hash": "5e38dc2980f6ac8a5a5fded3d4ee3812",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Panes/BeadsPanel.swift": {
+    "mtime": 1782875700.0,
+    "ast_hash": "01fb05b52068e79e68cbd8c6bc42a621",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Panes/BrowserPane.swift": {
+    "mtime": 1782878985.0,
+    "ast_hash": "866550cc87d01f30097bc327787eb169",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Panes/ClipboardTerminalView.swift": {
+    "mtime": 1782958902.0,
+    "ast_hash": "b1ed2465f9ce90de3ee7f80458b9c4ac",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Panes/CodingPane.swift": {
+    "mtime": 1782959343.0,
+    "ast_hash": "bbe9f4472ee7099e9f26a33df40b3e08",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Panes/DependencyGraphView.swift": {
+    "mtime": 1782625786.0,
+    "ast_hash": "c0c3455212a0123941198764a22041b2",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Panes/GitDeployPanel.swift": {
+    "mtime": 1783469380.1973517,
+    "ast_hash": "766c060171869425dfa3624cb653f2e7",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Panes/HostHealthPanel.swift": {
+    "mtime": 1782875700.0,
+    "ast_hash": "bc7e24a58392fc9c33829634ec430e27",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Panes/LogViewer.swift": {
+    "mtime": 1782875700.0,
+    "ast_hash": "0048c78e31f62173510710db61892619",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Panes/Placeholders.swift": {
+    "mtime": 1782875700.0,
+    "ast_hash": "3616e87718aab1823cf3076b192487cc",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Panes/TerminalPane.swift": {
+    "mtime": 1782875700.0,
+    "ast_hash": "9dd714d8c5956b44ed254e7afa86802f",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Panes/VaultPane.swift": {
+    "mtime": 1782875700.0,
+    "ast_hash": "2d4b387766c21819aea915244c61d555",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Services/AgentController.swift": {
+    "mtime": 1782875700.0,
+    "ast_hash": "2d581fff6ca97fd655ef2b306cdbf90e",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Services/BeadsController.swift": {
+    "mtime": 1782875700.0,
+    "ast_hash": "301b968650cba1ae10c006853f9449d4",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Services/ConnectionMonitor.swift": {
+    "mtime": 1782550568.0,
+    "ast_hash": "8e7103abb3ff10422414426dd548f6d7",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Services/GitController.swift": {
+    "mtime": 1783467565.3564453,
+    "ast_hash": "2a17c91e927c3b6d413fe4bf6e687304",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Services/HealthController.swift": {
+    "mtime": 1782875700.0,
+    "ast_hash": "9bdfe9064161c06a1f5196ecf4bf038a",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Services/LogStreamController.swift": {
+    "mtime": 1783066186.0,
+    "ast_hash": "2e6438659d2edd55a2caac8e690557fa",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Services/PortForwardManager.swift": {
+    "mtime": 1782878695.0,
+    "ast_hash": "a4e82e94639848699668b37555a3b838",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Services/PreviewWatcher.swift": {
+    "mtime": 1782875700.0,
+    "ast_hash": "b7d44df72137bbfb8b479c8eb22e4f58",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Services/ProjectService.swift": {
+    "mtime": 1782875700.0,
+    "ast_hash": "6ea18c10b3041ffe8ea4fece55bf5e8e",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Services/RemoteFS.swift": {
+    "mtime": 1782875700.0,
+    "ast_hash": "f9570d5eb7114abd48caf5afc35d0348",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Services/SSHConfigParser.swift": {
+    "mtime": 1782517307.0,
+    "ast_hash": "ec39b3170ac1316619ff6104c4472a22",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Services/SSHManager.swift": {
+    "mtime": 1782875700.0,
+    "ast_hash": "e4875c3b7bd6fb1e86d72316d7f74362",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Services/ServerOnboarding.swift": {
+    "mtime": 1782875700.0,
+    "ast_hash": "ffa58e4371229b8065474b83a777d76f",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Services/UsageService.swift": {
+    "mtime": 1782875700.0,
+    "ast_hash": "a3ed5e1eccb767bcaf36f8f9422b094e",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Services/WakeObserver.swift": {
+    "mtime": 1783066186.0,
+    "ast_hash": "a58f15cbdeeff3e8a72f6c15d5e4ed69",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/SettingsView.swift": {
+    "mtime": 1782875700.0,
+    "ast_hash": "e45db0aa1584471987ad2e316b488347",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Workspace.swift": {
+    "mtime": 1782875700.0,
+    "ast_hash": "4af2ecfcce69b5f26d144987a52b73bb",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/WriteGuard.swift": {
+    "mtime": 1782875700.0,
+    "ast_hash": "79bd854ca0912e8ea392385da691d599",
+    "semantic_hash": ""
+  },
+  "AronnaxIOS/AgentCommands.swift": {
+    "mtime": 1783055627.0,
+    "ast_hash": "aeb254544909fdd62e2eaa45f8c27971",
+    "semantic_hash": ""
+  },
+  "AronnaxIOS/AronnaxApp.swift": {
+    "mtime": 1783054273.0,
+    "ast_hash": "96d9c70505d990b2fecebc4bf24d6c9d",
+    "semantic_hash": ""
+  },
+  "AronnaxIOS/AronnaxTerminalView.swift": {
+    "mtime": 1783406930.8404813,
+    "ast_hash": "fa0f5c6189b69200aaad89fb92887df4",
+    "semantic_hash": ""
+  },
+  "AronnaxIOS/Assets.xcassets/AppIcon.appiconset/Contents.json": {
+    "mtime": 1783059401.0,
+    "ast_hash": "4c3af117706f59f4e2f4403b4213579a",
+    "semantic_hash": ""
+  },
+  "AronnaxIOS/Assets.xcassets/Contents.json": {
+    "mtime": 1783059401.0,
+    "ast_hash": "6f266f38436c1b8465f1c0b241ffd07e",
+    "semantic_hash": ""
+  },
+  "AronnaxIOS/ContentView.swift": {
+    "mtime": 1783323001.4128845,
+    "ast_hash": "b0d4b51b09c66ccca85fece546fb15d2",
+    "semantic_hash": ""
+  },
+  "AronnaxIOS/SSHTerminalSession.swift": {
+    "mtime": 1783322990.0249484,
+    "ast_hash": "d026116aacbe9db910e21c05cb39e551",
+    "semantic_hash": ""
+  },
+  "AronnaxIOS/TerminalSurface.swift": {
+    "mtime": 1783406930.8407304,
+    "ast_hash": "d37b04d431037cba7a0bdb4f83a82d0a",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Examples/CitadelCLI/CitadelCLI/Assets.xcassets/AccentColor.colorset/Contents.json": {
+    "mtime": 1783302244.2592404,
+    "ast_hash": "55019f7265dde0a78318b0807f98e847",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Examples/CitadelCLI/CitadelCLI/Assets.xcassets/AppIcon.appiconset/Contents.json": {
+    "mtime": 1783302244.2593703,
+    "ast_hash": "312293803cc066cebe794885fe1ddcfe",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Examples/CitadelCLI/CitadelCLI/Assets.xcassets/Contents.json": {
+    "mtime": 1783302244.2594457,
+    "ast_hash": "9deb2ada1cc834bbebf8bbad9c8978a1",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Examples/CitadelCLI/CitadelCLI/CitadelCLIApp.swift": {
+    "mtime": 1783302244.2596085,
+    "ast_hash": "45e31eba56177dab0db7aee6b1346d38",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Examples/CitadelCLI/CitadelCLI/ContentView.swift": {
+    "mtime": 1783302244.2596812,
+    "ast_hash": "f9e30e6a7c1a981caa7738bca8700481",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Examples/CitadelCLI/CitadelCLI/Preview Content/Preview Assets.xcassets/Contents.json": {
+    "mtime": 1783302244.2598422,
+    "ast_hash": "9deb2ada1cc834bbebf8bbad9c8978a1",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Examples/CitadelCLI/CitadelCLITests/CitadelCLITests.swift": {
+    "mtime": 1783302244.259957,
+    "ast_hash": "b477c74634fb085fc6de0547f249d45e",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Examples/CitadelCLI/CitadelCLIUITests/CitadelCLIUITests.swift": {
+    "mtime": 1783302244.2600806,
+    "ast_hash": "a916dbe49750f20448ba247e18ccfd3a",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Examples/CitadelCLI/CitadelCLIUITests/CitadelCLIUITestsLaunchTests.swift": {
+    "mtime": 1783302244.2601583,
+    "ast_hash": "7eb3a93e25e25eeb1911ee2f9eabc552",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Examples/ExampleClient/.vscode/launch.json": {
+    "mtime": 1783302244.2603703,
+    "ast_hash": "7f971cb01378ab91365059106a6f46f2",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Examples/ExampleClient/Package.swift": {
+    "mtime": 1783302244.2605217,
+    "ast_hash": "13909afa7ebfb79f9679e0a950b25cd5",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Examples/ExampleClient/Sources/main.swift": {
+    "mtime": 1783302244.2606926,
+    "ast_hash": "6dd62b99fb65b32c9eae42f1154946c4",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Examples/RemotePortForwardExample/Package.swift": {
+    "mtime": 1783302244.2609177,
+    "ast_hash": "27aa30baace65ef1885eaf7daae75459",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Examples/RemotePortForwardExample/Sources/RemotePortForwardExample/App.swift": {
+    "mtime": 1783302244.2611618,
+    "ast_hash": "295258548dfe0327b27b14a77422f46c",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Examples/TerminalAppServer/Package.swift": {
+    "mtime": 1783302244.2613175,
+    "ast_hash": "a3571a35e1a96a43003941960140dc35",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Examples/TerminalAppServer/Sources/main.swift": {
+    "mtime": 1783302244.261426,
+    "ast_hash": "711dd0a73c6762bdc409c03140aa178f",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Package.swift": {
+    "mtime": 1783302244.2615519,
+    "ast_hash": "24c1035f7534dc027edddc8738eb5e56",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/CCitadelBcrypt/bcrypt-kdf.c": {
+    "mtime": 1783302244.2618244,
+    "ast_hash": "fb3a55cc51ee3588346c6857bf4a7ac3",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/CCitadelBcrypt/bcrypt-kdf.h": {
+    "mtime": 1783302244.2618866,
+    "ast_hash": "7634272f6bebd6f367876acca10d6199",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/CCitadelBcrypt/bcrypt.c": {
+    "mtime": 1783302244.261966,
+    "ast_hash": "6553a28f2d769936d138d1d3e719d6fc",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/CCitadelBcrypt/bcrypt.h": {
+    "mtime": 1783302244.2620306,
+    "ast_hash": "cc76a908d4e49c9be0eab125ba0a20d9",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/CCitadelBcrypt/blf.c": {
+    "mtime": 1783302244.2621393,
+    "ast_hash": "d74c06af4ff70d2043216f4ed5c94dd6",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/CCitadelBcrypt/blf.h": {
+    "mtime": 1783302244.262217,
+    "ast_hash": "a4d909dbc3038b8e419b35261cf18522",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/Algorithms/AES.swift": {
+    "mtime": 1783302244.2625065,
+    "ast_hash": "c4509055ce89da94434ed5c9a97bc9f5",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/Algorithms/DH-Helpers.swift": {
+    "mtime": 1783302244.2626011,
+    "ast_hash": "f554845ee53eff4ce802c02527f813f3",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/Algorithms/DiffieHellmanGroup14Sha1.swift": {
+    "mtime": 1783302244.2626889,
+    "ast_hash": "c14d783afd59073155d6aebea73c7526",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/Algorithms/DiffieHellmanGroup14Sha256.swift": {
+    "mtime": 1783302244.2627745,
+    "ast_hash": "2399d6ed25d76e9a32280736d897e465",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/Algorithms/RSA.swift": {
+    "mtime": 1783302244.2628691,
+    "ast_hash": "d75d43a3024197e579f36e393a0ea154",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/BCrypt.swift": {
+    "mtime": 1783302244.2629516,
+    "ast_hash": "89506a2e08a922903f8bec587f184923",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/ByteBufferHelpers.swift": {
+    "mtime": 1783302244.2630966,
+    "ast_hash": "2cc25c9bd45b10a2d703e241452e7e26",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/ChannelUnwrapper.swift": {
+    "mtime": 1783302244.263207,
+    "ast_hash": "db7a56895201dc426fb649c9363b40a2",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/Client.swift": {
+    "mtime": 1783302244.2633245,
+    "ast_hash": "5982635ee28e43a94122d98e886b846a",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/ClientSession.swift": {
+    "mtime": 1783302244.2634416,
+    "ast_hash": "37d0820877d3ac6034607bbee07516b5",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/DirectTCPIP/Client/DirectTCPIP+Client.swift": {
+    "mtime": 1783302244.263623,
+    "ast_hash": "a85c13a20a21b899ebcc6501d280feaa",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/DirectTCPIP/Server/DirectTCPIP+Server.swift": {
+    "mtime": 1783302244.2637427,
+    "ast_hash": "3b838f8f176809f902638a39cf740617",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/Errors.swift": {
+    "mtime": 1783302244.2638257,
+    "ast_hash": "713c013d49aa4eb2983e6811fefda5d4",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/Exec/Client/ExecClient.swift": {
+    "mtime": 1783302244.2639976,
+    "ast_hash": "37032a801cfc2477dfb29c1e8380a195",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/Exec/Server/ExecDelegate.swift": {
+    "mtime": 1783302244.2641158,
+    "ast_hash": "88e254ef20dc68b93835a6d88076d767",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/Exec/Server/ExecHandler.swift": {
+    "mtime": 1783302244.264206,
+    "ast_hash": "50f87aff9b8d25887e8ceaf44813083c",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/NIOGlueHandler.swift": {
+    "mtime": 1783302244.2642882,
+    "ast_hash": "85b8b7dff639d5da5f6a8b466b564cb9",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/OpenSSHKey.swift": {
+    "mtime": 1783302244.2643878,
+    "ast_hash": "e634c9b56ad98d540956b7594ac1f5ad",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/RemotePortForward/Client/RemotePortForward+Client.swift": {
+    "mtime": 1783302244.2645621,
+    "ast_hash": "efe205e3be0e07ac2aa3361499b0d672",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/RemotePortForward/Server/RemotePortForward+Server.swift": {
+    "mtime": 1783302244.264683,
+    "ast_hash": "7f468a3bc8352e6f84c3bc93ed86f104",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/SFTP/Client/SFTPClient.swift": {
+    "mtime": 1783302244.264852,
+    "ast_hash": "5323e4f1055222b42d4cd073814ca256",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/SFTP/Client/SFTPClientInboundHandler.swift": {
+    "mtime": 1783302244.2649288,
+    "ast_hash": "e415e1949a296b09cdb4ee69dfe64f80",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/SFTP/Client/SFTPFile.swift": {
+    "mtime": 1783302244.265006,
+    "ast_hash": "8e90ca7321abe3a6dd7ff0424c665e59",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/SFTP/SFTPBasicEnums.swift": {
+    "mtime": 1783302244.2650769,
+    "ast_hash": "c5d00d8d632714615b3ffea6df2b3e92",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/SFTP/SFTPFileFlags.swift": {
+    "mtime": 1783302244.2651448,
+    "ast_hash": "b6097b1f6c4a34d8c3876bdfef382add",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/SFTP/SFTPMessage.swift": {
+    "mtime": 1783302244.2652297,
+    "ast_hash": "29a9cfcd0d3ce2e84d1081b3d90da86e",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/SFTP/SFTPMessageParser.swift": {
+    "mtime": 1783302244.2653072,
+    "ast_hash": "60617a8e6c01623f0947e4d4de8ca2af",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/SFTP/SFTPSerializer.swift": {
+    "mtime": 1783302244.265379,
+    "ast_hash": "83218402a647b058c5172e1ab20b64f1",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/SFTP/Server/SFTPServer.swift": {
+    "mtime": 1783302244.2656057,
+    "ast_hash": "57a0dc75c4ab4df1b28468c536feac64",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/SFTP/Server/SFTPServerInboundHandler.swift": {
+    "mtime": 1783302244.2657065,
+    "ast_hash": "68a244578ce817b12b970b121397dca5",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/SSHAuthenticationMethod.swift": {
+    "mtime": 1783302244.2657926,
+    "ast_hash": "ca27467611ceb858e0235ef8f670f58e",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/SSHCert.swift": {
+    "mtime": 1783302244.2658632,
+    "ast_hash": "a4ffc2ea8ff938be3e5ad121a42d7b45",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/SSHConnectionPoolSettings.swift": {
+    "mtime": 1783302244.2659414,
+    "ast_hash": "4b3a0f0a73cbfa43b4f79f1924fcae18",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/SSHKeyTypeDetection.swift": {
+    "mtime": 1783302244.2660213,
+    "ast_hash": "2c63d80b3d15f79fb35f653100893cd6",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/Server.swift": {
+    "mtime": 1783302244.2661088,
+    "ast_hash": "f8376cf3e58a5c54cf61383d17c46814",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/Shell/Server/ShellDelegate.swift": {
+    "mtime": 1783302244.266272,
+    "ast_hash": "71b398cfbf8fd22f16bad8371a76bb0d",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/Citadel/TTY/Client/TTY.swift": {
+    "mtime": 1783302244.2664516,
+    "ast_hash": "f8e2cb259d3061d18c83b7d73f31527a",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/CitadelServerExample/EchoShell/BasicCommands.swift": {
+    "mtime": 1783302244.2666354,
+    "ast_hash": "7bccf8dd2ca408bedbdbe091adab3558",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/CitadelServerExample/EchoShell/EchoShell.swift": {
+    "mtime": 1783302244.2667093,
+    "ast_hash": "b3a6a2946a5dd6d891ca2fa20e784ff5",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/CitadelServerExample/EchoShell/Extensions.swift": {
+    "mtime": 1783302244.2667725,
+    "ast_hash": "1d5d67c7839f478e54a6086bbee0c4c9",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/CitadelServerExample/EchoShell/Terminal.swift": {
+    "mtime": 1783302244.2668314,
+    "ast_hash": "366f0edcd981b04fe7735de0e5e69589",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/CitadelServerExample/HostKeyFile.swift": {
+    "mtime": 1783302244.266902,
+    "ast_hash": "830bcc8bed932da48ff07bb114cf9fed",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Sources/CitadelServerExample/Server.swift": {
+    "mtime": 1783302244.266971,
+    "ast_hash": "abd8065a975fb49b0b4a363326538122",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Tests/CitadelTests/Citadel2Tests.swift": {
+    "mtime": 1783302244.2671368,
+    "ast_hash": "2a6f8705a1b7bbbfab2e02b15a05486d",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Tests/CitadelTests/EndToEndTests.swift": {
+    "mtime": 1783302244.267195,
+    "ast_hash": "9cbc77b33e3f18acb0626b6e89693d9e",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Tests/CitadelTests/KeyTests.swift": {
+    "mtime": 1783302244.2672875,
+    "ast_hash": "2dea9a25eebca339ab828b0a465d269b",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Tests/CitadelTests/RemotePortForwardTests.swift": {
+    "mtime": 1783302244.2673624,
+    "ast_hash": "0869123e1199fd6f399b3336e4532bfc",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Tests/CitadelTests/WithExecTests.swift": {
+    "mtime": 1783302244.2674308,
+    "ast_hash": "beda0ed85cb3de0c0dc0562bbe289ee8",
+    "semantic_hash": ""
+  },
+  ".beads/README.md": {
+    "mtime": 1782508857.0,
+    "ast_hash": "a00afb35b5b41d506fabf0dfbbb64a0a",
+    "semantic_hash": ""
+  },
+  ".beads/config.yaml": {
+    "mtime": 1782508857.0,
+    "ast_hash": "c6c2278831088975c1b5a7e5c4369b58",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1783066334.0,
+    "ast_hash": "fee57cd4119338e3a969dd8c47a79614",
+    "semantic_hash": ""
+  },
+  "CLAUDE.md": {
+    "mtime": 1783134842.1103485,
+    "ast_hash": "6a1e76e0e5fca52716917b81d4697dd5",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1783066325.0,
+    "ast_hash": "0d7034594461191436d26aacbd5e5dba",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/.github/FUNDING.yml": {
+    "mtime": 1783302244.2584572,
+    "ast_hash": "90256ccae68911dfdf7f7ed1e0e66f4a",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/.github/ISSUE_TEMPLATE/bug_report.md": {
+    "mtime": 1783302244.2585847,
+    "ast_hash": "0d0ddacc0bf90c14a4455fab1330782a",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/.github/ISSUE_TEMPLATE/feature_request.md": {
+    "mtime": 1783302244.258664,
+    "ast_hash": "d1313eb6ef5df608a23e3a2c15ef6dc1",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/.github/workflows/test.yml": {
+    "mtime": 1783302244.2587888,
+    "ast_hash": "7d9d8fb895886629301798d2122cbc50",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/.spi.yml": {
+    "mtime": 1783302244.2589161,
+    "ast_hash": "9e248463d7844eacc6f1fbf4b5d51446",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Examples/ExampleClient/README.md": {
+    "mtime": 1783302244.260582,
+    "ast_hash": "bcabdcec51e80035196a3c86b4d32f75",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/Examples/RemotePortForwardExample/README.md": {
+    "mtime": 1783302244.2610016,
+    "ast_hash": "f0d3c5122ec26444e17e3be8158770c3",
+    "semantic_hash": ""
+  },
+  "ThirdParty/Citadel/README.md": {
+    "mtime": 1783302244.2616606,
+    "ast_hash": "0b69cc78f88aa92640f5c3a53e608bdf",
+    "semantic_hash": ""
+  },
+  "docs/EDIT-IN-APP.md": {
+    "mtime": 1783132423.8299322,
+    "ast_hash": "200424aeaab6c5fb5c1681020f605a16",
+    "semantic_hash": ""
+  },
+  "docs/PLAN.md": {
+    "mtime": 1783066334.0,
+    "ast_hash": "dac3b5e6e36e02fd5c4fe583095e486c",
+    "semantic_hash": ""
+  },
+  "docs/WORKFLOW.md": {
+    "mtime": 1783066334.0,
+    "ast_hash": "5667d2d5576d153a5c560679d6619371",
+    "semantic_hash": ""
+  },
+  "project.yml": {
+    "mtime": 1783406930.84129,
+    "ast_hash": "2794f4ac67a4a0840552988d74f3584b",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Assets.xcassets/AppIcon.appiconset/icon_1024.png": {
+    "mtime": 1782875700.0,
+    "ast_hash": "13909b17b147b198046501e904d6d2bb",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Assets.xcassets/AppIcon.appiconset/icon_128.png": {
+    "mtime": 1782875700.0,
+    "ast_hash": "c0b57ce42aa484d2dbcca8b048fb7e7f",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Assets.xcassets/AppIcon.appiconset/icon_16.png": {
+    "mtime": 1782875700.0,
+    "ast_hash": "3438fa5d0625f2cc5f09fdb8ab8d13fa",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Assets.xcassets/AppIcon.appiconset/icon_256.png": {
+    "mtime": 1782875700.0,
+    "ast_hash": "575edea20c47e8087cd6eb316793ef78",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Assets.xcassets/AppIcon.appiconset/icon_32.png": {
+    "mtime": 1782875700.0,
+    "ast_hash": "573a52ad24c054cbff435a95dbd6be9f",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Assets.xcassets/AppIcon.appiconset/icon_512.png": {
+    "mtime": 1782875700.0,
+    "ast_hash": "1a32228ea9356c8ec34e8c71a3edf49d",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Assets.xcassets/AppIcon.appiconset/icon_64.png": {
+    "mtime": 1782875700.0,
+    "ast_hash": "9358b0025d5742d2dee855d40b459d55",
+    "semantic_hash": ""
+  },
+  "AronnaxIDE/Assets.xcassets/Wordmark.imageset/wordmark.png": {
+    "mtime": 1782875700.0,
+    "ast_hash": "a3b5c7d95298f6d887875403c238ec48",
+    "semantic_hash": ""
+  },
+  "AronnaxIOS/Assets.xcassets/AppIcon.appiconset/AppIcon1024.png": {
+    "mtime": 1783060087.0,
+    "ast_hash": "13909b17b147b198046501e904d6d2bb",
+    "semantic_hash": ""
+  }
+}
