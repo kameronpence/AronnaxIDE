@@ -283,14 +283,15 @@ final class ServerOnboarding: ObservableObject {
             let pkgs = sys.joined(separator: " ")
             let sysInstall = await runStep("""
             SUDO=""; [ "$(id -u)" -ne 0 ] && SUDO="sudo "
-            if command -v apt-get >/dev/null 2>&1; then DEBIAN_FRONTEND=noninteractive ${SUDO}apt-get -o Dpkg::Use-Pty=0 update -qq --allow-releaseinfo-change && DEBIAN_FRONTEND=noninteractive ${SUDO}apt-get -o Dpkg::Use-Pty=0 install -y \(pkgs)
+            if command -v apt-get >/dev/null 2>&1; then DEBIAN_FRONTEND=noninteractive ${SUDO}apt-get -o Dpkg::Use-Pty=0 -o Acquire::AllowReleaseInfoChange=true -o Acquire::AllowReleaseInfoChange::Label=true --allow-releaseinfo-change update -qq && DEBIAN_FRONTEND=noninteractive ${SUDO}apt-get -o Dpkg::Use-Pty=0 -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold install -y \(pkgs)
             elif command -v dnf >/dev/null 2>&1; then ${SUDO}dnf install -y \(pkgs)
             elif command -v yum >/dev/null 2>&1; then ${SUDO}yum install -y \(pkgs)
             elif command -v apk >/dev/null 2>&1; then ${SUDO}apk add \(pkgs)
             else echo NO_PKG_MGR; exit 1; fi
+            hash -r 2>/dev/null || true
             """, seconds: 240)
             guard sysInstall?.ok == true else {
-                set(6, .failed, "Couldn't install \(sys.joined(separator: " + ")) — the package manager timed out or failed. Install it manually, then Retry.")
+                set(6, .failed, "Couldn't install \(sys.joined(separator: " + ")) — \(failureTail(sysInstall))")
                 return
             }
         }
@@ -308,8 +309,7 @@ final class ServerOnboarding: ObservableObject {
         let nowMissing = await toolStatus() ?? missing
         let sysStill = nowMissing.filter { $0 == "zsh" || $0 == "tmux" }
         if !sysStill.isEmpty {
-            set(6, .failed, "Couldn't install \(sysStill.joined(separator: " + ")) — the box's "
-                + "package manager may need different access. Install it manually, then Retry.")
+            set(6, .failed, "Couldn't install \(sysStill.joined(separator: " + ")) — package command finished, but the tool is still missing. Retry, or check the package-manager output above.")
             return
         }
         let installed = missing.filter { !nowMissing.contains($0) }
@@ -332,6 +332,15 @@ final class ServerOnboarding: ObservableObject {
         case "cr":     return "`cr auth login`"
         default:       return tool
         }
+    }
+
+    private func failureTail(_ result: CommandResult?) -> String {
+        guard let result else { return "Timed out." }
+        let combined = (result.stderr + "\n" + result.stdout)
+            .split(separator: "\n")
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+        return combined.suffix(2).joined(separator: " ")
     }
 
     // MARK: - Step 7 (app): verify the round-trip + commit the host to the app
