@@ -1,15 +1,13 @@
 import SwiftUI
 import SwiftTerm
 
-/// The Terminal surface: a host picker over a live terminal. Picking a host attaches
-/// to that host's persistent tmux session — the hub directly, or EC2/Lightsail via
-/// the hub (ProxyJump). Each host keeps its own session, so switching is lossless.
+/// The Terminal surface attaches to the host selected in the sidebar's Working on list.
+/// Each host keeps its own persistent tmux session, so switching is lossless.
 struct TerminalPane: View {
     @EnvironmentObject private var settings: AppSettings
     @State private var confirmed: Set<String> = []   // protected hosts OK'd this session
 
-    /// The terminal follows the "Working on" host — the picker here is bound to the
-    /// same selection, so switching either keeps both in sync.
+    /// The terminal follows the "Working on" host selected in the sidebar.
     private var selectedHost: Host? { settings.activeHost }
 
     /// The terminal opens in the active project's directory: on the hub that's the
@@ -25,13 +23,10 @@ struct TerminalPane: View {
             if settings.hosts.count > 1 {
                 HStack(spacing: 8) {
                     Image(systemName: "server.rack").foregroundStyle(.secondary)
-                    Picker("Host", selection: $settings.activeHostID) {
-                        ForEach(settings.hosts) { host in
-                            Text(host.displayName).tag(host.id)
-                        }
-                    }
-                    .labelsHidden()
-                    .fixedSize()
+                    Text(selectedHost?.displayName ?? "No host")
+                        .fontWeight(.semibold)
+                    Text(selectedHost?.sshAlias ?? "")
+                        .foregroundStyle(.secondary)
                     Spacer()
                 }
                 .padding(.horizontal, 8).padding(.vertical, 5)
