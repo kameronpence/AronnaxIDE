@@ -254,9 +254,9 @@ final class ServerOnboarding: ObservableObject {
 
     /// The tools missing on the box, or nil if the check itself couldn't run.
     private func toolStatus() async -> [String]? {
-        guard let r = try? await SSHManager.shared.runShell(
+        guard let r = await runStep(
                 "bash -lc 'for t in zsh tmux claude bd cr codex; do command -v $t >/dev/null 2>&1 && echo $t:ok || echo $t:missing; done'",
-                on: host),
+                seconds: 30),
               r.ok, !r.stdout.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return nil
         }
@@ -281,20 +281,27 @@ final class ServerOnboarding: ObservableObject {
         if !sys.isEmpty {
             set(6, .running, "Installing \(sys.joined(separator: " + "))…")
             let pkgs = sys.joined(separator: " ")
-            _ = try? await SSHManager.shared.runShell("""
+            let sysInstall = await runStep("""
             SUDO=""; [ "$(id -u)" -ne 0 ] && SUDO="sudo "
-            if command -v apt-get >/dev/null 2>&1; then ${SUDO}apt-get update -qq && ${SUDO}apt-get install -y \(pkgs)
+            if command -v apt-get >/dev/null 2>&1; then DEBIAN_FRONTEND=noninteractive ${SUDO}apt-get -o Dpkg::Use-Pty=0 update -qq --allow-releaseinfo-change && DEBIAN_FRONTEND=noninteractive ${SUDO}apt-get -o Dpkg::Use-Pty=0 install -y \(pkgs)
             elif command -v dnf >/dev/null 2>&1; then ${SUDO}dnf install -y \(pkgs)
             elif command -v yum >/dev/null 2>&1; then ${SUDO}yum install -y \(pkgs)
             elif command -v apk >/dev/null 2>&1; then ${SUDO}apk add \(pkgs)
             else echo NO_PKG_MGR; exit 1; fi
-            """, on: host)
+            """, seconds: 240)
+            guard sysInstall?.ok == true else {
+                set(6, .failed, "Couldn't install \(sys.joined(separator: " + ")) — the package manager timed out or failed. Install it manually, then Retry.")
+                return
+            }
         }
         for tool in missing {
             guard !Task.isCancelled else { return }
             guard let installer = Self.cliInstaller[tool] else { continue }
             set(6, .running, "Installing \(tool)…")
-            _ = try? await SSHManager.shared.runShell(installer, on: host)
+            guard let install = await runStep(installer, seconds: 180), install.ok else {
+                set(6, .failed, "Couldn't install \(tool) — the installer timed out or failed. Install it manually, then Retry.")
+                return
+            }
         }
         guard !Task.isCancelled else { return }
         set(6, .running, "Verifying the installs…")
