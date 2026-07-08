@@ -165,20 +165,28 @@ private struct SidebarView: View {
         VStack(spacing: 0) {
             List {
                 Section("Working on") {
-                    ForEach(settings.hosts) { host in
-                        Button { settings.activeHostID = host.id } label: {
-                            HStack {
-                                Label(host.displayName, systemImage: host.isHub ? "server.rack" : "cloud")
-                                Spacer()
-                                if settings.activeHostID == host.id {
-                                    Image(systemName: "checkmark")
-                                        .font(.caption.weight(.semibold))
-                                        .foregroundStyle(.tint)
+                    ForEach(Array(settings.hosts.enumerated()), id: \.element.id) { index, host in
+                        HStack {
+                            Button { settings.activeHostID = host.id } label: {
+                                HStack {
+                                    Label(host.displayName, systemImage: host.isHub ? "server.rack" : "cloud")
+                                    Spacer()
+                                    if settings.activeHostID == host.id {
+                                        Image(systemName: "checkmark")
+                                            .font(.caption.weight(.semibold))
+                                            .foregroundStyle(.tint)
+                                    }
                                 }
+                                .contentShape(Rectangle())
                             }
-                            .contentShape(Rectangle())
+                            .buttonStyle(.plain)
+                            moveButtons(
+                                canMoveUp: index > 0,
+                                canMoveDown: index < settings.hosts.count - 1,
+                                moveUp: { settings.moveHosts(from: IndexSet(integer: index), to: index - 1) },
+                                moveDown: { settings.moveHosts(from: IndexSet(integer: index), to: index + 2) }
+                            )
                         }
-                        .buttonStyle(.plain)
                     }
                     .onMove { source, destination in
                         settings.moveHosts(from: source, to: destination)
@@ -200,11 +208,17 @@ private struct SidebarView: View {
                             Text(emptyProjectsText)
                                 .foregroundStyle(.secondary).font(.callout)
                         } else {
-                            ForEach(visible) { project in
+                            ForEach(Array(visible.enumerated()), id: \.element.id) { index, project in
                                 let hidden = settings.isProjectHidden(project.path)
                                 projectRow(name: project.name, path: project.path,
                                            subtitle: project.branch.map { $0 + (project.owner.map { o in " · \(o)" } ?? "") },
-                                           isHidden: hidden)
+                                           isHidden: hidden,
+                                           moveUp: index > 0
+                                                ? { settings.moveProjects(projects.projects, visibleProjects: visible, from: IndexSet(integer: index), to: index - 1) }
+                                                : nil,
+                                           moveDown: index < visible.count - 1
+                                                ? { settings.moveProjects(projects.projects, visibleProjects: visible, from: IndexSet(integer: index), to: index + 2) }
+                                                : nil)
                                     .contextMenu {
                                         Button(hidden ? "Show in List" : "Hide from List",
                                                systemImage: hidden ? "eye" : "eye.slash") {
@@ -293,24 +307,58 @@ private struct SidebarView: View {
     /// project). `isHidden` only applies to hub projects revealed via "show hidden" —
     /// the row is dimmed and marked so it reads as hidden.
     @ViewBuilder
-    private func projectRow(name: String, path: String, subtitle: String?, isHidden: Bool = false, icon: String = "folder") -> some View {
-        Button { settings.selectedProjectPath = path } label: {
-            HStack {
-                VStack(alignment: .leading, spacing: 1) {
-                    Label(name, systemImage: isHidden ? "eye.slash" : icon)
-                    if let subtitle {
-                        Text(subtitle).font(.callout).foregroundStyle(.secondary).padding(.leading, 24)
+    private func projectRow(
+        name: String,
+        path: String,
+        subtitle: String?,
+        isHidden: Bool = false,
+        icon: String = "folder",
+        moveUp: (() -> Void)? = nil,
+        moveDown: (() -> Void)? = nil
+    ) -> some View {
+        HStack {
+            Button { settings.selectedProjectPath = path } label: {
+                HStack {
+                    VStack(alignment: .leading, spacing: 1) {
+                        Label(name, systemImage: isHidden ? "eye.slash" : icon)
+                        if let subtitle {
+                            Text(subtitle).font(.callout).foregroundStyle(.secondary).padding(.leading, 24)
+                        }
+                    }
+                    Spacer()
+                    if settings.selectedProjectPath == path {
+                        Image(systemName: "checkmark").font(.caption.weight(.semibold)).foregroundStyle(.tint)
                     }
                 }
-                Spacer()
-                if settings.selectedProjectPath == path {
-                    Image(systemName: "checkmark").font(.caption.weight(.semibold)).foregroundStyle(.tint)
-                }
+                .contentShape(Rectangle())
             }
-            .contentShape(Rectangle())
+            .buttonStyle(.plain)
+            moveButtons(
+                canMoveUp: moveUp != nil,
+                canMoveDown: moveDown != nil,
+                moveUp: moveUp ?? {},
+                moveDown: moveDown ?? {}
+            )
         }
-        .buttonStyle(.plain)
         .opacity(isHidden ? 0.5 : 1)
+    }
+
+    private func moveButtons(
+        canMoveUp: Bool,
+        canMoveDown: Bool,
+        moveUp: @escaping () -> Void,
+        moveDown: @escaping () -> Void
+    ) -> some View {
+        HStack(spacing: 2) {
+            Button(action: moveUp) { Image(systemName: "chevron.up") }
+                .disabled(!canMoveUp)
+                .help("Move up")
+            Button(action: moveDown) { Image(systemName: "chevron.down") }
+                .disabled(!canMoveDown)
+                .help("Move down")
+        }
+        .buttonStyle(.borderless)
+        .controlSize(.mini)
     }
 
     /// Count of discovered projects the user has hidden (hub only).
