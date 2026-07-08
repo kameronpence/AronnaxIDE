@@ -226,7 +226,8 @@ final class ServerOnboarding: ObservableObject {
         // Install the real slash commands / skills so /resumeproject + /save actually
         // exist on the box (the memory rules only *describe* them; /resume is a built-in).
         guard await installAgentCommands() else {
-            set(5, .failed, "Cloned, but couldn't install the /resumeproject + /saveproject commands."); return
+            set(5, .failed, "Cloned, but couldn't install the /resumeproject + /saveproject commands. Retry.")
+            return
         }
         await setClaudeRetention()   // stop Claude's 30-day auto-prune of /resume history
         set(5, .done, "Vault cloned + memory rules + slash commands in place.")
@@ -556,7 +557,7 @@ final class ServerOnboarding: ObservableObject {
         os.makedirs(os.path.dirname(p), exist_ok=True)
         json.dump(d, open(p, 'w'), indent=2)
         """
-        _ = try? await SSHManager.shared.runShell("python3", input: py, on: host)
+        _ = await runStep("python3", input: py, seconds: 30)
     }
 
     /// Installs the Claude commands + Codex skills on the box so /resumeproject and
@@ -567,7 +568,7 @@ final class ServerOnboarding: ObservableObject {
         let mk = "mkdir -p \(SSHManager.shellEscaped(claudeDir + "/commands")) "
             + "\(SSHManager.shellEscaped(skills + "/resumeproject")) "
             + "\(SSHManager.shellEscaped(skills + "/saveproject"))"
-        guard let m = try? await SSHManager.shared.runShell(mk, on: host), m.ok else { return false }
+        guard let m = await runStep(mk, seconds: 30), m.ok else { return false }
         let files: [(String, String)] = [
             ("\(claudeDir)/commands/resumeproject.md", Self.claudeResumeProject),
             ("\(claudeDir)/commands/saveproject.md",   Self.claudeSave),
@@ -576,8 +577,7 @@ final class ServerOnboarding: ObservableObject {
         ]
         for (path, content) in files {
             let body = content.replacingOccurrences(of: "/root/AI_OS", with: vaultDir)
-            let w = try? await SSHManager.shared.runShell(
-                "cat > \(SSHManager.shellEscaped(path))", input: body, on: host)
+            let w = await runStep("cat > \(SSHManager.shellEscaped(path))", input: body, seconds: 30)
             guard w?.ok == true else { return false }
         }
         return true
