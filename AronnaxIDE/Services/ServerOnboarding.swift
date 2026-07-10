@@ -438,20 +438,23 @@ final class ServerOnboarding: ObservableObject {
     3. `bd prime` then `bd ready` -> live ready/in-progress tasks
     4. Summarize current state + next tasks (from beads, not guessed)
 
-    ### /saveproject  (you-triggered — this IS permission to push)
+    ### /saveproject  (you-triggered — this IS permission to push AND merge)
     1. Update beads: `bd close` finished, `bd update` progress, `bd create` new pending items
     2. Write a session log at <project>/logs/YYYY-MM-DD-description.md (frontmatter, type: session)
     3. Record what was done + decisions; link bead IDs; update DECISIONS.md/ROADMAP.md if changed
     4. Write durable knowledge to /root/AI_OS/permanent/ (kebab-case, frontmatter, [[wikilinks]])
     5. Run CodeRabbit (`cr`) on the changes — address findings; never commit unreviewed code
     6. git add + commit + push on the current feature branch
-    7. Sync the vault: git -C /root/AI_OS add -A && git -C /root/AI_OS commit -m "<what>" && git -C /root/AI_OS push
+    7. Open + auto-merge the PR: `gh pr create --fill` if none exists, then `gh pr merge --squash --delete-branch` (skip only if not cleanly mergeable)
+    8. Sync the vault: git -C /root/AI_OS add -A && git -C /root/AI_OS commit -m "<what>" && git -C /root/AI_OS push
 
     ## Rules (how to work)
     - Call him Kam every reply.
     - ADHD: one thing at a time, short replies, never make him repeat himself, don't talk down.
       If he's cursing in frustration, stop and do a breathing exercise — see CTX-aboutme.
-    - Never push to git on your own. ONLY triggers: Kameron runs /save, or says "push."
+    - Never push OR merge to git on your own. ONLY triggers: Kameron runs /saveproject (which authorizes
+      commit → push → PR → auto-merge), or gives an explicit imperative to push/merge now (e.g. "push
+      and merge") — a casual mention of the words "push"/"merge" in conversation is NOT authorization.
       Mid-work commits / "looks done" / finishing a feature are NOT permission.
     - Every new task = its own branch. Commit locally as you go; push only per the rule above.
     - Run CodeRabbit (`cr`) on every commit. Shared bd beads per project.
@@ -542,13 +545,13 @@ final class ServerOnboarding: ObservableObject {
     static let codexSave = """
     ---
     name: saveproject
-    description: Save the session — update beads, write a session log, update DECISIONS/ROADMAP, CodeRabbit review, then commit + push. Does NOT open or merge a pull request (that is Claude's job). Invoke explicitly to wrap up a session.
+    description: Save the session — update beads, write a session log, update DECISIONS/ROADMAP, CodeRabbit review, then commit → push → open + auto-merge the PR, then sync the vault. Identical to Claude's /saveproject. Invoke explicitly to wrap up a session.
     auto_trigger: false
     ---
 
-    # saveproject — Save the session (no PR)
+    # saveproject — Save the session
 
-    Wrap up the current session. Running this is your permission to commit + push — never push otherwise.
+    You-triggered save. **Running this IS Kameron's permission to push AND merge** — never push or merge otherwise. This is **identical to Claude's `/saveproject`**: same steps, same outcome.
 
     ## Steps
     1. Detect the project root (walk up from the current directory for `CLAUDE.md`/`.git`).
@@ -558,9 +561,11 @@ final class ServerOnboarding: ObservableObject {
        (title, tags, created, updated, status: complete, type: session). Link bead IDs for pending items.
     4. Update `DECISIONS.md` / `ROADMAP.md` if decisions or the plan changed. Add `[[wikilinks]]`.
     5. CodeRabbit review: run `cr` on the changes; address findings. Never commit unreviewed code.
-    6. Commit + push on the current feature branch.
-
-    Do NOT open or merge a pull request — leave that to Claude's /saveproject. Stop after pushing.
+    6. Commit + push on the current feature branch (authorized only because Kameron ran `$saveproject`).
+    7. Open + auto-merge the PR: create one if none exists (`gh pr create --fill`), then
+       `gh pr merge --squash --delete-branch`. Only skip if not cleanly mergeable — then leave it
+       open and report why.
+    8. Sync the vault: `git -C /root/AI_OS add -A && git -C /root/AI_OS commit -m "<what>" && git -C /root/AI_OS push`
     """
 
     /// Raise Claude's transcript retention to a year on the box, so /resume history isn't
