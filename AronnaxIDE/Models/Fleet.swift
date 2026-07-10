@@ -16,8 +16,11 @@ struct Host: Identifiable, Codable, Hashable {
     var reach: HostReach
     var isHub: Bool          // true for the mini
 
-    /// The hub: Kameron's Mac mini, reached directly over LAN via the `kepler`
-    /// alias in `~/.ssh/config` (HostName 10.63.1.233, User kepler).
+    /// The hub: Kameron's Mac mini, reached via the `kepler` alias in `~/.ssh/config`
+    /// (User kepler). Point that alias's HostName at kepler's **Tailscale** IP
+    /// (100.106.82.21) — it works on any network (Tailscale routes over the LAN directly
+    /// when home), whereas the LAN IP (10.63.1.x, DHCP-assigned) only works at home and
+    /// drifts. The iOS app uses the same Tailscale IP, which is why it connects anywhere.
     static let kepler = Host(
         id: "kepler", displayName: "Kepler (Mac mini)", sshAlias: "kepler",
         user: "kepler", reach: .direct, isHub: true
