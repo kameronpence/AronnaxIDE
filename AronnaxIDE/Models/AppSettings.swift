@@ -281,6 +281,9 @@ final class AppSettings: ObservableObject {
         hostOrder = defaults.stringArray(forKey: Keys.hostOrder) ?? []
         projectOrder = defaults.stringArray(forKey: Keys.projectOrder) ?? []
         rebuildHosts()   // hosts = discovered + custom
+        // Resolve the hub's Tailscale address in the background now, so the first connection
+        // already reaches kepler over Tailscale (works on any network) instead of the LAN IP.
+        if let hub { SSHManager.shared.prewarmTailscale(for: hub) }
     }
 
     var hub: Host? { hosts.first(where: { $0.isHub }) ?? hosts.first }

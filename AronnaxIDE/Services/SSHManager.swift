@@ -42,6 +42,13 @@ final class SSHManager {
     private var lastResetGeneration: [String: Int] = [:]
     private let resetLock = NSLock()
 
+    /// Cached Tailscale-IP resolution per host id (value may be nil = "no Tailscale address").
+    /// Short-lived so a home↔away network change is picked up without restarting the app.
+    private struct TSResolution { let ip: String?; let at: Date }
+    private var tailscaleCache: [String: TSResolution] = [:]
+    private var tailscaleRefreshing: Set<String> = []
+    private let tailscaleLock = NSLock()
+
     init() {
         let base = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
             .appendingPathComponent("miniide-cm", isDirectory: true)
@@ -71,7 +78,7 @@ final class SSHManager {
 
     /// Multiplexing + keepalive options shared by every connection to `host`.
     private func sharedOptions(for host: Host) -> [String] {
-        [
+        var opts = [
             "-o", "ControlMaster=auto",
             "-o", "ControlPath=\(controlPath(for: host))",
             "-o", "ControlPersist=300",
@@ -85,7 +92,140 @@ final class SSHManager {
             "-o", "ServerAliveInterval=15",
             "-o", "ServerAliveCountMax=3",
         ]
+        // Reach the hub over Tailscale from ANY network: its ~/.ssh/config HostName is a LAN
+        // IP that only works at home (and drifts via DHCP), which is why the app connected on
+        // the home LAN but failed at work while the iOS app (which uses the Tailscale IP) kept
+        // working. A command-line `-o HostName=` overrides the config; Tailscale routes over
+        // the LAN directly when home, so this is strictly better. Falls back to the config
+        // HostName when Tailscale isn't running (resolution returns nil).
+        if let ts = tailscaleHostName(for: host) {
+            opts += ["-o", "HostName=\(ts)"]
+        }
+        return opts
     }
+
+    /// The hub's Tailscale IPv4 as seen by THIS Mac's Tailscale client, or nil to fall back to
+    /// the ssh-config HostName. Hub-only (other hosts are public IPs / ProxyJump — no LAN
+    /// problem). NEVER blocks: it returns the cached value immediately (nil on the very first
+    /// call) and, when the cache is missing/stale, kicks off a background refresh via the CLI.
+    /// This is called synchronously while building ssh args on the main thread, so it must not
+    /// run the subprocess inline. `prewarmTailscale(for:)` warms it before the first connect.
+    private func tailscaleHostName(for host: Host) -> String? {
+        guard host.isHub else { return nil }
+        tailscaleLock.lock(); defer { tailscaleLock.unlock() }
+        let cached = tailscaleCache[host.id]
+        let fresh = cached.map { Date().timeIntervalSince($0.at) < 15 } ?? false
+        if !fresh { scheduleTailscaleRefresh(host) }   // background; returns immediately
+        return cached?.ip
+    }
+
+    /// Kicks a one-at-a-time background probe of the hub's Tailscale IP. Must be called with
+    /// `tailscaleLock` held (reads/writes `tailscaleRefreshing`). The probe itself runs off the
+    /// lock and off the calling thread, so connection setup is never blocked by the CLI.
+    private func scheduleTailscaleRefresh(_ host: Host) {
+        guard !tailscaleRefreshing.contains(host.id) else { return }
+        tailscaleRefreshing.insert(host.id)
+        DispatchQueue.global(qos: .utility).async { [weak self] in
+            let ip = Self.resolveTailscaleIP(matching: host.sshAlias)
+            guard let self else { return }
+            self.tailscaleLock.lock()
+            self.tailscaleCache[host.id] = TSResolution(ip: ip, at: Date())
+            self.tailscaleRefreshing.remove(host.id)
+            self.tailscaleLock.unlock()
+        }
+    }
+
+    /// Warm the hub's Tailscale address before the first connection, so the app reaches it over
+    /// Tailscale on the very first attempt (rather than after a LAN attempt times out at work).
+    /// Fire-and-forget; safe to call repeatedly (deduped). Call once the hub host is known.
+    func prewarmTailscale(for host: Host) {
+        _ = tailscaleHostName(for: host)
+    }
+
+    /// Guarantees the hub's Tailscale address is resolved (or definitively absent) before ssh
+    /// args are built, so the FIRST connection targets Tailscale rather than the unreachable
+    /// LAN IP when away from home. Async + bounded (the probe self-limits to ~3s) — it awaits
+    /// off the main thread, so it never freezes the UI the way an inline sync probe would.
+    /// The async command paths await this; the sync terminal spawn relies on `prewarmTailscale`.
+    func ensureTailscaleResolved(for host: Host) async {
+        guard host.isHub else { return }
+        tailscaleLock.lock()
+        let fresh = tailscaleCache[host.id].map { Date().timeIntervalSince($0.at) < 15 } ?? false
+        tailscaleLock.unlock()
+        guard !fresh else { return }
+        let ip = await Task.detached(priority: .userInitiated) {
+            Self.resolveTailscaleIP(matching: host.sshAlias)
+        }.value
+        tailscaleLock.lock()
+        tailscaleCache[host.id] = TSResolution(ip: ip, at: Date())
+        tailscaleLock.unlock()
+    }
+
+    /// Finds the Tailscale **peer** whose DNS name or hostname corresponds to `alias`
+    /// (e.g. `kepler` → `keplers-mac-mini`) and returns its 100.x IPv4, or nil. Deliberately
+    /// ignores `Self`: the app runs on the MacBook and the hub is always a remote peer, so a
+    /// fuzzy match on this Mac's own name must never redirect hub traffic back to localhost.
+    private static func resolveTailscaleIP(matching alias: String) -> String? {
+        guard let data = runTailscaleStatusJSON(),
+              let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+        else { return nil }
+        let needle = alias.lowercased()
+        let nodes: [[String: Any]] = (root["Peer"] as? [String: Any])?
+            .values.compactMap { $0 as? [String: Any] } ?? []
+        for node in nodes {
+            let host = (node["HostName"] as? String ?? "").lowercased()
+            let firstLabel = (node["DNSName"] as? String ?? "").lowercased()
+                .split(separator: ".").first.map(String.init) ?? ""
+            let matches = host.contains(needle)
+                || (!firstLabel.isEmpty && (firstLabel.contains(needle) || needle.contains(firstLabel)))
+            guard matches else { continue }
+            if let ips = node["TailscaleIPs"] as? [String],
+               let v4 = ips.first(where: { $0.contains(".") && !$0.contains(":") }) {
+                return v4
+            }
+        }
+        return nil
+    }
+
+    /// Runs the Mac's Tailscale CLI (`tailscale status --json`) from the standard install
+    /// locations. Returns nil if Tailscale isn't installed/running.
+    private static func runTailscaleStatusJSON() -> Data? {
+        let candidates = [
+            "/usr/local/bin/tailscale",
+            "/opt/homebrew/bin/tailscale",
+            "/Applications/Tailscale.app/Contents/MacOS/Tailscale",
+        ]
+        for path in candidates where FileManager.default.isExecutableFile(atPath: path) {
+            let proc = Process()
+            proc.executableURL = URL(fileURLWithPath: path)
+            proc.arguments = ["status", "--json"]
+            let out = Pipe()
+            proc.standardOutput = out
+            proc.standardError = FileHandle.nullDevice
+            guard (try? proc.run()) != nil else { continue }
+            // Bound the WHOLE probe (read + process lifetime): if tailscaled/the CLI wedges —
+            // even by closing stdout but never exiting — terminate after 3s and fall back to
+            // the ssh-config HostName rather than blocking. Runs on a background thread, so a
+            // slow probe never affects connection setup.
+            let box = DataBox()
+            let done = DispatchGroup()
+            done.enter()
+            DispatchQueue.global(qos: .userInitiated).async {
+                box.data = out.fileHandleForReading.readDataToEndOfFile()
+                done.leave()
+            }
+            let timedOut = done.wait(timeout: .now() + 3) == .timedOut
+            if proc.isRunning { proc.terminate() }   // bounds process exit too, not just the read
+            if timedOut { continue }
+            // Validate by parsing (not exit status): the caller requires a real peer match, so
+            // partial/garbage output simply resolves to nil.
+            if let data = box.data, !data.isEmpty { return data }
+        }
+        return nil
+    }
+
+    /// Reference box so the background reader can hand data back without a captured `var`.
+    private final class DataBox { var data: Data? }
 
     /// POSIX single-quote escaping so a token survives a shell as one argument:
     /// wrap in single quotes and close/escape/reopen around any embedded single
@@ -136,6 +276,7 @@ final class SSHManager {
     /// directory named `My Project`, and metacharacters in arguments are inert.
     @discardableResult
     func run(_ remoteCommand: [String], on host: Host) async throws -> CommandResult {
+        await ensureTailscaleResolved(for: host)   // first attempt targets Tailscale, not the LAN
         let remote = remoteCommand.isEmpty
             ? nil
             : [remoteCommand.map(Self.shellEscaped).joined(separator: " ")]
@@ -149,6 +290,7 @@ final class SSHManager {
     /// for `cat > file` atomic writes.
     @discardableResult
     func runShell(_ command: String, input: String? = nil, on host: Host, timeoutSeconds: TimeInterval? = nil) async throws -> CommandResult {
+        await ensureTailscaleResolved(for: host)   // first attempt targets Tailscale, not the LAN
         let args = sshArguments(for: host, interactive: false, remoteCommand: [command])
         return try await launch(arguments: args, input: input, timeoutSeconds: timeoutSeconds)
     }
