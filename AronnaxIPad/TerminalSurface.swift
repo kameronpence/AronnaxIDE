@@ -6,6 +6,8 @@ import UIKit
 /// keystrokes go out via `send`, remote output is fed in by the session.
 struct TerminalSurface: UIViewRepresentable {
     let session: PaneSession
+    /// True when this leaf is the focused pane — only the focused terminal holds the keyboard.
+    var isFocused: Bool = true
 
     func makeUIView(context: Context) -> AronnaxTerminalView {
         let tv = AronnaxTerminalView(frame: .zero)
@@ -19,12 +21,22 @@ struct TerminalSurface: UIViewRepresentable {
         tv.allowMouseReporting = false
         tv.terminalDelegate = context.coordinator
         tv.installAronnaxGestures()
+        tv.wantsFocus = isFocused
         session.terminalView = tv
         session.attach()
         return tv
     }
 
-    func updateUIView(_ uiView: AronnaxTerminalView, context: Context) {}
+    func updateUIView(_ uiView: AronnaxTerminalView, context: Context) {
+        // Drive the keyboard to follow the focused leaf: the focused terminal becomes first
+        // responder, the others resign so keystrokes never go to a background pane.
+        uiView.wantsFocus = isFocused
+        if isFocused {
+            if !uiView.isFirstResponder { _ = uiView.becomeFirstResponder() }
+        } else if uiView.isFirstResponder {
+            _ = uiView.resignFirstResponder()
+        }
+    }
 
     func makeCoordinator() -> Coordinator { Coordinator(session: session) }
 

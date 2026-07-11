@@ -27,7 +27,7 @@ struct RootView: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             Divider()
-            WorkspaceView(model: workspace)
+            WorkspaceView(model: workspace, manager: manager, workdir: connection.keplerHome)
         }
         .onAppear { connection.start() }
         .preferredColorScheme(.light)

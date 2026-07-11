@@ -66,15 +66,21 @@ final class AronnaxTerminalView: TerminalView {
         getTerminal().sendEvent(buttonFlags: up ? 64 : 65, x: 0, y: 0)
     }
 
-    /// Takes focus (raising the keyboard) once the view is actually in a window. Doing this
-    /// off the initial `makeUIView` path avoids an intermittent main-thread hang at launch.
+    /// Whether this pane is the focused leaf. With many terminals on screen, only the focused
+    /// one may hold the keyboard; `TerminalSurface` sets this and drives first-responder on
+    /// focus changes. The initial grab (below) fires only for the pane focused at launch.
+    var wantsFocus = false
+
+    /// Takes focus (raising the keyboard) once the view is actually in a window — but only if
+    /// this is the focused leaf. Deferring off the initial `makeUIView` path avoids an
+    /// intermittent main-thread hang at launch.
     private var hasTakenFocus = false
     override func didMoveToWindow() {
         super.didMoveToWindow()
-        guard window != nil, !hasTakenFocus else { return }
+        guard window != nil, wantsFocus, !hasTakenFocus else { return }
         hasTakenFocus = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
-            guard let self, self.window != nil else { return }
+            guard let self, self.window != nil, self.wantsFocus else { return }
             _ = self.becomeFirstResponder()
         }
     }

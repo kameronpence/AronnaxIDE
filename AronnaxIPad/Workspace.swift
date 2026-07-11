@@ -185,27 +185,34 @@ final class WorkspaceModel: ObservableObject {
 
 // MARK: - Views
 
-/// Renders a workspace layout tree.
+/// Renders a workspace layout tree, binding each leaf to a live terminal session.
 struct WorkspaceView: View {
     @ObservedObject var model: WorkspaceModel
+    let manager: PaneSessionManager
+    let workdir: String
 
     var body: some View {
-        PaneNodeView(node: model.tree, model: model)
+        PaneNodeView(node: model.tree, model: model, manager: manager, workdir: workdir)
+            // GC sessions whose leaves were closed (retire is a no-op for still-live ids, so
+            // this is safe on splits too).
+            .onChange(of: model.leafIDs) { _, live in manager.retire(keeping: live) }
     }
 }
 
 private struct PaneNodeView: View {
     let node: PaneTree
     @ObservedObject var model: WorkspaceModel
+    let manager: PaneSessionManager
+    let workdir: String
 
     @ViewBuilder
     var body: some View {
         switch node {
         case .leaf(let id, let target):
-            LeafPaneView(id: id, target: target, model: model)
+            LeafPaneView(id: id, target: target, model: model, manager: manager, workdir: workdir)
         case .split(let id, let axis, let first, let second, let fraction):
             SplitNodeView(splitID: id, axis: axis, first: first, second: second,
-                          fraction: fraction, model: model)
+                          fraction: fraction, model: model, manager: manager, workdir: workdir)
         }
     }
 }
@@ -219,6 +226,8 @@ private struct SplitNodeView: View {
     let second: PaneTree
     let fraction: CGFloat
     @ObservedObject var model: WorkspaceModel
+    let manager: PaneSessionManager
+    let workdir: String
 
     @State private var dragStart: CGFloat?
     /// Wider than the desktop's 8pt so it's a comfortable finger target on touch.
@@ -235,16 +244,18 @@ private struct SplitNodeView: View {
 
             if isH {
                 HStack(spacing: 0) {
-                    PaneNodeView(node: first, model: model).frame(width: firstExtent)
+                    PaneNodeView(node: first, model: model, manager: manager, workdir: workdir)
+                        .frame(width: firstExtent)
                     divider(isHorizontal: true, usable: usable)
-                    PaneNodeView(node: second, model: model)
+                    PaneNodeView(node: second, model: model, manager: manager, workdir: workdir)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             } else {
                 VStack(spacing: 0) {
-                    PaneNodeView(node: first, model: model).frame(height: firstExtent)
+                    PaneNodeView(node: first, model: model, manager: manager, workdir: workdir)
+                        .frame(height: firstExtent)
                     divider(isHorizontal: false, usable: usable)
-                    PaneNodeView(node: second, model: model)
+                    PaneNodeView(node: second, model: model, manager: manager, workdir: workdir)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
@@ -281,32 +292,31 @@ private struct LeafPaneView: View {
     let id: UUID
     let target: AgentTarget
     @ObservedObject var model: WorkspaceModel
+    let manager: PaneSessionManager
+    let workdir: String
 
-    private var isFocused: Bool { model.focusedID == id && model.paneCount > 1 }
+    /// Keyboard focus: the sole pane, or the explicitly-focused one.
+    private var hasKeyboard: Bool { model.focusedID == id }
+    /// Show the accent border only when there's more than one pane to distinguish.
+    private var showBorder: Bool { model.focusedID == id && model.paneCount > 1 }
 
     var body: some View {
         VStack(spacing: 0) {
             header
             Divider()
-            surface
+            // The session is keyed by this leaf's id; switching the surface reopens its PTY.
+            TerminalSurface(session: manager.session(for: id, target: target, workdir: workdir),
+                            isFocused: hasKeyboard)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .id(id)   // tie the live surface to this leaf so it survives restructuring
         }
         .overlay(
             Rectangle().strokeBorder(
-                isFocused ? Color.accentColor : Color(uiColor: .separator),
-                lineWidth: isFocused ? 2 : 1)
+                showBorder ? Color.accentColor : Color(uiColor: .separator),
+                lineWidth: showBorder ? 2 : 1)
         )
         .padding(2)
         .simultaneousGesture(TapGesture().onEnded { model.focus(id) })
-    }
-
-    // Placeholder until M4 binds a real TerminalSurface to this leaf's PaneSession.
-    private var surface: some View {
-        ZStack {
-            Color(uiColor: .secondarySystemBackground)
-            Text(target.label).font(.title3).foregroundStyle(.secondary)
-        }
     }
 
     private var header: some View {
