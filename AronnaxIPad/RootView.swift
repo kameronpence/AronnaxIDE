@@ -1,16 +1,11 @@
 import SwiftUI
 
-/// M2 checkpoint shell: one connection, TWO concurrent panes (Terminal + Claude) to prove
-/// multiple PTY channels multiplex over a single `SSHConnection`. The recursive split-pane
-/// workspace + sidebar replace this in M3–M5.
+/// M3 shell: a status header over the recursive split-pane workspace. Leaves are placeholders
+/// for now; M4 binds each leaf to a real terminal session and M5 adds the project sidebar.
 struct RootView: View {
     @StateObject private var connection: SSHConnection
     @StateObject private var manager: PaneSessionManager
-    // @State so the pane keys survive RootView reconstruction (a plain `let` would
-    // regenerate and leak the prior sessions' PTY channels). M3's WorkspaceModel owns leaf
-    // ids persistently; this is just the interim two-pane checkpoint.
-    @State private var leftID = UUID()
-    @State private var rightID = UUID()
+    @StateObject private var workspace = WorkspaceModel()
 
     init() {
         let conn = SSHConnection()
@@ -32,15 +27,7 @@ struct RootView: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             Divider()
-            HStack(spacing: 0) {
-                TerminalSurface(session: manager.session(for: leftID, target: .terminal,
-                                                         workdir: connection.keplerHome))
-                    .id(leftID)
-                Divider()
-                TerminalSurface(session: manager.session(for: rightID, target: .claude,
-                                                         workdir: connection.keplerHome))
-                    .id(rightID)
-            }
+            WorkspaceView(model: workspace)
         }
         .onAppear { connection.start() }
         .preferredColorScheme(.light)
