@@ -1,11 +1,13 @@
 import SwiftUI
 
-/// M3 shell: a status header over the recursive split-pane workspace. Leaves are placeholders
-/// for now; M4 binds each leaf to a real terminal session and M5 adds the project sidebar.
+/// The iPad shell: a project sidebar beside the recursive split-pane workspace. Selecting a
+/// project reattaches the agent panes to that project's tmux session (a plain terminal keeps
+/// running). Single host = kepler.
 struct RootView: View {
     @StateObject private var connection: SSHConnection
     @StateObject private var manager: PaneSessionManager
     @StateObject private var workspace = WorkspaceModel()
+    @State private var selectedProject: String? = SSHConnection.keplerRootLabel
 
     init() {
         let conn = SSHConnection()
@@ -14,20 +16,14 @@ struct RootView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 8) {
-                Image(systemName: "terminal.fill").foregroundStyle(.tint)
-                Text("kepler").font(.headline)
-                Spacer()
-                Text(connection.status)
-                    .font(.caption.monospaced())
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            Divider()
-            WorkspaceView(model: workspace, manager: manager, workdir: connection.keplerHome)
+        NavigationSplitView {
+            ProjectSidebar(connection: connection, selected: $selectedProject)
+        } detail: {
+            let project = selectedProject ?? SSHConnection.keplerRootLabel
+            WorkspaceView(model: workspace, manager: manager,
+                          workdir: connection.workdir(for: project))
+                .navigationTitle(project)
+                .navigationBarTitleDisplayMode(.inline)
         }
         .onAppear { connection.start() }
         .preferredColorScheme(.light)

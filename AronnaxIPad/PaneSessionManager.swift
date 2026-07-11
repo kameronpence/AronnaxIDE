@@ -11,13 +11,19 @@ final class PaneSessionManager: ObservableObject {
 
     init(connection: SSHConnection) { self.connection = connection }
 
-    /// The session for a leaf, creating it (and its PTY) on first request. If the leaf's
-    /// surface or project changed since last time, the existing session reopens its channel —
-    /// the session (and its SwiftTerm view) persist, matching the macOS keep-the-id contract.
+    /// The session for a leaf, creating it (and its PTY) on first request. The session (and
+    /// its SwiftTerm view) persist across restructuring — keyed by the stable leaf id. When
+    /// something changed since last time:
+    ///  - surface switch → reopen the channel on the new target;
+    ///  - project switch → agents reattach to the new project's tmux session, but a plain
+    ///    terminal keeps running (its workdir is just noted for a future reopen).
     func session(for id: UUID, target: AgentTarget, workdir: String) -> PaneSession {
         if let existing = sessions[id] {
-            if existing.target != target || existing.workdir != workdir {
+            if existing.target != target {
                 existing.restart(target: target, workdir: workdir)
+            } else if existing.workdir != workdir {
+                if target == .terminal { existing.updateWorkdir(workdir) }
+                else { existing.restart(target: target, workdir: workdir) }
             }
             return existing
         }
@@ -35,11 +41,5 @@ final class PaneSessionManager: ObservableObject {
     /// Garbage-collect any session whose leaf is no longer in the tree.
     func retire(keeping live: Set<UUID>) {
         for id in sessions.keys where !live.contains(id) { retire(id) }
-    }
-
-    /// Project switch: reattach only the agent panes (per-workdir tmux sessions); plain
-    /// shells keep running.
-    func restartAgents(workdir: String) {
-        for session in sessions.values { session.restartForProject(workdir) }
     }
 }

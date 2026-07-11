@@ -50,11 +50,10 @@ final class PaneSession: ObservableObject, Identifiable {
         attach()
     }
 
-    /// Reopen only if this pane hosts an agent (agent tmux sessions are per-workdir); a plain
-    /// shell is left running when the project changes.
-    func restartForProject(_ workdir: String) {
+    /// Remember a new workdir without reopening the channel — used for a plain terminal on a
+    /// project switch (it keeps running; only the dir a *future* reopen would use changes).
+    func updateWorkdir(_ workdir: String) {
         self.workdir = workdir
-        if target != .terminal { attach() }
     }
 
     func teardown() {
