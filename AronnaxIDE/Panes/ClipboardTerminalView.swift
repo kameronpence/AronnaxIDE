@@ -18,13 +18,6 @@ import SwiftTerm
 final class ClipboardTerminalView: LocalProcessTerminalView {
     private var scrollMonitor: Any?
 
-    /// For agent panes: Cmd-C pulls the current selection from tmux's paste buffer (a
-    /// drag-select in copy-mode lands there) to the Mac clipboard. tmux 3.7 emits OSC 52 with
-    /// an empty target that SwiftTerm drops, so we fetch the buffer over SSH instead of
-    /// relying on the OSC 52 auto-copy. Unset for the plain Terminal, which keeps the local
-    /// SwiftTerm-selection Cmd-C.
-    var remoteSelectionCopy: (() -> Void)?
-
     /// True when this terminal (or a descendant) holds first responder — i.e. it's
     /// the focused agent. `performKeyEquivalent` is offered to every view in the
     /// window, so without this the first terminal in the hierarchy would claim
@@ -47,13 +40,8 @@ final class ClipboardTerminalView: LocalProcessTerminalView {
         if mods == .command, let key = event.charactersIgnoringModifiers?.lowercased() {
             switch key {
             case "c":
-                // Agent panes: pull the tmux copy-mode selection from tmux's buffer.
-                if let remoteSelectionCopy {
-                    remoteSelectionCopy()
-                    return true
-                }
-                // Plain Terminal: only claim Cmd-C when there's a local selection to copy;
-                // otherwise let it fall through rather than silently clearing the clipboard.
+                // Only claim Cmd-C when there's a selection to copy; otherwise let
+                // it fall through rather than silently clearing the clipboard.
                 if selectionActive {
                     copy(self)
                     return true
@@ -92,24 +80,21 @@ final class ClipboardTerminalView: LocalProcessTerminalView {
     /// - A light color scheme (light background, dark text). The plain shell honors
     ///   this; full-screen TUIs like Claude/Codex paint their own colors and may stay
     ///   dark unless their own theme is set to light.
-    /// - Enable mouse *reporting* so drags reach the app. Under an agent's tmux (`mouse
-    ///   on`) this hands the drag to tmux **copy-mode**, which selects across the
-    ///   scrollback and auto-scrolls at the edges — so a selection that spans more than a
-    ///   screen no longer slides off as tmux repaints (the old local SwiftTerm selection
-    ///   was screen-anchored and couldn't survive a scroll). On release, tmux copies and —
-    ///   with `set-clipboard on` + the `xterm*:clipboard` terminal-feature already set on
-    ///   the mini — emits **OSC 52**, which SwiftTerm's `MacLocalTerminalView` writes
-    ///   straight to `NSPasteboard.general`. Net: drag-select across scroll → Mac clipboard.
-    ///   The plain Terminal (tmux `mouse` off → `mouseMode == .off`) reports nothing, so it
-    ///   keeps its local SwiftTerm selection + Cmd-C. Wheel scrolling is unaffected:
-    ///   `handleScroll` still consumes the wheel and forwards it via `terminal.sendEvent`.
+    /// - Disable mouse *reporting* to the app. SwiftTerm's `mouseDown` sends drags to
+    ///   the app (and skips local selection) whenever an app has mouse mode on — and
+    ///   under tmux that's most of the time, so drag-select only ever filled tmux's
+    ///   own buffer, never the system clipboard. With reporting off, drags become a
+    ///   *local* SwiftTerm selection that Cmd-C copies to the clipboard — for both
+    ///   Claude and Codex, even when the agent grabs the mouse. Scrolling still works
+    ///   because `handleScroll` forwards the wheel directly via `terminal.sendEvent`,
+    ///   which doesn't go through `allowMouseReporting`.
     private func applySetupIfNeeded() {
         guard !configured else { return }
         configured = true
         nativeBackgroundColor = NSColor(calibratedWhite: 0.99, alpha: 1)
         nativeForegroundColor = NSColor(calibratedWhite: 0.15, alpha: 1)
         caretColor = NSColor.systemBlue
-        allowMouseReporting = true
+        allowMouseReporting = false
     }
 
     deinit {
