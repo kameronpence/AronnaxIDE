@@ -5,7 +5,7 @@ import Foundation
 /// PTY-backed; `beads` (and future Git/Vault/Health) is a non-terminal "data" surface with no
 /// PTY — see `isTerminal`.
 enum AgentTarget: String, CaseIterable, Identifiable, Codable {
-    case terminal, claude, codex, beads
+    case terminal, claude, codex, beads, git
     var id: String { rawValue }
     var label: String {
         switch self {
@@ -13,11 +13,18 @@ enum AgentTarget: String, CaseIterable, Identifiable, Codable {
         case .claude:   return "Claude"
         case .codex:    return "Codex"
         case .beads:    return "Beads"
+        case .git:      return "Git"
         }
     }
 
     /// True for surfaces backed by a live PTY (get a `PaneSession`); false for data panes.
-    var isTerminal: Bool { self != .beads }
+    /// Whitelist the terminals so new data surfaces are non-terminal by default.
+    var isTerminal: Bool {
+        switch self {
+        case .terminal, .claude, .codex: return true
+        case .beads, .git:               return false
+        }
+    }
 }
 
 /// Builds the remote commands the iOS app runs over the PTY. Mirrors the macOS
@@ -45,9 +52,9 @@ enum AgentCommands {
     /// clients share one live session.
     static func attachCommand(target: AgentTarget, workdir: String) -> String? {
         switch target {
-        case .terminal, .beads:
-            // .beads has no PTY (rendered by BeadsView, never opens a PaneSession); listed here
-            // only for exhaustiveness. .terminal = a plain login shell.
+        case .terminal, .beads, .git:
+            // Data surfaces (.beads/.git) have no PTY — rendered by their own views, never open a
+            // PaneSession; listed only for exhaustiveness. .terminal = a plain login shell.
             return nil
         case .claude, .codex:
             let name = target == .claude ? "agent-claude" : "agent-codex"

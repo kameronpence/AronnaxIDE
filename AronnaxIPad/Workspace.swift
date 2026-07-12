@@ -88,6 +88,7 @@ final class WorkspaceModel: ObservableObject {
         case .claude:   return .terminal
         case .codex:    return .terminal
         case .beads:    return .terminal
+        case .git:      return .terminal
         }
     }
 
@@ -333,13 +334,16 @@ private struct LeafPaneView: View {
 
     /// The pane body: a PTY-backed terminal surface, or a non-terminal data surface (Beads).
     @ViewBuilder private var surface: some View {
-        if target.isTerminal {
+        switch target {
+        case .terminal, .claude, .codex:
             // The session is keyed by this leaf's id; switching among terminal surfaces reopens
             // its PTY in place. Data leaves never create a session (GC'd via agentLeafIDs).
             LeafSurfaceView(session: manager.session(for: id, target: target, workdir: workdir),
                             isFocused: hasKeyboard)
-        } else {
+        case .beads:
             BeadsView(connection: manager.connection, workdir: workdir)
+        case .git:
+            GitView(connection: manager.connection, workdir: workdir)
         }
     }
 
