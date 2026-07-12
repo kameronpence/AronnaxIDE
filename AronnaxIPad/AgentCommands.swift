@@ -1,17 +1,23 @@
 import Foundation
 
 /// Which surface a pane is showing. On iPad each pane leaf holds its own `AgentTarget`,
-/// so this is the persisted leaf payload — hence `Codable`.
+/// so this is the persisted leaf payload — hence `Codable`. `terminal`/`claude`/`codex` are
+/// PTY-backed; `beads` (and future Git/Vault/Health) is a non-terminal "data" surface with no
+/// PTY — see `isTerminal`.
 enum AgentTarget: String, CaseIterable, Identifiable, Codable {
-    case terminal, claude, codex
+    case terminal, claude, codex, beads
     var id: String { rawValue }
     var label: String {
         switch self {
         case .terminal: return "Terminal"
         case .claude:   return "Claude"
         case .codex:    return "Codex"
+        case .beads:    return "Beads"
         }
     }
+
+    /// True for surfaces backed by a live PTY (get a `PaneSession`); false for data panes.
+    var isTerminal: Bool { self != .beads }
 }
 
 /// Builds the remote commands the iOS app runs over the PTY. Mirrors the macOS
@@ -39,7 +45,9 @@ enum AgentCommands {
     /// clients share one live session.
     static func attachCommand(target: AgentTarget, workdir: String) -> String? {
         switch target {
-        case .terminal:
+        case .terminal, .beads:
+            // .beads has no PTY (rendered by BeadsView, never opens a PaneSession); listed here
+            // only for exhaustiveness. .terminal = a plain login shell.
             return nil
         case .claude, .codex:
             let name = target == .claude ? "agent-claude" : "agent-codex"

@@ -60,6 +60,10 @@ final class WorkspaceModel: ObservableObject {
     /// The set of live leaf ids — used to garbage-collect retired pane sessions.
     var leafIDs: Set<UUID> { Self.leafIDs(tree) }
 
+    /// Leaf ids for PTY-backed surfaces only. Session GC keys off this so a leaf switched to a
+    /// data surface (Beads) has its PTY session retired, not kept alive by the still-live id.
+    var agentLeafIDs: Set<UUID> { Self.agentLeafIDs(tree) }
+
     func focus(_ id: UUID) { focusedID = id }
 
     func setTarget(_ target: AgentTarget, for id: UUID) {
@@ -83,6 +87,7 @@ final class WorkspaceModel: ObservableObject {
         case .terminal: return .claude
         case .claude:   return .terminal
         case .codex:    return .terminal
+        case .beads:    return .terminal
         }
     }
 
@@ -166,6 +171,13 @@ final class WorkspaceModel: ObservableObject {
         }
     }
 
+    private static func agentLeafIDs(_ node: PaneTree) -> Set<UUID> {
+        switch node {
+        case .leaf(let id, let target): return target.isTerminal ? [id] : []
+        case .split(_, _, let f, let s, _): return agentLeafIDs(f).union(agentLeafIDs(s))
+        }
+    }
+
     private static func target(of id: UUID, in node: PaneTree) -> AgentTarget? {
         switch node {
         case .leaf(let nid, let t):
@@ -193,9 +205,9 @@ struct WorkspaceView: View {
 
     var body: some View {
         PaneNodeView(node: model.tree, model: model, manager: manager, workdir: workdir)
-            // GC sessions whose leaves were closed (retire is a no-op for still-live ids, so
-            // this is safe on splits too).
-            .onChange(of: model.leafIDs) { _, live in manager.retire(keeping: live) }
+            // GC sessions whose leaves were closed OR switched to a data surface (retire is a
+            // no-op for still-live agent ids, so this is safe on splits too).
+            .onChange(of: model.agentLeafIDs) { _, live in manager.retire(keeping: live) }
     }
 }
 
@@ -304,11 +316,11 @@ private struct LeafPaneView: View {
         VStack(spacing: 0) {
             header
             Divider()
-            // The session is keyed by this leaf's id; switching the surface reopens its PTY.
-            LeafSurfaceView(session: manager.session(for: id, target: target, workdir: workdir),
-                            isFocused: hasKeyboard)
+            surface
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .id(id)   // tie the live surface to this leaf so it survives restructuring
+                // Stable per-leaf identity (survives tree restructuring), but flips when the leaf
+                // crosses the terminal↔data boundary so the surface cleanly swaps view types.
+                .id("\(id.uuidString)-\(target.isTerminal)")
         }
         .overlay(
             Rectangle().strokeBorder(
@@ -317,6 +329,18 @@ private struct LeafPaneView: View {
         )
         .padding(2)
         .simultaneousGesture(TapGesture().onEnded { model.focus(id) })
+    }
+
+    /// The pane body: a PTY-backed terminal surface, or a non-terminal data surface (Beads).
+    @ViewBuilder private var surface: some View {
+        if target.isTerminal {
+            // The session is keyed by this leaf's id; switching among terminal surfaces reopens
+            // its PTY in place. Data leaves never create a session (GC'd via agentLeafIDs).
+            LeafSurfaceView(session: manager.session(for: id, target: target, workdir: workdir),
+                            isFocused: hasKeyboard)
+        } else {
+            BeadsView(connection: manager.connection, workdir: workdir)
+        }
     }
 
     private var header: some View {
