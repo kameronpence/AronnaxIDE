@@ -18,6 +18,12 @@ import SwiftTerm
 final class ClipboardTerminalView: LocalProcessTerminalView {
     private var scrollMonitor: Any?
 
+    /// Cmd-Shift-C copies the whole tmux scrollback of this pane (visible + history) to the
+    /// Mac clipboard — the reliable way to grab output that scrolled off, without forwarding
+    /// mouse events to the agent (which would re-introduce hover/selection side-effects). The
+    /// pane wires this to a `tmux capture-pane` over SSH; unset panes ignore Cmd-Shift-C.
+    var copyScrollback: (() -> Void)?
+
     /// True when this terminal (or a descendant) holds first responder — i.e. it's
     /// the focused agent. `performKeyEquivalent` is offered to every view in the
     /// window, so without this the first terminal in the hierarchy would claim
@@ -37,6 +43,12 @@ final class ClipboardTerminalView: LocalProcessTerminalView {
         // don't break the match — macOS shortcuts ignore Caps Lock.
         let relevant: NSEvent.ModifierFlags = [.command, .shift, .option, .control]
         let mods = event.modifierFlags.intersection(relevant)
+        // Cmd-Shift-C: copy the full tmux scrollback (for output that scrolled off screen).
+        if mods == [.command, .shift], event.charactersIgnoringModifiers?.lowercased() == "c",
+           let copyScrollback {
+            copyScrollback()
+            return true
+        }
         if mods == .command, let key = event.charactersIgnoringModifiers?.lowercased() {
             switch key {
             case "c":

@@ -25,7 +25,9 @@ targets:
   AronnaxIDE:
     type: application
     platform: macOS
-    scheme: {}
+    scheme:
+      testTargets:
+        - AronnaxIDEUITests
     sources:
       - path: AronnaxIDE
     dependencies:
@@ -58,6 +60,27 @@ targets:
         CODE_SIGN_STYLE: Automatic
         CODE_SIGN_IDENTITY: "-"
         SWIFT_VERSION: "5.0"
+
+  # Probe/verification UI-test target for the macOS app (lets me drive the app on kepler
+  # via XCUITest, which has automation privileges a plain SSH launch lacks).
+  AronnaxIDEUITests:
+    type: bundle.ui-testing
+    platform: macOS
+    sources:
+      - path: AronnaxIDEUITests
+    dependencies:
+      - target: AronnaxIDE
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.kameronpence.AronnaxIDEUITests
+        SWIFT_VERSION: "5.0"
+        GENERATE_INFOPLIST_FILE: "YES"
+        # Ad-hoc sign (like the app) so the test runner builds over SSH without a locked
+        # keychain / Developer identity.
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGNING_REQUIRED: "NO"
+        ENABLE_HARDENED_RUNTIME: "NO"
 
   # iOS companion — Terminal + Coding only, over Citadel (pure-Swift SSH) to kepler
   # via Tailscale. iOS can't shell out to /usr/bin/ssh, so transport differs from the
