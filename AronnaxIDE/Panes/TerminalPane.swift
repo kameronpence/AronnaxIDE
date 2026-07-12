@@ -214,20 +214,9 @@ struct HostTerminalView: NSViewRepresentable {
             // already exists, tmux attaches to it (keeping its dir) — so the terminal
             // opens in the selected project.
             let startDir = workdir.map { " -c \(SSHManager.shellEscaped($0))" } ?? ""
-            let esc = SSHManager.shellEscaped(session)
-            // Create-or-attach *detached* (`-A -d`) so the clipboard setup runs BEFORE the
-            // blocking attach — a foreground `tmux new-session -A -s` never returns, so any
-            // trailing setup would only run after the user detaches. Same three-step shape as
-            // the agent attach: ensure session, wire OSC 52 copy (a keyboard copy-mode
-            // selection lands on the Mac clipboard via `~/.aronnax-osc52`; the plain terminal
-            // keeps local mouse-drag selection), then attach. execProcess:false so all three
-            // statements run (the outer `exec zsh` still makes the attach ssh's child).
             let args = SSHManager.shared.loginShellArguments(
                 for: host,
-                running: "tmux new-session -A -d -s \(esc)\(startDir); "
-                    + AgentController.clipboardSetup
-                    + "tmux attach -t \(esc)",
-                execProcess: false
+                running: "tmux new-session -A -s \(SSHManager.shellEscaped(session))\(startDir)"
             )
             connectedAt = Date()
             view.startProcess(executable: SSHManager.shared.sshExecutable, args: args)
