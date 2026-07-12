@@ -49,7 +49,11 @@ struct TerminalSurface: UIViewRepresentable {
             MainActor.assumeIsolated { session.sendInput(bytes) }
         }
 
-        func sizeChanged(source: TerminalView, newCols: Int, newRows: Int) {}
+        func sizeChanged(source: TerminalView, newCols: Int, newRows: Int) {
+            // SwiftTerm recomputed the grid (divider drag, rotation, Split View / Stage Manager,
+            // keyboard toolbar) → SIGWINCH the remote PTY so tmux/agents re-lay-out to fit.
+            MainActor.assumeIsolated { session.changeSize(cols: newCols, rows: newRows) }
+        }
         func setTerminalTitle(source: TerminalView, title: String) {}
         func hostCurrentDirectoryUpdate(source: TerminalView, directory: String?) {}
         func scrolled(source: TerminalView, position: Double) {}

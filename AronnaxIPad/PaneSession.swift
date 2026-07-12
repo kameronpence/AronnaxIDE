@@ -16,12 +16,19 @@ final class PaneSession: ObservableObject, Identifiable {
     let id: UUID
     @Published private(set) var target: AgentTarget
     @Published private(set) var status = "…"
+    /// True once the PTY has exited on its own (agent quit, channel dropped) rather than being
+    /// intentionally torn down — drives a tap-to-reconnect affordance on the pane.
+    @Published private(set) var ended = false
     private(set) var workdir: String
     weak var terminalView: AronnaxTerminalView?
 
     private unowned let connection: SSHConnection
     private var ptyTask: Task<Void, Never>?
     private var inputContinuation: AsyncStream<[UInt8]>.Continuation?
+    private var sizeContinuation: AsyncStream<(cols: Int, rows: Int)>.Continuation?
+    /// The last size we told the PTY, so a reopen starts at the pane's real size and we don't
+    /// spam identical SIGWINCHes as SwiftTerm reports sub-cell layout passes.
+    private var lastSize: (cols: Int, rows: Int)?
 
     init(id: UUID, target: AgentTarget, workdir: String, connection: SSHConnection) {
         self.id = id
@@ -33,9 +40,20 @@ final class PaneSession: ObservableObject, Identifiable {
     /// Keyboard input → the active PTY's stdin.
     func sendInput(_ bytes: [UInt8]) { inputContinuation?.yield(bytes) }
 
+    /// A resize (divider drag, rotation, Split View / Stage Manager) → SIGWINCH on the remote
+    /// PTY, so tmux and the agents re-lay-out to the pane's real size. Deduped against the last
+    /// size sent; the reopen path picks up `lastSize` so a fresh channel starts correctly sized.
+    func changeSize(cols: Int, rows: Int) {
+        guard cols > 0, rows > 0 else { return }
+        guard lastSize?.cols != cols || lastSize?.rows != rows else { return }
+        lastSize = (cols, rows)
+        sizeContinuation?.yield((cols, rows))
+    }
+
     /// Open (or reopen) the PTY for the current target/workdir.
     func attach() {
         ptyTask?.cancel()
+        ended = false
         // Agents run in tmux → a one-finger drag scrolls history via wheel events; the plain
         // shell uses SwiftTerm's native scrollback, so leave agent scroll off.
         terminalView?.agentScrollEnabled = (target != .terminal)
@@ -60,11 +78,14 @@ final class PaneSession: ObservableObject, Identifiable {
         ptyTask?.cancel()
         ptyTask = nil
         inputContinuation = nil
+        sizeContinuation = nil
     }
 
     private func feed(_ bytes: [UInt8]) { terminalView?.feed(byteArray: bytes[...]) }
 
     private func initialSize() -> (cols: Int, rows: Int) {
+        // A reopen (surface/project switch) should start at the pane's real current size.
+        if let s = lastSize { return s }
         if let t = terminalView?.getTerminal() { return (max(t.cols, 20), max(t.rows, 10)) }
         return (80, 24)
     }
@@ -76,6 +97,8 @@ final class PaneSession: ObservableObject, Identifiable {
         if Task.isCancelled { return }
         let (input, cont) = AsyncStream<[UInt8]>.makeStream()
         inputContinuation = cont
+        let (sizes, sizeCont) = AsyncStream<(cols: Int, rows: Int)>.makeStream()
+        sizeContinuation = sizeCont
         let size = initialSize()
         let command = AgentCommands.attachCommand(target: target, workdir: workdir)
         do {
@@ -114,13 +137,28 @@ final class PaneSession: ObservableObject, Identifiable {
                             try await writer.write(buf)
                         }
                     }
+                    group.addTask {
+                        // Live resize: each reported size becomes a WindowChangeRequest (SIGWINCH).
+                        for await size in sizes {
+                            try await writer.changeSize(cols: size.cols, rows: size.rows,
+                                                        pixelWidth: 0, pixelHeight: 0)
+                        }
+                    }
                     try await group.next()
                     group.cancelAll()
                 }
             }
+            // withPTY returned WITHOUT throwing = the remote command/shell exited on its own
+            // (agent quit, `exit` typed). This is the common end case and does NOT hit `catch`,
+            // so surface the reconnect affordance here too (unless we were torn down).
+            if !Task.isCancelled {
+                status = "\(target.label) exited"
+                ended = true
+            }
         } catch {
             if !Task.isCancelled {
                 status = "\(target.label) ended"
+                ended = true
             }
         }
     }

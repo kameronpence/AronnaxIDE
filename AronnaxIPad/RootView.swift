@@ -8,6 +8,10 @@ struct RootView: View {
     @StateObject private var manager: PaneSessionManager
     @StateObject private var workspace = WorkspaceModel()
     @State private var selectedProject: String? = SSHConnection.keplerRootLabel
+    @Environment(\.scenePhase) private var scenePhase
+    /// Only reconnect on foreground if we actually tore down on background — a brief
+    /// `.inactive` (control center, notification) must not trigger a needless reconnect.
+    @State private var didBackground = false
 
     init() {
         let conn = SSHConnection()
@@ -26,6 +30,19 @@ struct RootView: View {
                 .navigationBarTitleDisplayMode(.inline)
         }
         .onAppear { connection.start() }
+        .onChange(of: scenePhase) { _, phase in
+            switch phase {
+            case .background:
+                connection.stop()
+                didBackground = true
+            case .active where didBackground:
+                didBackground = false
+                connection.start()        // reconnect…
+                manager.reattachAll()     // …and reattach every pane to its tmux session
+            default:
+                break
+            }
+        }
         .preferredColorScheme(.light)
     }
 }

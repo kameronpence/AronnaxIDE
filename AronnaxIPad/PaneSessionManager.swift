@@ -42,4 +42,12 @@ final class PaneSessionManager: ObservableObject {
     func retire(keeping live: Set<UUID>) {
         for id in sessions.keys where !live.contains(id) { retire(id) }
     }
+
+    /// Reopen every live pane's PTY — used after a background disconnect. Each session
+    /// reattaches to its tmux session on kepler (agents and the plain terminal alike), so the
+    /// on-screen work resumes where it left off. Safe to call once the connection is starting;
+    /// each `attach` awaits the reconnected client before opening its channel.
+    func reattachAll() {
+        for session in sessions.values { session.attach() }
+    }
 }

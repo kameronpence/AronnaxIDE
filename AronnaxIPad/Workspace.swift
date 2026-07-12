@@ -305,7 +305,7 @@ private struct LeafPaneView: View {
             header
             Divider()
             // The session is keyed by this leaf's id; switching the surface reopens its PTY.
-            TerminalSurface(session: manager.session(for: id, target: target, workdir: workdir),
+            LeafSurfaceView(session: manager.session(for: id, target: target, workdir: workdir),
                             isFocused: hasKeyboard)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .id(id)   // tie the live surface to this leaf so it survives restructuring
@@ -353,5 +353,28 @@ private struct LeafPaneView: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+}
+
+/// The pane's live terminal plus a tap-to-reconnect overlay when its PTY has ended on its own
+/// (agent quit, dropped channel). Observes the session so the overlay appears/clears with state.
+private struct LeafSurfaceView: View {
+    @ObservedObject var session: PaneSession
+    let isFocused: Bool
+
+    var body: some View {
+        TerminalSurface(session: session, isFocused: isFocused)
+            .overlay(alignment: .bottom) {
+                if session.ended {
+                    Button { session.attach() } label: {
+                        Label("\(session.status) — tap to reconnect", systemImage: "arrow.clockwise")
+                            .font(.callout)
+                            .padding(.horizontal, 12).padding(.vertical, 8)
+                            .background(.thinMaterial, in: Capsule())
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.bottom, 10)
+                }
+            }
     }
 }
