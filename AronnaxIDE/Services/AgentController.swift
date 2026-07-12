@@ -118,7 +118,24 @@ enum AgentController {
         // grab the mouse) while the user's global mouse-off and manual sessions stay put.
         let kill = recreate ? "tmux kill-session -t \(session) 2>/dev/null; " : ""
         return "\(kill)tmux new-session -A -d -s \(session) -c \(dir) \(launched); "
-            + "tmux set -t \(session) mouse on; tmux attach -t \(session)"
+            + "tmux set -t \(session) mouse on; "
+            + "tmux set -t \(session) set-clipboard on; "
+            // A mouse *drag* must start tmux copy-mode selection even when the agent (Claude)
+            // has grabbed the mouse (mouse_any_flag=1) — otherwise tmux forwards the drag to
+            // the app and the selection can't span the scrollback. tmux key tables are
+            // server-global, so the binding is CONDITIONAL: only `agent-*` sessions get the
+            // force-copy-mode behavior; every other session keeps tmux's default (forward to a
+            // mouse-grabbing app, else copy-mode), so manual/unrelated sessions are unchanged.
+            // On release, tmux's default copy-selection-and-cancel copies; with set-clipboard
+            // on that emits OSC 52, which SwiftTerm writes to the Mac clipboard. Clicks still
+            // reach the app. Re-applied (idempotently) on each attach.
+            + "tmux bind -n MouseDrag1Pane if -F '#{m:agent-*,#{session_name}}' "
+            // agent-* pane: force copy-mode even when the app grabbed the mouse (extend if
+            // already selecting) — this is the fix.
+            + "'if -F \"#{pane_in_mode}\" \"send-keys -M\" \"copy-mode -M\"' "
+            // everything else: tmux's exact default, so unrelated sessions are untouched.
+            + "'if -F \"#{||:#{pane_in_mode},#{mouse_any_flag}}\" \"send-keys -M\" \"copy-mode -M\"' 2>/dev/null; "
+            + "tmux attach -t \(session)"
     }
 
     /// A short, stable, tmux-safe suffix derived from the project directory (FNV-1a),
