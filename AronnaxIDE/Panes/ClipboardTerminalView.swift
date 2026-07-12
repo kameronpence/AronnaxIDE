@@ -17,6 +17,7 @@ import SwiftTerm
 /// (normal screen) — never sending stray input to a shell that didn't ask for it.
 final class ClipboardTerminalView: LocalProcessTerminalView {
     private var scrollMonitor: Any?
+    private var hoverMonitor: Any?
 
     /// For agent panes: Cmd-C pulls the current selection from tmux's paste buffer (a
     /// drag-select in copy-mode lands there) to the Mac clipboard. tmux 3.7 emits OSC 52 with
@@ -71,7 +72,7 @@ final class ClipboardTerminalView: LocalProcessTerminalView {
         return super.performKeyEquivalent(with: event)
     }
 
-    // MARK: - Scroll forwarding
+    // MARK: - Scroll forwarding & hover suppression
 
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
@@ -84,7 +85,29 @@ final class ClipboardTerminalView: LocalProcessTerminalView {
                     self?.handleScroll(event) ?? event
                 }
             }
+            if hoverMonitor == nil {
+                hoverMonitor = NSEvent.addLocalMonitorForEvents(matching: .mouseMoved) { [weak self] event in
+                    self?.handleHover(event) ?? event
+                }
+            }
         }
+    }
+
+    /// Swallow bare hover motion over this terminal so it never reaches SwiftTerm's
+    /// `mouseMoved` — that method reports motion to the app in `.anyEvent` mouse mode
+    /// (Claude/Codex grab the mouse this way), and a forwarded hover expands collapsed
+    /// agent actions just by passing the pointer over them (no click). Returning nil
+    /// consumes the event *before* dispatch, so we suppress hover without disturbing
+    /// SwiftTerm's tracking-area bookkeeping (removing its retained area risks an AppKit
+    /// crash). Button *drags* fire `mouseDragged`, not `.mouseMoved`, so tmux copy-mode
+    /// selection is unaffected. Only `.anyEvent` (the motion-reporting mode) is swallowed;
+    /// the plain shell (`mouseMode == .off`) keeps normal hover/URL-preview behavior.
+    private func handleHover(_ event: NSEvent) -> NSEvent? {
+        guard event.window == window,
+              terminal.mouseMode == .anyEvent else { return event }
+        let local = convert(event.locationInWindow, from: nil)
+        guard bounds.contains(local) else { return event }
+        return nil
     }
 
     private var configured = false
@@ -120,6 +143,10 @@ final class ClipboardTerminalView: LocalProcessTerminalView {
         if let scrollMonitor {
             NSEvent.removeMonitor(scrollMonitor)
             self.scrollMonitor = nil
+        }
+        if let hoverMonitor {
+            NSEvent.removeMonitor(hoverMonitor)
+            self.hoverMonitor = nil
         }
     }
 
