@@ -180,6 +180,22 @@ private struct AgentTerminalView: NSViewRepresentable {
     func makeNSView(context: Context) -> LocalProcessTerminalView {
         let view = ClipboardTerminalView(frame: .zero)
         view.processDelegate = context.coordinator
+        // Cmd-C copies a drag-selection: the drag lands in tmux copy-mode → tmux's paste
+        // buffer, which we fetch over SSH and put on the Mac clipboard (tmux 3.7's OSC 52 uses
+        // an empty target SwiftTerm won't accept, so we can't rely on the auto-copy).
+        view.remoteSelectionCopy = { [settings] in
+            guard let host = settings.activeHost else { return }
+            Task {
+                guard let r = try? await SSHManager.shared.runShell("tmux show-buffer 2>/dev/null", on: host),
+                      r.ok, !r.stdout.isEmpty else { return }
+                let text = r.stdout
+                await MainActor.run {
+                    let pb = NSPasteboard.general
+                    pb.clearContents()
+                    pb.setString(text, forType: .string)
+                }
+            }
+        }
         context.coordinator.start(view, host: settings.activeHost, agent: agent,
                                   workdir: workdir, extraArgs: extraArgs,
                                   baselineSignal: wakeObserver.reconnectSignal)

@@ -18,6 +18,13 @@ import SwiftTerm
 final class ClipboardTerminalView: LocalProcessTerminalView {
     private var scrollMonitor: Any?
 
+    /// For agent panes: Cmd-C pulls the current selection from tmux's paste buffer (a
+    /// drag-select in copy-mode lands there) to the Mac clipboard. tmux 3.7 emits OSC 52 with
+    /// an empty target that SwiftTerm drops, so we fetch the buffer over SSH instead of
+    /// relying on the OSC 52 auto-copy. Unset for the plain Terminal, which keeps the local
+    /// SwiftTerm-selection Cmd-C.
+    var remoteSelectionCopy: (() -> Void)?
+
     /// True when this terminal (or a descendant) holds first responder — i.e. it's
     /// the focused agent. `performKeyEquivalent` is offered to every view in the
     /// window, so without this the first terminal in the hierarchy would claim
@@ -40,8 +47,13 @@ final class ClipboardTerminalView: LocalProcessTerminalView {
         if mods == .command, let key = event.charactersIgnoringModifiers?.lowercased() {
             switch key {
             case "c":
-                // Only claim Cmd-C when there's a selection to copy; otherwise let
-                // it fall through rather than silently clearing the clipboard.
+                // Agent panes: pull the tmux copy-mode selection from tmux's buffer.
+                if let remoteSelectionCopy {
+                    remoteSelectionCopy()
+                    return true
+                }
+                // Plain Terminal: only claim Cmd-C when there's a local selection to copy;
+                // otherwise let it fall through rather than silently clearing the clipboard.
                 if selectionActive {
                     copy(self)
                     return true
