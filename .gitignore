@@ -30,3 +30,4 @@ AronnaxIOS/Secrets.swift
 
 # per-session logs — local vault notes, not for the public repo
 logs/
+AronnaxIPad/Secrets.swift
