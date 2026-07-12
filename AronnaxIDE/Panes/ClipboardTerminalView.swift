@@ -80,21 +80,24 @@ final class ClipboardTerminalView: LocalProcessTerminalView {
     /// - A light color scheme (light background, dark text). The plain shell honors
     ///   this; full-screen TUIs like Claude/Codex paint their own colors and may stay
     ///   dark unless their own theme is set to light.
-    /// - Disable mouse *reporting* to the app. SwiftTerm's `mouseDown` sends drags to
-    ///   the app (and skips local selection) whenever an app has mouse mode on — and
-    ///   under tmux that's most of the time, so drag-select only ever filled tmux's
-    ///   own buffer, never the system clipboard. With reporting off, drags become a
-    ///   *local* SwiftTerm selection that Cmd-C copies to the clipboard — for both
-    ///   Claude and Codex, even when the agent grabs the mouse. Scrolling still works
-    ///   because `handleScroll` forwards the wheel directly via `terminal.sendEvent`,
-    ///   which doesn't go through `allowMouseReporting`.
+    /// - Enable mouse *reporting* so drags reach the app. Under an agent's tmux (`mouse
+    ///   on`) this hands the drag to tmux **copy-mode**, which selects across the
+    ///   scrollback and auto-scrolls at the edges — so a selection that spans more than a
+    ///   screen no longer slides off as tmux repaints (the old local SwiftTerm selection
+    ///   was screen-anchored and couldn't survive a scroll). On release, tmux copies and —
+    ///   with `set-clipboard on` + the `xterm*:clipboard` terminal-feature already set on
+    ///   the mini — emits **OSC 52**, which SwiftTerm's `MacLocalTerminalView` writes
+    ///   straight to `NSPasteboard.general`. Net: drag-select across scroll → Mac clipboard.
+    ///   The plain Terminal (tmux `mouse` off → `mouseMode == .off`) reports nothing, so it
+    ///   keeps its local SwiftTerm selection + Cmd-C. Wheel scrolling is unaffected:
+    ///   `handleScroll` still consumes the wheel and forwards it via `terminal.sendEvent`.
     private func applySetupIfNeeded() {
         guard !configured else { return }
         configured = true
         nativeBackgroundColor = NSColor(calibratedWhite: 0.99, alpha: 1)
         nativeForegroundColor = NSColor(calibratedWhite: 0.15, alpha: 1)
         caretColor = NSColor.systemBlue
-        allowMouseReporting = false
+        allowMouseReporting = true
     }
 
     deinit {
