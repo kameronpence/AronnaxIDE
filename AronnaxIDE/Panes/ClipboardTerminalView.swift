@@ -17,6 +17,7 @@ import SwiftTerm
 /// (normal screen) — never sending stray input to a shell that didn't ask for it.
 final class ClipboardTerminalView: LocalProcessTerminalView {
     private var scrollMonitor: Any?
+    private var hoverMonitor: Any?
 
     /// True when this terminal (or a descendant) holds first responder — i.e. it's
     /// the focused agent. `performKeyEquivalent` is offered to every view in the
@@ -72,7 +73,41 @@ final class ClipboardTerminalView: LocalProcessTerminalView {
                     self?.handleScroll(event) ?? event
                 }
             }
+            if hoverMonitor == nil {
+                hoverMonitor = NSEvent.addLocalMonitorForEvents(matching: .mouseMoved) { [weak self] event in
+                    // Return handleHover's result directly — it returns nil to CONSUME the
+                    // hover. A `?? event` fallback here would turn that consume-nil back into
+                    // the event and defeat the suppression; only fall back if self is gone.
+                    guard let self else { return event }
+                    return self.handleHover(event)
+                }
+            }
         }
+    }
+
+    /// Swallow *bare* hover motion over this terminal so it never reaches SwiftTerm's
+    /// `mouseMoved`. In `.anyEvent` mouse mode (which Claude/Codex request for their
+    /// hover UI), `mouseMoved` reports motion to the app — and, unlike `mouseDragged`,
+    /// it does NOT check `allowMouseReporting` — so just passing the pointer over a
+    /// collapsed agent action expands it (no click). `.anyEvent` is the ONLY mode whose
+    /// `sendMotionEvent()` is true, so gating on it suppresses exactly the hover reports
+    /// and nothing else. Returning nil consumes the event before dispatch, so SwiftTerm's
+    /// `mouseMoved` never runs.
+    ///
+    /// We deliberately let Command-held motion through: SwiftTerm's `mouseMoved` also drives
+    /// Command-hover URL preview and link highlighting (the default `linkHighlightMode` is
+    /// `.hoverWithModifier`, which only acts while Command is down), so preserving those means
+    /// suppressing only the modifier-free hover that triggers the agent's expand-on-hover.
+    /// Button *drags* fire `mouseDragged` (and clicks fire `mouseDown`/`Up`), not
+    /// `.mouseMoved`, so local selection and clicks are unaffected; the plain shell
+    /// (`mouseMode == .off`) is untouched entirely.
+    private func handleHover(_ event: NSEvent) -> NSEvent? {
+        guard event.window == window,
+              terminal.mouseMode == .anyEvent,
+              !event.modifierFlags.contains(.command) else { return event }
+        let local = convert(event.locationInWindow, from: nil)
+        guard bounds.contains(local) else { return event }
+        return nil
     }
 
     private var configured = false
@@ -105,6 +140,10 @@ final class ClipboardTerminalView: LocalProcessTerminalView {
         if let scrollMonitor {
             NSEvent.removeMonitor(scrollMonitor)
             self.scrollMonitor = nil
+        }
+        if let hoverMonitor {
+            NSEvent.removeMonitor(hoverMonitor)
+            self.hoverMonitor = nil
         }
     }
 
