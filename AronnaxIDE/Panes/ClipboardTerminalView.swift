@@ -18,11 +18,12 @@ import SwiftTerm
 final class ClipboardTerminalView: LocalProcessTerminalView {
     private var scrollMonitor: Any?
 
-    /// Cmd-Shift-C copies the whole tmux scrollback of this pane (visible + history) to the
-    /// Mac clipboard — the reliable way to grab output that scrolled off, without forwarding
-    /// mouse events to the agent (which would re-introduce hover/selection side-effects). The
-    /// pane wires this to a `tmux capture-pane` over SSH; unset panes ignore Cmd-Shift-C.
-    var copyScrollback: (() -> Void)?
+    /// For agent panes: Cmd-C pulls the current selection from tmux's paste buffer (a
+    /// drag-select in copy-mode lands there) to the Mac clipboard. tmux 3.7 emits OSC 52 with
+    /// an empty target that SwiftTerm drops, so we fetch the buffer over SSH instead of
+    /// relying on the OSC 52 auto-copy. Unset for the plain Terminal, which keeps the local
+    /// SwiftTerm-selection Cmd-C.
+    var remoteSelectionCopy: (() -> Void)?
 
     /// True when this terminal (or a descendant) holds first responder — i.e. it's
     /// the focused agent. `performKeyEquivalent` is offered to every view in the
@@ -43,17 +44,16 @@ final class ClipboardTerminalView: LocalProcessTerminalView {
         // don't break the match — macOS shortcuts ignore Caps Lock.
         let relevant: NSEvent.ModifierFlags = [.command, .shift, .option, .control]
         let mods = event.modifierFlags.intersection(relevant)
-        // Cmd-Shift-C: copy the full tmux scrollback (for output that scrolled off screen).
-        if mods == [.command, .shift], event.charactersIgnoringModifiers?.lowercased() == "c",
-           let copyScrollback {
-            copyScrollback()
-            return true
-        }
         if mods == .command, let key = event.charactersIgnoringModifiers?.lowercased() {
             switch key {
             case "c":
-                // Only claim Cmd-C when there's a selection to copy; otherwise let
-                // it fall through rather than silently clearing the clipboard.
+                // Agent panes: pull the tmux copy-mode selection from tmux's buffer.
+                if let remoteSelectionCopy {
+                    remoteSelectionCopy()
+                    return true
+                }
+                // Plain Terminal: only claim Cmd-C when there's a local selection to copy;
+                // otherwise let it fall through rather than silently clearing the clipboard.
                 if selectionActive {
                     copy(self)
                     return true
@@ -92,21 +92,24 @@ final class ClipboardTerminalView: LocalProcessTerminalView {
     /// - A light color scheme (light background, dark text). The plain shell honors
     ///   this; full-screen TUIs like Claude/Codex paint their own colors and may stay
     ///   dark unless their own theme is set to light.
-    /// - Disable mouse *reporting* to the app. SwiftTerm's `mouseDown` sends drags to
-    ///   the app (and skips local selection) whenever an app has mouse mode on — and
-    ///   under tmux that's most of the time, so drag-select only ever filled tmux's
-    ///   own buffer, never the system clipboard. With reporting off, drags become a
-    ///   *local* SwiftTerm selection that Cmd-C copies to the clipboard — for both
-    ///   Claude and Codex, even when the agent grabs the mouse. Scrolling still works
-    ///   because `handleScroll` forwards the wheel directly via `terminal.sendEvent`,
-    ///   which doesn't go through `allowMouseReporting`.
+    /// - Enable mouse *reporting* so drags reach the app. Under an agent's tmux (`mouse
+    ///   on`) this hands the drag to tmux **copy-mode**, which selects across the
+    ///   scrollback and auto-scrolls at the edges — so a selection that spans more than a
+    ///   screen no longer slides off as tmux repaints (the old local SwiftTerm selection
+    ///   was screen-anchored and couldn't survive a scroll). On release, tmux copies and —
+    ///   with `set-clipboard on` + the `xterm*:clipboard` terminal-feature already set on
+    ///   the mini — emits **OSC 52**, which SwiftTerm's `MacLocalTerminalView` writes
+    ///   straight to `NSPasteboard.general`. Net: drag-select across scroll → Mac clipboard.
+    ///   The plain Terminal (tmux `mouse` off → `mouseMode == .off`) reports nothing, so it
+    ///   keeps its local SwiftTerm selection + Cmd-C. Wheel scrolling is unaffected:
+    ///   `handleScroll` still consumes the wheel and forwards it via `terminal.sendEvent`.
     private func applySetupIfNeeded() {
         guard !configured else { return }
         configured = true
         nativeBackgroundColor = NSColor(calibratedWhite: 0.99, alpha: 1)
         nativeForegroundColor = NSColor(calibratedWhite: 0.15, alpha: 1)
         caretColor = NSColor.systemBlue
-        allowMouseReporting = false
+        allowMouseReporting = true
     }
 
     deinit {
