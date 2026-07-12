@@ -48,8 +48,20 @@ final class AppSettings: ObservableObject {
         didSet { UserDefaults.standard.set(agentWorkdir, forKey: Keys.agentWorkdir) }
     }
 
+    /// The default hub vault/workdir — also the fallback whenever `agentWorkdir` is blank, so
+    /// an empty field can never point `find`/`git`/vault at a nonexistent path and blank the
+    /// whole sidebar. (Kept in sync with the `agentWorkdir` initial value.)
+    static let defaultAgentWorkdir = "/Users/kepler/Documents/AI_OS"
+
+    /// `agentWorkdir`, but never empty: falls back to the default when the field is blank or
+    /// whitespace. Everything that resolves a hub path (projects, vault) goes through this.
+    var resolvedAgentWorkdir: String {
+        let trimmed = agentWorkdir.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? Self.defaultAgentWorkdir : trimmed
+    }
+
     /// Where project folders live: `<vault>/Projects`.
-    var projectsRoot: String { (agentWorkdir as NSString).appendingPathComponent("Projects") }
+    var projectsRoot: String { (resolvedAgentWorkdir as NSString).appendingPathComponent("Projects") }
 
     /// Per-agent permission posture the Coding pane launches each agent with — the
     /// two CLIs have different modes, so they're tracked separately. Switching one
@@ -211,8 +223,8 @@ final class AppSettings: ObservableObject {
     /// The active host's vault root — `agentWorkdir` on the hub, the configured clone
     /// path on a server.
     var activeVaultPath: String {
-        if activeHost?.isHub ?? true { return agentWorkdir }
-        return hostVaultPaths[activeHostID] ?? agentWorkdir
+        if activeHost?.isHub ?? true { return resolvedAgentWorkdir }
+        return hostVaultPaths[activeHostID] ?? resolvedAgentWorkdir
     }
     /// The active server's single project directory (nil on the hub, which discovers
     /// many projects under `projectsRoot` instead).

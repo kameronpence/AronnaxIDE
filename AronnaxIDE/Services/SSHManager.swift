@@ -280,8 +280,26 @@ final class SSHManager {
         let remote = remoteCommand.isEmpty
             ? nil
             : [remoteCommand.map(Self.shellEscaped).joined(separator: " ")]
-        let args = sshArguments(for: host, interactive: false, remoteCommand: remote)
-        return try await launch(arguments: args)
+        return try await launchHealingStaleMaster(for: host) {
+            self.sshArguments(for: host, interactive: false, remoteCommand: remote)
+        }
+    }
+
+    /// Runs an ssh invocation and, if **ssh itself** fails (exit 255 — a stale/dead shared
+    /// ControlMaster after a network change, a jump-host round-trip, etc.), drops the master
+    /// and retries once with a fresh connection. This is the self-heal the interactive panes
+    /// already do on reconnect; without it a one-shot command (project scan, vault list, git
+    /// status) rides the dead tunnel, fails silently, and — with no retry — leaves the sidebar
+    /// blank until the whole app is restarted. Exit 255 means ssh never ran the remote command,
+    /// so re-running is safe even for writes. Any other exit code (a real remote-command result)
+    /// is returned as-is.
+    private func launchHealingStaleMaster(for host: Host, input: String? = nil,
+                                          timeoutSeconds: TimeInterval? = nil,
+                                          buildArgs: () -> [String]) async throws -> CommandResult {
+        let first = try await launch(arguments: buildArgs(), input: input, timeoutSeconds: timeoutSeconds)
+        guard first.exitCode == 255 else { return first }
+        closeMaster(for: host)   // tear down the dead tunnel so ControlMaster=auto rebuilds it
+        return try await launch(arguments: buildArgs(), input: input, timeoutSeconds: timeoutSeconds)
     }
 
     /// Runs a raw shell command string on `host` (pipes, globs, redirection are
@@ -291,8 +309,9 @@ final class SSHManager {
     @discardableResult
     func runShell(_ command: String, input: String? = nil, on host: Host, timeoutSeconds: TimeInterval? = nil) async throws -> CommandResult {
         await ensureTailscaleResolved(for: host)   // first attempt targets Tailscale, not the LAN
-        let args = sshArguments(for: host, interactive: false, remoteCommand: [command])
-        return try await launch(arguments: args, input: input, timeoutSeconds: timeoutSeconds)
+        return try await launchHealingStaleMaster(for: host, input: input, timeoutSeconds: timeoutSeconds) {
+            self.sshArguments(for: host, interactive: false, remoteCommand: [command])
+        }
     }
 
     /// Lightweight reachability probe used by status/health views.
