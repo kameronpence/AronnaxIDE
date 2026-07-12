@@ -180,6 +180,10 @@ private struct AgentTerminalView: NSViewRepresentable {
     func makeNSView(context: Context) -> LocalProcessTerminalView {
         let view = ClipboardTerminalView(frame: .zero)
         view.processDelegate = context.coordinator
+        // Cmd-Shift-C copies this agent's full tmux scrollback to the Mac clipboard.
+        view.copyScrollback = HostTerminalView.scrollbackCopier(
+            host: settings.activeHost,
+            session: agent.tmuxSession + AgentController.sessionSuffix(for: workdir))
         context.coordinator.start(view, host: settings.activeHost, agent: agent,
                                   workdir: workdir, extraArgs: extraArgs,
                                   baselineSignal: wakeObserver.reconnectSignal)

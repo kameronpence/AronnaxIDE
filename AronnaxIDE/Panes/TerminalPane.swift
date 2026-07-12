@@ -106,9 +106,29 @@ struct HostTerminalView: NSViewRepresentable {
     func makeNSView(context: Context) -> LocalProcessTerminalView {
         let view = ClipboardTerminalView(frame: .zero)
         view.processDelegate = context.coordinator
+        view.copyScrollback = Self.scrollbackCopier(host: host, session: session)
         context.coordinator.start(view, host: host, session: session, workdir: workdir,
                                   baselineSignal: wakeObserver.reconnectSignal)
         return view
+    }
+
+    /// Builds the Cmd-Shift-C action: capture this pane's full tmux scrollback over SSH and
+    /// put it on the Mac clipboard. Shared with the Coding pane's agent terminals.
+    static func scrollbackCopier(host: Host?, session: String) -> () -> Void {
+        {
+            guard let host else { return }
+            let cmd = "tmux capture-pane -p -J -S - -t \(SSHManager.shellEscaped(session)) 2>/dev/null"
+            Task {
+                guard let r = try? await SSHManager.shared.runShell(cmd, on: host),
+                      r.ok, !r.stdout.isEmpty else { return }
+                let text = r.stdout
+                await MainActor.run {
+                    let pb = NSPasteboard.general
+                    pb.clearContents()
+                    pb.setString(text, forType: .string)
+                }
+            }
+        }
     }
 
     func updateNSView(_ nsView: LocalProcessTerminalView, context: Context) {
