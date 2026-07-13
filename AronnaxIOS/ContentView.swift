@@ -4,6 +4,10 @@ import SwiftUI
 /// split) and a project picker for which kepler project the agents attach to.
 struct ContentView: View {
     @StateObject private var session = SSHTerminalSession()
+    @Environment(\.scenePhase) private var scenePhase
+    /// Only reconnect on foreground if we actually backgrounded — a brief `.inactive`
+    /// (notification banner, Control Center) must not trigger a needless reconnect.
+    @State private var didBackground = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -64,6 +68,17 @@ struct ContentView: View {
                 .padding(.bottom, 4)
         }
         .onAppear { session.start() }
+        .onChange(of: scenePhase) { _, phase in
+            switch phase {
+            case .background:
+                didBackground = true
+            case .active where didBackground:
+                didBackground = false
+                session.reconnect()   // socket died while suspended → reconnect + reattach
+            default:
+                break
+            }
+        }
         .preferredColorScheme(.light)
     }
 }
