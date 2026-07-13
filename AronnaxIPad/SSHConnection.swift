@@ -19,6 +19,8 @@ final class SSHConnection: ObservableObject {
     static let keplerRootLabel = "kepler root"
     let keplerHome = "/Users/kepler"
     let projectsRoot = "/Users/kepler/Documents/AI_OS/Projects"
+    /// The Obsidian vault root (parent of `projectsRoot`) — what the Vault pane browses.
+    let vaultRoot = "/Users/kepler/Documents/AI_OS"
 
     private var connection: SSHClient?
     private var connectTask: Task<Void, Never>?

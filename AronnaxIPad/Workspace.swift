@@ -90,6 +90,7 @@ final class WorkspaceModel: ObservableObject {
         case .beads:    return .terminal
         case .git:      return .terminal
         case .health:   return .terminal
+        case .vault:    return .terminal
         }
     }
 
@@ -347,6 +348,8 @@ private struct LeafPaneView: View {
             GitView(connection: manager.connection, workdir: workdir)
         case .health:
             HealthView(connection: manager.connection)
+        case .vault:
+            VaultView(connection: manager.connection)
         }
     }
 
