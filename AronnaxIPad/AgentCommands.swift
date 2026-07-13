@@ -5,7 +5,7 @@ import Foundation
 /// PTY-backed; `beads` (and future Git/Vault/Health) is a non-terminal "data" surface with no
 /// PTY — see `isTerminal`.
 enum AgentTarget: String, CaseIterable, Identifiable, Codable {
-    case terminal, claude, codex, beads, git
+    case terminal, claude, codex, beads, git, health
     var id: String { rawValue }
     var label: String {
         switch self {
@@ -14,6 +14,7 @@ enum AgentTarget: String, CaseIterable, Identifiable, Codable {
         case .codex:    return "Codex"
         case .beads:    return "Beads"
         case .git:      return "Git"
+        case .health:   return "Health"
         }
     }
 
@@ -22,7 +23,7 @@ enum AgentTarget: String, CaseIterable, Identifiable, Codable {
     var isTerminal: Bool {
         switch self {
         case .terminal, .claude, .codex: return true
-        case .beads, .git:               return false
+        case .beads, .git, .health:      return false
         }
     }
 }
@@ -52,9 +53,9 @@ enum AgentCommands {
     /// clients share one live session.
     static func attachCommand(target: AgentTarget, workdir: String) -> String? {
         switch target {
-        case .terminal, .beads, .git:
-            // Data surfaces (.beads/.git) have no PTY — rendered by their own views, never open a
-            // PaneSession; listed only for exhaustiveness. .terminal = a plain login shell.
+        case .terminal, .beads, .git, .health:
+            // Data surfaces (.beads/.git/.health) have no PTY — rendered by their own views, never
+            // open a PaneSession; listed only for exhaustiveness. .terminal = a plain login shell.
             return nil
         case .claude, .codex:
             let name = target == .claude ? "agent-claude" : "agent-codex"
