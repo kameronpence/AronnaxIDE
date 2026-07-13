@@ -66,6 +66,13 @@ final class WorkspaceModel: ObservableObject {
 
     func focus(_ id: UUID) { focusedID = id }
 
+    /// The surface of the currently-focused pane — drives the top tab bar's active highlight.
+    var focusedTarget: AgentTarget { Self.target(of: focusedID, in: tree) ?? .terminal }
+
+    /// Retarget the focused pane's surface — the top tab bar's action (mirrors the desktop,
+    /// where the surface tabs retarget whichever pane is focused).
+    func setFocusedTarget(_ target: AgentTarget) { setTarget(target, for: focusedID) }
+
     func setTarget(_ target: AgentTarget, for id: UUID) {
         tree = Self.setTarget(target, for: id, in: tree)
     }
@@ -199,6 +206,34 @@ final class WorkspaceModel: ObservableObject {
 }
 
 // MARK: - Views
+
+/// The top surface-tab bar (mirrors the desktop's `WorkspaceTopBar`): a row of tabs that
+/// retarget the FOCUSED pane's surface, with the active surface highlighted. The per-pane
+/// dropdown still switches an individual pane; these tabs act on whichever pane is focused.
+/// Text-only (no icons) and horizontally scrollable so all surfaces fit on any width.
+struct WorkspaceTopBar: View {
+    @ObservedObject var model: WorkspaceModel
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 4) {
+                ForEach(AgentTarget.allCases) { target in
+                    let active = model.focusedTarget == target
+                    Button { model.setFocusedTarget(target) } label: {
+                        Text(target.label)
+                            .font(.callout)
+                            .padding(.horizontal, 12).padding(.vertical, 7)
+                            .background(active ? Color.accentColor.opacity(0.18) : .clear,
+                                        in: RoundedRectangle(cornerRadius: 7))
+                            .foregroundStyle(active ? Color.accentColor : .secondary)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 10).padding(.vertical, 5)
+        }
+    }
+}
 
 /// Renders a workspace layout tree, binding each leaf to a live terminal session.
 struct WorkspaceView: View {

@@ -24,10 +24,15 @@ struct RootView: View {
             ProjectSidebar(connection: connection, selected: $selectedProject)
         } detail: {
             let project = selectedProject ?? SSHConnection.keplerRootLabel
-            WorkspaceView(model: workspace, manager: manager,
-                          workdir: connection.workdir(for: project))
-                .navigationTitle(project)
-                .navigationBarTitleDisplayMode(.inline)
+            VStack(spacing: 0) {
+                WorkspaceTopBar(model: workspace)   // desktop-style surface tabs, retarget focused pane
+                Divider()
+                WorkspaceView(model: workspace, manager: manager,
+                              workdir: connection.workdir(for: project))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            .navigationTitle(project)
+            .navigationBarTitleDisplayMode(.inline)
         }
         .onAppear { connection.start() }
         .onChange(of: scenePhase) { _, phase in
