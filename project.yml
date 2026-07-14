@@ -106,6 +106,10 @@ targets:
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         CFBundleDisplayName: Aronnax
         CFBundleName: Aronnax
+        # Keyboard dictation (the mic on the software keyboard) needs microphone access, gated by
+        # this usage string — without it iOS won't dictate into the app. SwiftTerm's iOS view is a
+        # UITextInput/UIKeyInput client, so dictated text inserts once the mic is granted.
+        NSMicrophoneUsageDescription: "Aronnax uses the microphone for keyboard dictation into the terminal."
         UILaunchScreen: {}
         UIRequiresFullScreen: true
         UISupportedInterfaceOrientations~ipad:
@@ -153,6 +157,10 @@ targets:
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         CFBundleDisplayName: AronnaxIPad
         CFBundleName: AronnaxIPad
+        # Keyboard dictation (the mic on the software keyboard) needs microphone access, gated by
+        # this usage string — without it iPadOS won't dictate into the app. SwiftTerm's iOS view is
+        # a UITextInput/UIKeyInput client, so dictated text inserts once the mic is granted.
+        NSMicrophoneUsageDescription: "AronnaxIPad uses the microphone for keyboard dictation into the terminal and agent panes."
         UILaunchScreen: {}
         # NO UIRequiresFullScreen -> Split View / Stage Manager multitasking works.
         UISupportedInterfaceOrientations~ipad:
