@@ -40,6 +40,21 @@ final class SSHTerminalSession: ObservableObject {
         connectTask = Task { [weak self] in await self?.connect() }
     }
 
+    /// Reconnect after the app returns from the background. iOS drops the socket while the app
+    /// is suspended, so the live PTY channel dies and the surface reads "ended" — and `start()`
+    /// won't help because its `connectTask` guard still sees the finished task. Tear down the
+    /// dead client + tasks and start a fresh connect, which reattaches the current surface's
+    /// tmux session — lossless, since the work keeps running in tmux on kepler.
+    func reconnect() {
+        connectTask?.cancel(); connectTask = nil
+        ptyTask?.cancel(); ptyTask = nil
+        let old = client
+        client = nil
+        status = "Reconnecting…"
+        if let old { Task { try? await old.close() } }
+        start()
+    }
+
     /// Keyboard input → the active PTY's stdin.
     func sendInput(_ bytes: [UInt8]) { inputContinuation?.yield(bytes) }
 
@@ -85,7 +100,10 @@ final class SSHTerminalSession: ObservableObject {
                 // of hanging the whole 30s on one doomed attempt.
                 settings.connectTimeout = .seconds(12)
                 let c = try await SSHClient.connect(to: settings)
-                guard !Task.isCancelled else { return }
+                // Cancelling the Task (e.g. reconnect() on foreground) doesn't cancel the NIO
+                // handshake, so this can still succeed after we bailed — close it so a stray
+                // authenticated channel doesn't leak across repeated foreground transitions.
+                guard !Task.isCancelled else { try? await c.close(); return }
                 client = c
                 status = "Connected"
                 restartPTY()
