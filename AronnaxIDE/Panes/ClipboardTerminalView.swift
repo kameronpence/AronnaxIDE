@@ -29,6 +29,20 @@ final class ClipboardTerminalView: LocalProcessTerminalView {
         return (responder as? NSView)?.isDescendant(of: self) ?? false
     }
 
+    // MARK: - Dictation
+
+    /// macOS Dictation queries `selectedRange()` to find where to insert text. SwiftTerm returns
+    /// `{NSNotFound, 0}` ("no selection") whenever there's no *visual* selection — i.e. the normal
+    /// state with just a blinking cursor — which tells Dictation there's no insertion point, so it
+    /// silently refuses to start (the "Dictation won't start in this app" symptom). A terminal
+    /// always has a caret, so report a valid zero-length insertion point when there's no real
+    /// selection. Dictated text still routes through `insertText(_:)`, which SwiftTerm forwards to
+    /// the shell/agent as input.
+    override func selectedRange() -> NSRange {
+        let range = super.selectedRange()
+        return range.location == NSNotFound ? NSRange(location: 0, length: 0) : range
+    }
+
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
         // Only the focused terminal may claim clipboard shortcuts; otherwise defer so
         // the event reaches the pane the user is actually working in.
