@@ -21,7 +21,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "swiftui",
-      "community": 81,
+      "community": 9,
       "norm_label": "swiftui"
     },
     {
@@ -61,7 +61,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aronnaxide_contentview",
-      "community": 11,
+      "community": 109,
       "norm_label": "contentview.swift"
     },
     {
@@ -71,7 +71,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "aronnaxide_contentview_workspacetab",
-      "community": 11,
+      "community": 109,
       "norm_label": "workspacetab"
     },
     {
@@ -91,7 +91,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "caseiterable",
-      "community": 17,
+      "community": 29,
       "norm_label": "caseiterable"
     },
     {
@@ -101,7 +101,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "identifiable",
-      "community": 60,
+      "community": 29,
       "norm_label": "identifiable"
     },
     {
@@ -121,7 +121,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "aronnaxide_contentview_workspacetab_terminal",
-      "community": 11,
+      "community": 109,
       "norm_label": "terminal"
     },
     {
@@ -131,7 +131,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "aronnaxide_contentview_workspacetab_coding",
-      "community": 11,
+      "community": 109,
       "norm_label": "coding"
     },
     {
@@ -141,7 +141,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "aronnaxide_contentview_workspacetab_browser",
-      "community": 11,
+      "community": 109,
       "norm_label": "browser"
     },
     {
@@ -151,7 +151,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "aronnaxide_contentview_workspacetab_vault",
-      "community": 11,
+      "community": 109,
       "norm_label": "vault"
     },
     {
@@ -161,7 +161,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "aronnaxide_contentview_workspacetab_beads",
-      "community": 11,
+      "community": 109,
       "norm_label": "beads"
     },
     {
@@ -171,7 +171,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "aronnaxide_contentview_workspacetab_logs",
-      "community": 11,
+      "community": 109,
       "norm_label": "logs"
     },
     {
@@ -181,7 +181,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "aronnaxide_contentview_workspacetab_git",
-      "community": 11,
+      "community": 109,
       "norm_label": "git"
     },
     {
@@ -191,7 +191,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "aronnaxide_contentview_workspacetab_health",
-      "community": 11,
+      "community": 109,
       "norm_label": "health"
     },
     {
@@ -201,7 +201,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "aronnaxide_contentview_workspacesurface",
-      "community": 11,
+      "community": 109,
       "norm_label": "workspacesurface"
     },
     {
@@ -221,7 +221,7 @@
       "source_location": "L75",
       "_origin": "ast",
       "id": "aronnaxide_contentview_workspacetopbar",
-      "community": 45,
+      "community": 2,
       "norm_label": "workspacetopbar"
     },
     {
@@ -241,7 +241,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxide_contentview_swift_color",
-      "community": 45,
+      "community": 2,
       "norm_label": "color"
     },
     {
@@ -251,7 +251,7 @@
       "source_location": "L144",
       "_origin": "ast",
       "id": "aronnaxide_contentview_workspacetopbar_reconnect",
-      "community": 45,
+      "community": 2,
       "norm_label": ".reconnect()"
     },
     {
@@ -261,7 +261,7 @@
       "source_location": "L155",
       "_origin": "ast",
       "id": "aronnaxide_contentview_sidebarview",
-      "community": 43,
+      "community": 93,
       "norm_label": "sidebarview"
     },
     {
@@ -271,7 +271,7 @@
       "source_location": "L309",
       "_origin": "ast",
       "id": "aronnaxide_contentview_sidebarview_projectrow",
-      "community": 43,
+      "community": 93,
       "norm_label": ".projectrow()"
     },
     {
@@ -281,7 +281,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxide_contentview_swift_bool",
-      "community": 43,
+      "community": 93,
       "norm_label": "bool"
     },
     {
@@ -291,7 +291,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxide_contentview_swift_void",
-      "community": 43,
+      "community": 93,
       "norm_label": "void"
     },
     {
@@ -301,7 +301,7 @@
       "source_location": "L346",
       "_origin": "ast",
       "id": "aronnaxide_contentview_sidebarview_movebuttons",
-      "community": 43,
+      "community": 93,
       "norm_label": ".movebuttons()"
     },
     {
@@ -311,7 +311,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxide_contentview_swift_int",
-      "community": 43,
+      "community": 93,
       "norm_label": "int"
     },
     {
@@ -321,7 +321,7 @@
       "source_location": "L380",
       "_origin": "ast",
       "id": "aronnaxide_contentview_sidebarview_togglehidden",
-      "community": 43,
+      "community": 93,
       "norm_label": ".togglehidden()"
     },
     {
@@ -373,7 +373,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "observableobject",
-      "community": 106,
+      "community": 104,
       "norm_label": "observableobject"
     },
     {
@@ -450,7 +450,7 @@
       "label": "Keys",
       "file_type": "code",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L76",
+      "source_location": "L64",
       "_origin": "ast",
       "id": "aronnaxide_models_appsettings_keys",
       "community": 114,
@@ -460,7 +460,7 @@
       "label": ".addHost()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L94",
+      "source_location": "L82",
       "_origin": "ast",
       "id": "aronnaxide_models_appsettings_appsettings_addhost",
       "community": 51,
@@ -470,7 +470,7 @@
       "label": ".removeHost()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L102",
+      "source_location": "L90",
       "_origin": "ast",
       "id": "aronnaxide_models_appsettings_appsettings_removehost",
       "community": 51,
@@ -480,7 +480,7 @@
       "label": ".isCustomHost()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L120",
+      "source_location": "L108",
       "_origin": "ast",
       "id": "aronnaxide_models_appsettings_appsettings_iscustomhost",
       "community": 51,
@@ -490,7 +490,7 @@
       "label": ".rebuildHosts()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L122",
+      "source_location": "L110",
       "_origin": "ast",
       "id": "aronnaxide_models_appsettings_appsettings_rebuildhosts",
       "community": 51,
@@ -500,7 +500,7 @@
       "label": ".moveHosts()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L131",
+      "source_location": "L119",
       "_origin": "ast",
       "id": "aronnaxide_models_appsettings_appsettings_movehosts",
       "community": 51,
@@ -530,7 +530,7 @@
       "label": ".orderedProjects()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L139",
+      "source_location": "L127",
       "_origin": "ast",
       "id": "aronnaxide_models_appsettings_appsettings_orderedprojects",
       "community": 51,
@@ -540,7 +540,7 @@
       "label": ".moveProjects()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L143",
+      "source_location": "L131",
       "_origin": "ast",
       "id": "aronnaxide_models_appsettings_appsettings_moveprojects",
       "community": 51,
@@ -550,7 +550,7 @@
       "label": ".order()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L160",
+      "source_location": "L148",
       "_origin": "ast",
       "id": "aronnaxide_models_appsettings_appsettings_order",
       "community": 51,
@@ -570,7 +570,7 @@
       "label": ".reconcileHostOrder()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L169",
+      "source_location": "L157",
       "_origin": "ast",
       "id": "aronnaxide_models_appsettings_appsettings_reconcilehostorder",
       "community": 51,
@@ -580,7 +580,7 @@
       "label": ".saveCustomHosts()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L181",
+      "source_location": "L169",
       "_origin": "ast",
       "id": "aronnaxide_models_appsettings_appsettings_savecustomhosts",
       "community": 51,
@@ -590,7 +590,7 @@
       "label": ".isProjectHidden()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L197",
+      "source_location": "L185",
       "_origin": "ast",
       "id": "aronnaxide_models_appsettings_appsettings_isprojecthidden",
       "community": 51,
@@ -600,7 +600,7 @@
       "label": ".setProjectHidden()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L198",
+      "source_location": "L186",
       "_origin": "ast",
       "id": "aronnaxide_models_appsettings_appsettings_setprojecthidden",
       "community": 51,
@@ -610,7 +610,7 @@
       "label": ".init()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L254",
+      "source_location": "L242",
       "_origin": "ast",
       "id": "aronnaxide_models_appsettings_appsettings_init",
       "community": 51,
@@ -623,7 +623,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aronnaxide_models_fleet",
-      "community": 11,
+      "community": 20,
       "norm_label": "fleet.swift"
     },
     {
@@ -633,7 +633,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "aronnaxide_models_fleet_hostreach",
-      "community": 11,
+      "community": 20,
       "norm_label": "hostreach"
     },
     {
@@ -643,7 +643,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "hashable",
-      "community": 37,
+      "community": 20,
       "norm_label": "hashable"
     },
     {
@@ -653,7 +653,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "aronnaxide_models_fleet_hostreach_direct",
-      "community": 11,
+      "community": 20,
       "norm_label": "direct"
     },
     {
@@ -663,7 +663,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "aronnaxide_models_fleet_hostreach_proxyjump",
-      "community": 11,
+      "community": 20,
       "norm_label": "proxyjump"
     },
     {
@@ -673,7 +673,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxide_models_fleet_swift_string",
-      "community": 11,
+      "community": 20,
       "norm_label": "string"
     },
     {
@@ -703,7 +703,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "aronnaxide_models_fleet_githubaccount",
-      "community": 11,
+      "community": 20,
       "norm_label": "githubaccount"
     },
     {
@@ -713,7 +713,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "aronnaxide_models_fleet_project",
-      "community": 11,
+      "community": 20,
       "norm_label": "project"
     },
     {
@@ -723,7 +723,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aronnaxide_panes_addserverwizard",
-      "community": 81,
+      "community": 9,
       "norm_label": "addserverwizard.swift"
     },
     {
@@ -733,7 +733,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "aronnaxide_panes_addserverwizard_addserverwizardwindow",
-      "community": 81,
+      "community": 9,
       "norm_label": "addserverwizardwindow"
     },
     {
@@ -1103,7 +1103,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aronnaxide_panes_browserpane",
-      "community": 49,
+      "community": 9,
       "norm_label": "browserpane.swift"
     },
     {
@@ -1114,7 +1114,7 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "webkit",
-      "community": 49,
+      "community": 9,
       "norm_label": "webkit"
     },
     {
@@ -1374,7 +1374,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "nsviewrepresentable",
-      "community": 49,
+      "community": 15,
       "norm_label": "nsviewrepresentable"
     },
     {
@@ -1414,7 +1414,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aronnaxide_panes_clipboardterminalview",
-      "community": 10,
+      "community": 49,
       "norm_label": "clipboardterminalview.swift"
     },
     {
@@ -1425,7 +1425,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "appkit",
-      "community": 10,
+      "community": 49,
       "norm_label": "appkit"
     },
     {
@@ -1446,7 +1446,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "aronnaxide_panes_clipboardterminalview_clipboardterminalview",
-      "community": 10,
+      "community": 49,
       "norm_label": "clipboardterminalview"
     },
     {
@@ -1456,7 +1456,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "localprocessterminalview",
-      "community": 10,
+      "community": 49,
       "norm_label": "localprocessterminalview"
     },
     {
@@ -1466,7 +1466,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxide_panes_clipboardterminalview_swift_any",
-      "community": 10,
+      "community": 49,
       "norm_label": "any"
     },
     {
@@ -1476,107 +1476,17 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxide_panes_clipboardterminalview_swift_bool",
-      "community": 10,
+      "community": 49,
       "norm_label": "bool"
-    },
-    {
-      "label": ".selectedRange()",
-      "file_type": "code",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L41",
-      "_origin": "ast",
-      "id": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_selectedrange",
-      "community": 10,
-      "norm_label": ".selectedrange()"
-    },
-    {
-      "label": "NSRange",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "nsrange",
-      "community": 10,
-      "norm_label": "nsrange"
-    },
-    {
-      "label": "NSTextField",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "nstextfield",
-      "community": 10,
-      "norm_label": "nstextfield"
-    },
-    {
-      "label": ".hasMarkedText()",
-      "file_type": "code",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L55",
-      "_origin": "ast",
-      "id": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_hasmarkedtext",
-      "community": 10,
-      "norm_label": ".hasmarkedtext()"
-    },
-    {
-      "label": ".markedRange()",
-      "file_type": "code",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L57",
-      "_origin": "ast",
-      "id": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_markedrange",
-      "community": 10,
-      "norm_label": ".markedrange()"
-    },
-    {
-      "label": ".setMarkedText()",
-      "file_type": "code",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L62",
-      "_origin": "ast",
-      "id": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_setmarkedtext",
-      "community": 10,
-      "norm_label": ".setmarkedtext()"
-    },
-    {
-      "label": ".unmarkText()",
-      "file_type": "code",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L67",
-      "_origin": "ast",
-      "id": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_unmarktext",
-      "community": 10,
-      "norm_label": ".unmarktext()"
-    },
-    {
-      "label": ".insertText()",
-      "file_type": "code",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L72",
-      "_origin": "ast",
-      "id": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_inserttext",
-      "community": 10,
-      "norm_label": ".inserttext()"
-    },
-    {
-      "label": ".refreshDictationOverlay()",
-      "file_type": "code",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L78",
-      "_origin": "ast",
-      "id": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_refreshdictationoverlay",
-      "community": 10,
-      "norm_label": ".refreshdictationoverlay()"
     },
     {
       "label": ".performKeyEquivalent()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L109",
+      "source_location": "L31",
       "_origin": "ast",
       "id": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_performkeyequivalent",
-      "community": 10,
+      "community": 49,
       "norm_label": ".performkeyequivalent()"
     },
     {
@@ -1586,77 +1496,67 @@
       "source_location": "",
       "_origin": "ast",
       "id": "nsevent",
-      "community": 10,
+      "community": 49,
       "norm_label": "nsevent"
     },
     {
       "label": ".viewDidMoveToWindow()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L142",
+      "source_location": "L64",
       "_origin": "ast",
       "id": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_viewdidmovetowindow",
-      "community": 10,
+      "community": 49,
       "norm_label": ".viewdidmovetowindow()"
-    },
-    {
-      "label": ".handleHover()",
-      "file_type": "code",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L181",
-      "_origin": "ast",
-      "id": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_handlehover",
-      "community": 10,
-      "norm_label": ".handlehover()"
     },
     {
       "label": ".applySetupIfNeeded()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L203",
+      "source_location": "L91",
       "_origin": "ast",
       "id": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_applysetupifneeded",
-      "community": 10,
+      "community": 49,
       "norm_label": ".applysetupifneeded()"
     },
     {
       "label": ".deinit()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L212",
+      "source_location": "L100",
       "_origin": "ast",
       "id": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_deinit",
-      "community": 10,
+      "community": 49,
       "norm_label": ".deinit()"
     },
     {
       "label": ".removeScrollMonitor()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L216",
+      "source_location": "L104",
       "_origin": "ast",
       "id": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_removescrollmonitor",
-      "community": 10,
+      "community": 49,
       "norm_label": ".removescrollmonitor()"
     },
     {
       "label": ".handleScroll()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L229",
+      "source_location": "L113",
       "_origin": "ast",
       "id": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_handlescroll",
-      "community": 10,
+      "community": 49,
       "norm_label": ".handlescroll()"
     },
     {
       "label": ".cell()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L253",
+      "source_location": "L137",
       "_origin": "ast",
       "id": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_cell",
-      "community": 10,
+      "community": 49,
       "norm_label": ".cell()"
     },
     {
@@ -1666,7 +1566,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "nspoint",
-      "community": 10,
+      "community": 49,
       "norm_label": "nspoint"
     },
     {
@@ -1676,7 +1576,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxide_panes_clipboardterminalview_swift_int",
-      "community": 10,
+      "community": 49,
       "norm_label": "int"
     },
     {
@@ -1686,7 +1586,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aronnaxide_panes_codingpane",
-      "community": 104,
+      "community": 29,
       "norm_label": "codingpane.swift"
     },
     {
@@ -1696,7 +1596,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "aronnaxide_panes_codingpane_codingpane",
-      "community": 104,
+      "community": 29,
       "norm_label": "codingpane"
     },
     {
@@ -1706,7 +1606,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "aronnaxide_panes_codingpane_agentlayout",
-      "community": 104,
+      "community": 29,
       "norm_label": "agentlayout"
     },
     {
@@ -1716,7 +1616,7 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "aronnaxide_panes_codingpane_agentlayout_claude",
-      "community": 104,
+      "community": 29,
       "norm_label": "claude"
     },
     {
@@ -1726,7 +1626,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "aronnaxide_panes_codingpane_agentlayout_codex",
-      "community": 104,
+      "community": 29,
       "norm_label": "codex"
     },
     {
@@ -1736,7 +1636,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "aronnaxide_panes_codingpane_agentlayout_both",
-      "community": 104,
+      "community": 29,
       "norm_label": "both"
     },
     {
@@ -1996,7 +1896,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aronnaxide_panes_dependencygraphview",
-      "community": 49,
+      "community": 9,
       "norm_label": "dependencygraphview.swift"
     },
     {
@@ -2006,7 +1906,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "aronnaxide_panes_dependencygraphview_beadsviewmode",
-      "community": 49,
+      "community": 9,
       "norm_label": "beadsviewmode"
     },
     {
@@ -2016,7 +1916,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "aronnaxide_panes_dependencygraphview_beadsviewmode_list",
-      "community": 49,
+      "community": 9,
       "norm_label": "list"
     },
     {
@@ -2026,7 +1926,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "aronnaxide_panes_dependencygraphview_beadsviewmode_graph",
-      "community": 49,
+      "community": 9,
       "norm_label": "graph"
     },
     {
@@ -2036,7 +1936,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "aronnaxide_panes_dependencygraphview_mermaidgraph",
-      "community": 49,
+      "community": 53,
       "norm_label": "mermaidgraph"
     },
     {
@@ -2046,7 +1946,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "aronnaxide_panes_dependencygraphview_mermaidgraph_source",
-      "community": 49,
+      "community": 53,
       "norm_label": ".source()"
     },
     {
@@ -2056,7 +1956,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxide_panes_dependencygraphview_swift_string",
-      "community": 49,
+      "community": 53,
       "norm_label": "string"
     },
     {
@@ -2066,7 +1966,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "aronnaxide_panes_dependencygraphview_mermaidgraph_nodename",
-      "community": 49,
+      "community": 53,
       "norm_label": ".nodename()"
     },
     {
@@ -2076,7 +1976,7 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "aronnaxide_panes_dependencygraphview_mermaidgraph_sanitize",
-      "community": 49,
+      "community": 53,
       "norm_label": ".sanitize()"
     },
     {
@@ -2086,7 +1986,7 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "aronnaxide_panes_dependencygraphview_dependencygraphview",
-      "community": 49,
+      "community": 53,
       "norm_label": "dependencygraphview"
     },
     {
@@ -2096,7 +1996,7 @@
       "source_location": "L69",
       "_origin": "ast",
       "id": "aronnaxide_panes_dependencygraphview_dependencygraphview_makensview",
-      "community": 49,
+      "community": 53,
       "norm_label": ".makensview()"
     },
     {
@@ -2106,7 +2006,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxide_panes_dependencygraphview_swift_context",
-      "community": 49,
+      "community": 53,
       "norm_label": "context"
     },
     {
@@ -2116,7 +2016,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxide_panes_dependencygraphview_swift_wkwebview",
-      "community": 49,
+      "community": 53,
       "norm_label": "wkwebview"
     },
     {
@@ -2126,7 +2026,7 @@
       "source_location": "L73",
       "_origin": "ast",
       "id": "aronnaxide_panes_dependencygraphview_dependencygraphview_updatensview",
-      "community": 49,
+      "community": 53,
       "norm_label": ".updatensview()"
     },
     {
@@ -2136,7 +2036,7 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "aronnaxide_panes_dependencygraphview_dependencygraphview_html",
-      "community": 49,
+      "community": 53,
       "norm_label": ".html()"
     },
     {
@@ -2146,7 +2046,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aronnaxide_panes_gitdeploypanel",
-      "community": 19,
+      "community": 9,
       "norm_label": "gitdeploypanel.swift"
     },
     {
@@ -2466,7 +2366,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aronnaxide_panes_hosthealthpanel",
-      "community": 43,
+      "community": 61,
       "norm_label": "hosthealthpanel.swift"
     },
     {
@@ -2476,7 +2376,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "aronnaxide_panes_hosthealthpanel_hosthealthpanel",
-      "community": 43,
+      "community": 61,
       "norm_label": "hosthealthpanel"
     },
     {
@@ -2486,7 +2386,7 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "aronnaxide_panes_hosthealthpanel_hosthealthpanel_hostrow",
-      "community": 43,
+      "community": 61,
       "norm_label": ".hostrow()"
     },
     {
@@ -2496,7 +2396,7 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "aronnaxide_panes_hosthealthpanel_hosthealthpanel_sessionchips",
-      "community": 43,
+      "community": 61,
       "norm_label": ".sessionchips()"
     },
     {
@@ -2506,7 +2406,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxide_panes_hosthealthpanel_swift_string",
-      "community": 43,
+      "community": 61,
       "norm_label": "string"
     },
     {
@@ -2516,7 +2416,7 @@
       "source_location": "L97",
       "_origin": "ast",
       "id": "aronnaxide_panes_hosthealthpanel_hosthealthpanel_sessionicon",
-      "community": 43,
+      "community": 61,
       "norm_label": ".sessionicon()"
     },
     {
@@ -2526,7 +2426,7 @@
       "source_location": "L103",
       "_origin": "ast",
       "id": "aronnaxide_panes_hosthealthpanel_hosthealthpanel_dotcolor",
-      "community": 43,
+      "community": 61,
       "norm_label": ".dotcolor()"
     },
     {
@@ -2536,7 +2436,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxide_panes_hosthealthpanel_swift_bool",
-      "community": 43,
+      "community": 61,
       "norm_label": "bool"
     },
     {
@@ -2546,7 +2446,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxide_panes_hosthealthpanel_swift_color",
-      "community": 43,
+      "community": 61,
       "norm_label": "color"
     },
     {
@@ -2556,7 +2456,7 @@
       "source_location": "L111",
       "_origin": "ast",
       "id": "aronnaxide_panes_hosthealthpanel_hosthealthpanel_reachabilitytext",
-      "community": 43,
+      "community": 61,
       "norm_label": ".reachabilitytext()"
     },
     {
@@ -2566,7 +2466,7 @@
       "source_location": "L122",
       "_origin": "ast",
       "id": "aronnaxide_panes_hosthealthpanel_flowchips",
-      "community": 43,
+      "community": 61,
       "norm_label": "flowchips"
     },
     {
@@ -2576,7 +2476,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "item",
-      "community": 43,
+      "community": 61,
       "norm_label": "item"
     },
     {
@@ -2586,7 +2486,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "content",
-      "community": 43,
+      "community": 61,
       "norm_label": "content"
     },
     {
@@ -2596,7 +2496,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aronnaxide_panes_logviewer",
-      "community": 86,
+      "community": 61,
       "norm_label": "logviewer.swift"
     },
     {
@@ -2606,7 +2506,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "aronnaxide_panes_logviewer_logviewer",
-      "community": 86,
+      "community": 61,
       "norm_label": "logviewer"
     },
     {
@@ -2616,7 +2516,7 @@
       "source_location": "L96",
       "_origin": "ast",
       "id": "aronnaxide_panes_logviewer_logviewer_statusbanner",
-      "community": 86,
+      "community": 61,
       "norm_label": ".statusbanner()"
     },
     {
@@ -2626,7 +2526,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxide_panes_logviewer_swift_string",
-      "community": 86,
+      "community": 61,
       "norm_label": "string"
     },
     {
@@ -2636,7 +2536,7 @@
       "source_location": "L143",
       "_origin": "ast",
       "id": "aronnaxide_panes_logviewer_logviewer_startifpossible",
-      "community": 86,
+      "community": 61,
       "norm_label": ".startifpossible()"
     },
     {
@@ -2646,7 +2546,7 @@
       "source_location": "L148",
       "_origin": "ast",
       "id": "aronnaxide_panes_logviewer_logviewer_message",
-      "community": 86,
+      "community": 61,
       "norm_label": ".message()"
     },
     {
@@ -2656,7 +2556,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aronnaxide_panes_placeholders",
-      "community": 81,
+      "community": 9,
       "norm_label": "placeholders.swift"
     },
     {
@@ -2666,7 +2566,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "aronnaxide_panes_placeholders_comingsoon",
-      "community": 81,
+      "community": 9,
       "norm_label": "comingsoon"
     },
     {
@@ -2676,7 +2576,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxide_panes_placeholders_swift_string",
-      "community": 81,
+      "community": 9,
       "norm_label": "string"
     },
     {
@@ -2686,7 +2586,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aronnaxide_panes_terminalpane",
-      "community": 81,
+      "community": 21,
       "norm_label": "terminalpane.swift"
     },
     {
@@ -2696,7 +2596,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "aronnaxide_panes_terminalpane_terminalpane",
-      "community": 111,
+      "community": 21,
       "norm_label": "terminalpane"
     },
     {
@@ -2706,7 +2606,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxide_panes_terminalpane_swift_set",
-      "community": 111,
+      "community": 21,
       "norm_label": "set"
     },
     {
@@ -2726,7 +2626,7 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "aronnaxide_panes_terminalpane_terminalpane_protectedgate",
-      "community": 111,
+      "community": 21,
       "norm_label": ".protectedgate()"
     },
     {
@@ -2736,7 +2636,7 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "aronnaxide_panes_terminalpane_terminalpane_protectedbanner",
-      "community": 111,
+      "community": 21,
       "norm_label": ".protectedbanner()"
     },
     {
@@ -3637,7 +3537,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "aronnaxide_services_beadscontroller_codingkeys",
-      "community": 20,
+      "community": 103,
       "norm_label": "codingkeys"
     },
     {
@@ -3657,7 +3557,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "aronnaxide_services_beadscontroller_codingkeys_id",
-      "community": 20,
+      "community": 103,
       "norm_label": "id"
     },
     {
@@ -3667,7 +3567,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "aronnaxide_services_beadscontroller_codingkeys_title",
-      "community": 20,
+      "community": 103,
       "norm_label": "title"
     },
     {
@@ -3677,7 +3577,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "aronnaxide_services_beadscontroller_codingkeys_description",
-      "community": 20,
+      "community": 103,
       "norm_label": "description"
     },
     {
@@ -3687,7 +3587,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "aronnaxide_services_beadscontroller_codingkeys_status",
-      "community": 20,
+      "community": 103,
       "norm_label": "status"
     },
     {
@@ -3697,7 +3597,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "aronnaxide_services_beadscontroller_codingkeys_priority",
-      "community": 20,
+      "community": 103,
       "norm_label": "priority"
     },
     {
@@ -3707,7 +3607,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "aronnaxide_services_beadscontroller_codingkeys_labels",
-      "community": 20,
+      "community": 103,
       "norm_label": "labels"
     },
     {
@@ -3717,7 +3617,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "aronnaxide_services_beadscontroller_codingkeys_dependencies",
-      "community": 20,
+      "community": 103,
       "norm_label": "dependencies"
     },
     {
@@ -3727,7 +3627,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "aronnaxide_services_beadscontroller_codingkeys_issuetype",
-      "community": 20,
+      "community": 103,
       "norm_label": "issuetype"
     },
     {
@@ -3737,7 +3637,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "aronnaxide_services_beadscontroller_codingkeys_dependencycount",
-      "community": 20,
+      "community": 103,
       "norm_label": "dependencycount"
     },
     {
@@ -3747,7 +3647,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "aronnaxide_services_beadscontroller_codingkeys_dependentcount",
-      "community": 20,
+      "community": 103,
       "norm_label": "dependentcount"
     },
     {
@@ -3757,7 +3657,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "aronnaxide_services_beadscontroller_codingkeys_blockedbycount",
-      "community": 20,
+      "community": 103,
       "norm_label": "blockedbycount"
     },
     {
@@ -3777,7 +3677,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "aronnaxide_services_beadscontroller_codingkeys_issueid",
-      "community": 20,
+      "community": 103,
       "norm_label": "issueid"
     },
     {
@@ -3787,7 +3687,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "aronnaxide_services_beadscontroller_codingkeys_dependsonid",
-      "community": 20,
+      "community": 103,
       "norm_label": "dependsonid"
     },
     {
@@ -3797,7 +3697,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "aronnaxide_services_beadscontroller_codingkeys_type",
-      "community": 20,
+      "community": 103,
       "norm_label": "type"
     },
     {
@@ -3817,7 +3717,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "localizederror",
-      "community": 4,
+      "community": 17,
       "norm_label": "localizederror"
     },
     {
@@ -4047,7 +3947,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "aronnaxide_services_connectionmonitor_connectionmonitor_recheck",
-      "community": 45,
+      "community": 2,
       "norm_label": ".recheck()"
     },
     {
@@ -4767,7 +4667,7 @@
       "source_location": "L220",
       "_origin": "ast",
       "id": "aronnaxide_services_logstreamcontroller_logsource",
-      "community": 17,
+      "community": 29,
       "norm_label": "logsource"
     },
     {
@@ -4777,7 +4677,7 @@
       "source_location": "L221",
       "_origin": "ast",
       "id": "aronnaxide_services_logstreamcontroller_logsource_file",
-      "community": 17,
+      "community": 29,
       "norm_label": "file"
     },
     {
@@ -4787,7 +4687,7 @@
       "source_location": "L222",
       "_origin": "ast",
       "id": "aronnaxide_services_logstreamcontroller_logsource_command",
-      "community": 17,
+      "community": 29,
       "norm_label": "command"
     },
     {
@@ -4978,7 +4878,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "aronnaxide_services_previewwatcher_previewwatcher",
-      "community": 23,
+      "community": 113,
       "norm_label": "previewwatcher"
     },
     {
@@ -4988,7 +4888,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxide_services_previewwatcher_swift_string",
-      "community": 23,
+      "community": 113,
       "norm_label": "string"
     },
     {
@@ -4998,7 +4898,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxide_services_previewwatcher_swift_timer",
-      "community": 23,
+      "community": 113,
       "norm_label": "timer"
     },
     {
@@ -5008,7 +4908,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxide_services_previewwatcher_swift_timeinterval",
-      "community": 23,
+      "community": 113,
       "norm_label": "timeinterval"
     },
     {
@@ -5018,7 +4918,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "aronnaxide_services_previewwatcher_previewwatcher_start",
-      "community": 23,
+      "community": 113,
       "norm_label": ".start()"
     },
     {
@@ -5028,7 +4928,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "aronnaxide_services_previewwatcher_previewwatcher_stop",
-      "community": 23,
+      "community": 113,
       "norm_label": ".stop()"
     },
     {
@@ -5038,7 +4938,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "aronnaxide_services_previewwatcher_previewwatcher_poll",
-      "community": 23,
+      "community": 113,
       "norm_label": ".poll()"
     },
     {
@@ -5238,7 +5138,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aronnaxide_services_sshconfigparser",
-      "community": 4,
+      "community": 111,
       "norm_label": "sshconfigparser.swift"
     },
     {
@@ -5248,7 +5148,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "aronnaxide_services_sshconfigparser_sshconfigparser",
-      "community": 4,
+      "community": 111,
       "norm_label": "sshconfigparser"
     },
     {
@@ -5258,7 +5158,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "aronnaxide_services_sshconfigparser_sshconfigparser_parse",
-      "community": 4,
+      "community": 111,
       "norm_label": ".parse()"
     },
     {
@@ -5268,7 +5168,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxide_services_sshconfigparser_swift_string",
-      "community": 4,
+      "community": 111,
       "norm_label": "string"
     },
     {
@@ -5278,7 +5178,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "aronnaxide_services_sshconfigparser_sshconfigparser_loadhosts",
-      "community": 4,
+      "community": 111,
       "norm_label": ".loadhosts()"
     },
     {
@@ -5288,7 +5188,7 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "aronnaxide_services_sshconfigparser_sshconfigparser_keyvalue",
-      "community": 4,
+      "community": 111,
       "norm_label": ".keyvalue()"
     },
     {
@@ -5298,7 +5198,7 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "aronnaxide_services_sshconfigparser_builder",
-      "community": 4,
+      "community": 111,
       "norm_label": "builder"
     },
     {
@@ -5308,7 +5208,7 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "aronnaxide_services_sshconfigparser_builder_build",
-      "community": 4,
+      "community": 111,
       "norm_label": ".build()"
     },
     {
@@ -5582,14 +5482,14 @@
       "norm_label": ".run()"
     },
     {
-      "label": ".launchHealingStaleMaster()",
+      "label": ".runShell()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L296",
+      "source_location": "L291",
       "_origin": "ast",
-      "id": "aronnaxide_services_sshmanager_sshmanager_launchhealingstalemaster",
+      "id": "aronnaxide_services_sshmanager_sshmanager_runshell",
       "community": 23,
-      "norm_label": ".launchhealingstalemaster()"
+      "norm_label": ".runshell()"
     },
     {
       "label": "TimeInterval",
@@ -5602,20 +5502,10 @@
       "norm_label": "timeinterval"
     },
     {
-      "label": ".runShell()",
-      "file_type": "code",
-      "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L309",
-      "_origin": "ast",
-      "id": "aronnaxide_services_sshmanager_sshmanager_runshell",
-      "community": 23,
-      "norm_label": ".runshell()"
-    },
-    {
       "label": ".isReachable()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L318",
+      "source_location": "L299",
       "_origin": "ast",
       "id": "aronnaxide_services_sshmanager_sshmanager_isreachable",
       "community": 23,
@@ -5625,7 +5515,7 @@
       "label": ".loginShellArguments()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L330",
+      "source_location": "L311",
       "_origin": "ast",
       "id": "aronnaxide_services_sshmanager_sshmanager_loginshellarguments",
       "community": 23,
@@ -5635,7 +5525,7 @@
       "label": ".streamArguments()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L351",
+      "source_location": "L332",
       "_origin": "ast",
       "id": "aronnaxide_services_sshmanager_sshmanager_streamarguments",
       "community": 23,
@@ -5645,7 +5535,7 @@
       "label": ".portForwardArguments()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L375",
+      "source_location": "L356",
       "_origin": "ast",
       "id": "aronnaxide_services_sshmanager_sshmanager_portforwardarguments",
       "community": 23,
@@ -5655,7 +5545,7 @@
       "label": ".closeMaster()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L402",
+      "source_location": "L383",
       "_origin": "ast",
       "id": "aronnaxide_services_sshmanager_sshmanager_closemaster",
       "community": 23,
@@ -5665,7 +5555,7 @@
       "label": ".resetMasterOnce()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L420",
+      "source_location": "L401",
       "_origin": "ast",
       "id": "aronnaxide_services_sshmanager_sshmanager_resetmasteronce",
       "community": 23,
@@ -5675,7 +5565,7 @@
       "label": ".launch()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L434",
+      "source_location": "L415",
       "_origin": "ast",
       "id": "aronnaxide_services_sshmanager_sshmanager_launch",
       "community": 23,
@@ -5685,7 +5575,7 @@
       "label": ".readToEnd()",
       "file_type": "code",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L512",
+      "source_location": "L493",
       "_origin": "ast",
       "id": "aronnaxide_services_sshmanager_sshmanager_readtoend",
       "community": 23,
@@ -5848,7 +5738,7 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "aronnaxide_services_serveronboarding_serveronboarding_init",
-      "community": 51,
+      "community": 16,
       "norm_label": ".init()"
     },
     {
@@ -6419,7 +6309,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "aronnaxide_services_wakeobserver_wakeobserver",
-      "community": 45,
+      "community": 2,
       "norm_label": "wakeobserver"
     },
     {
@@ -6429,7 +6319,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxide_services_wakeobserver_swift_int",
-      "community": 45,
+      "community": 2,
       "norm_label": "int"
     },
     {
@@ -6439,7 +6329,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "nsobjectprotocol",
-      "community": 45,
+      "community": 2,
       "norm_label": "nsobjectprotocol"
     },
     {
@@ -6449,7 +6339,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxide_services_wakeobserver_swift_string",
-      "community": 45,
+      "community": 2,
       "norm_label": "string"
     },
     {
@@ -6459,7 +6349,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "aronnaxide_services_wakeobserver_wakeobserver_init",
-      "community": 45,
+      "community": 2,
       "norm_label": ".init()"
     },
     {
@@ -6469,7 +6359,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "aronnaxide_services_wakeobserver_wakeobserver_deinit",
-      "community": 45,
+      "community": 2,
       "norm_label": ".deinit()"
     },
     {
@@ -6479,7 +6369,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "aronnaxide_services_wakeobserver_wakeobserver_signature",
-      "community": 45,
+      "community": 2,
       "norm_label": ".signature()"
     },
     {
@@ -6489,7 +6379,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "nwpath",
-      "community": 45,
+      "community": 2,
       "norm_label": "nwpath"
     },
     {
@@ -6499,7 +6389,7 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "aronnaxide_services_wakeobserver_wakeobserver_handlepath",
-      "community": 45,
+      "community": 2,
       "norm_label": ".handlepath()"
     },
     {
@@ -6509,7 +6399,7 @@
       "source_location": "L79",
       "_origin": "ast",
       "id": "aronnaxide_services_wakeobserver_wakeobserver_triggerreconnect",
-      "community": 45,
+      "community": 2,
       "norm_label": ".triggerreconnect()"
     },
     {
@@ -6519,7 +6409,7 @@
       "source_location": "L83",
       "_origin": "ast",
       "id": "aronnaxide_services_wakeobserver_wakeobserver_bump",
-      "community": 45,
+      "community": 2,
       "norm_label": ".bump()"
     },
     {
@@ -6929,7 +6819,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "aronnaxide_writeguard_view",
-      "community": 43,
+      "community": 61,
       "norm_label": "view"
     },
     {
@@ -6951,57 +6841,6 @@
       "id": "binding",
       "community": 19,
       "norm_label": "binding"
-    },
-    {
-      "label": "LaunchProbe.swift",
-      "file_type": "code",
-      "source_file": "AronnaxIDEUITests/LaunchProbe.swift",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "aronnaxideuitests_launchprobe",
-      "community": 68,
-      "norm_label": "launchprobe.swift"
-    },
-    {
-      "label": "XCTest",
-      "file_type": "code",
-      "type": "module",
-      "source_file": "ThirdParty/Citadel/Tests/CitadelTests/WithExecTests.swift",
-      "source_location": "L4",
-      "_origin": "ast",
-      "id": "xctest",
-      "community": 13,
-      "norm_label": "xctest"
-    },
-    {
-      "label": "StabilityTests",
-      "file_type": "code",
-      "source_file": "AronnaxIDEUITests/LaunchProbe.swift",
-      "source_location": "L3",
-      "_origin": "ast",
-      "id": "aronnaxideuitests_launchprobe_stabilitytests",
-      "community": 68,
-      "norm_label": "stabilitytests"
-    },
-    {
-      "label": "XCTestCase",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "xctestcase",
-      "community": 68,
-      "norm_label": "xctestcase"
-    },
-    {
-      "label": ".testLaunchesAndCmdCStable()",
-      "file_type": "code",
-      "source_file": "AronnaxIDEUITests/LaunchProbe.swift",
-      "source_location": "L6",
-      "_origin": "ast",
-      "id": "aronnaxideuitests_launchprobe_stabilitytests_testlaunchesandcmdcstable",
-      "community": 68,
-      "norm_label": ".testlaunchesandcmdcstable()"
     },
     {
       "label": "AgentCommands.swift",
@@ -7251,7 +7090,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "uigesturerecognizerdelegate",
-      "community": 110,
+      "community": 52,
       "norm_label": "uigesturerecognizerdelegate"
     },
     {
@@ -7765,7 +7604,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "terminalviewdelegate",
-      "community": 64,
+      "community": 15,
       "norm_label": "terminalviewdelegate"
     },
     {
@@ -8635,7 +8474,7 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "aronnaxipad_gitservice_gitservice_init",
-      "community": 60,
+      "community": 50,
       "norm_label": ".init()"
     },
     {
@@ -8875,7 +8714,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "aronnaxipad_healthservice_healthservice_load",
-      "community": 89,
+      "community": 50,
       "norm_label": ".load()"
     },
     {
@@ -9175,7 +9014,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aronnaxipad_panesessionmanager",
-      "community": 43,
+      "community": 104,
       "norm_label": "panesessionmanager.swift"
     },
     {
@@ -9185,7 +9024,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "aronnaxipad_panesessionmanager_panesessionmanager",
-      "community": 43,
+      "community": 104,
       "norm_label": "panesessionmanager"
     },
     {
@@ -9195,7 +9034,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxipad_panesessionmanager_swift_uuid",
-      "community": 43,
+      "community": 104,
       "norm_label": "uuid"
     },
     {
@@ -9205,7 +9044,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "aronnaxipad_panesessionmanager_panesessionmanager_init",
-      "community": 43,
+      "community": 50,
       "norm_label": ".init()"
     },
     {
@@ -9215,7 +9054,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "aronnaxipad_panesessionmanager_panesessionmanager_session",
-      "community": 43,
+      "community": 104,
       "norm_label": ".session()"
     },
     {
@@ -9225,7 +9064,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxipad_panesessionmanager_swift_agenttarget",
-      "community": 43,
+      "community": 104,
       "norm_label": "agenttarget"
     },
     {
@@ -9235,7 +9074,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxipad_panesessionmanager_swift_string",
-      "community": 43,
+      "community": 104,
       "norm_label": "string"
     },
     {
@@ -9245,7 +9084,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "aronnaxipad_panesessionmanager_panesessionmanager_apply",
-      "community": 43,
+      "community": 104,
       "norm_label": ".apply()"
     },
     {
@@ -9255,7 +9094,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "aronnaxipad_panesessionmanager_panesessionmanager_retire",
-      "community": 43,
+      "community": 104,
       "norm_label": ".retire()"
     },
     {
@@ -9265,7 +9104,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxipad_panesessionmanager_swift_set",
-      "community": 43,
+      "community": 104,
       "norm_label": "set"
     },
     {
@@ -9275,7 +9114,7 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "aronnaxipad_panesessionmanager_panesessionmanager_reattachall",
-      "community": 43,
+      "community": 104,
       "norm_label": ".reattachall()"
     },
     {
@@ -9425,7 +9264,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aronnaxipad_rootview",
-      "community": 43,
+      "community": 104,
       "norm_label": "rootview.swift"
     },
     {
@@ -9435,7 +9274,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "aronnaxipad_rootview_rootview",
-      "community": 43,
+      "community": 104,
       "norm_label": "rootview"
     },
     {
@@ -9445,7 +9284,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxipad_rootview_swift_string",
-      "community": 43,
+      "community": 104,
       "norm_label": "string"
     },
     {
@@ -9455,7 +9294,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "aronnaxipad_rootview_rootview_init",
-      "community": 43,
+      "community": 104,
       "norm_label": ".init()"
     },
     {
@@ -9485,7 +9324,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxipad_sshconnection_swift_string",
-      "community": 89,
+      "community": 50,
       "norm_label": "string"
     },
     {
@@ -9605,7 +9444,7 @@
       "source_location": "L97",
       "_origin": "ast",
       "id": "aronnaxipad_sshconnection_sshconnection_executecommand",
-      "community": 54,
+      "community": 50,
       "norm_label": ".executecommand()"
     },
     {
@@ -9615,7 +9454,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxipad_sshconnection_swift_bytebuffer",
-      "community": 54,
+      "community": 50,
       "norm_label": "bytebuffer"
     },
     {
@@ -9665,7 +9504,7 @@
       "source_location": "L189",
       "_origin": "ast",
       "id": "aronnaxipad_sshconnection_sshconnection_workdir",
-      "community": 89,
+      "community": 50,
       "norm_label": ".workdir()"
     },
     {
@@ -9695,7 +9534,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "aronnaxipad_terminalsurface_terminalsurface",
-      "community": 64,
+      "community": 112,
       "norm_label": "terminalsurface"
     },
     {
@@ -9705,7 +9544,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxipad_terminalsurface_swift_bool",
-      "community": 64,
+      "community": 112,
       "norm_label": "bool"
     },
     {
@@ -9715,7 +9554,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "aronnaxipad_terminalsurface_terminalsurface_makeuiview",
-      "community": 64,
+      "community": 112,
       "norm_label": ".makeuiview()"
     },
     {
@@ -9725,7 +9564,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxipad_terminalsurface_swift_context",
-      "community": 64,
+      "community": 112,
       "norm_label": "context"
     },
     {
@@ -9735,7 +9574,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxipad_terminalsurface_swift_aronnaxterminalview",
-      "community": 64,
+      "community": 112,
       "norm_label": "aronnaxterminalview"
     },
     {
@@ -9745,7 +9584,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "aronnaxipad_terminalsurface_terminalsurface_updateuiview",
-      "community": 64,
+      "community": 112,
       "norm_label": ".updateuiview()"
     },
     {
@@ -9755,7 +9594,7 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "aronnaxipad_terminalsurface_terminalsurface_makecoordinator",
-      "community": 64,
+      "community": 112,
       "norm_label": ".makecoordinator()"
     },
     {
@@ -9765,7 +9604,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxipad_terminalsurface_swift_coordinator",
-      "community": 64,
+      "community": 112,
       "norm_label": "coordinator"
     },
     {
@@ -9775,7 +9614,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "aronnaxipad_terminalsurface_coordinator",
-      "community": 64,
+      "community": 99,
       "norm_label": "coordinator"
     },
     {
@@ -9795,7 +9634,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "aronnaxipad_terminalsurface_coordinator_send",
-      "community": 64,
+      "community": 99,
       "norm_label": ".send()"
     },
     {
@@ -9805,7 +9644,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxipad_terminalsurface_swift_terminalview",
-      "community": 64,
+      "community": 99,
       "norm_label": "terminalview"
     },
     {
@@ -9815,7 +9654,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxipad_terminalsurface_swift_arrayslice",
-      "community": 64,
+      "community": 99,
       "norm_label": "arrayslice"
     },
     {
@@ -9825,7 +9664,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxipad_terminalsurface_swift_uint8",
-      "community": 64,
+      "community": 99,
       "norm_label": "uint8"
     },
     {
@@ -9835,7 +9674,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "aronnaxipad_terminalsurface_coordinator_sizechanged",
-      "community": 64,
+      "community": 99,
       "norm_label": ".sizechanged()"
     },
     {
@@ -9845,7 +9684,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxipad_terminalsurface_swift_int",
-      "community": 64,
+      "community": 99,
       "norm_label": "int"
     },
     {
@@ -9855,7 +9694,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "aronnaxipad_terminalsurface_coordinator_setterminaltitle",
-      "community": 64,
+      "community": 99,
       "norm_label": ".setterminaltitle()"
     },
     {
@@ -9865,7 +9704,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxipad_terminalsurface_swift_string",
-      "community": 64,
+      "community": 99,
       "norm_label": "string"
     },
     {
@@ -9875,7 +9714,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "aronnaxipad_terminalsurface_coordinator_hostcurrentdirectoryupdate",
-      "community": 64,
+      "community": 99,
       "norm_label": ".hostcurrentdirectoryupdate()"
     },
     {
@@ -9885,7 +9724,7 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "aronnaxipad_terminalsurface_coordinator_scrolled",
-      "community": 64,
+      "community": 99,
       "norm_label": ".scrolled()"
     },
     {
@@ -9895,7 +9734,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxipad_terminalsurface_swift_double",
-      "community": 64,
+      "community": 99,
       "norm_label": "double"
     },
     {
@@ -9905,7 +9744,7 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "aronnaxipad_terminalsurface_coordinator_requestopenlink",
-      "community": 64,
+      "community": 99,
       "norm_label": ".requestopenlink()"
     },
     {
@@ -9915,7 +9754,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "aronnaxipad_terminalsurface_coordinator_bell",
-      "community": 64,
+      "community": 99,
       "norm_label": ".bell()"
     },
     {
@@ -9925,7 +9764,7 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "aronnaxipad_terminalsurface_coordinator_clipboardcopy",
-      "community": 64,
+      "community": 99,
       "norm_label": ".clipboardcopy()"
     },
     {
@@ -9935,7 +9774,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxipad_terminalsurface_swift_data",
-      "community": 64,
+      "community": 99,
       "norm_label": "data"
     },
     {
@@ -9945,7 +9784,7 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "aronnaxipad_terminalsurface_coordinator_rangechanged",
-      "community": 64,
+      "community": 99,
       "norm_label": ".rangechanged()"
     },
     {
@@ -9955,7 +9794,7 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "aronnaxipad_terminalsurface_coordinator_itermcontent",
-      "community": 64,
+      "community": 99,
       "norm_label": ".itermcontent()"
     },
     {
@@ -10105,7 +9944,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aronnaxipad_vaultview",
-      "community": 63,
+      "community": 54,
       "norm_label": "vaultview.swift"
     },
     {
@@ -10135,7 +9974,7 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "aronnaxipad_vaultview_notedetailview",
-      "community": 63,
+      "community": 54,
       "norm_label": "notedetailview"
     },
     {
@@ -10145,7 +9984,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "vaultnote",
-      "community": 63,
+      "community": 54,
       "norm_label": "vaultnote"
     },
     {
@@ -10155,7 +9994,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxipad_vaultview_swift_string",
-      "community": 63,
+      "community": 54,
       "norm_label": "string"
     },
     {
@@ -10165,7 +10004,7 @@
       "source_location": "L100",
       "_origin": "ast",
       "id": "aronnaxipad_vaultview_vaultnote",
-      "community": 63,
+      "community": 54,
       "norm_label": "vaultnote"
     },
     {
@@ -10175,7 +10014,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxipad_vaultview_swift_bool",
-      "community": 63,
+      "community": 54,
       "norm_label": "bool"
     },
     {
@@ -10185,7 +10024,7 @@
       "source_location": "L102",
       "_origin": "ast",
       "id": "aronnaxipad_vaultview_vaultnote_hash",
-      "community": 63,
+      "community": 54,
       "norm_label": ".hash()"
     },
     {
@@ -10195,7 +10034,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aronnaxipad_vaultview_swift_hasher",
-      "community": 63,
+      "community": 54,
       "norm_label": "hasher"
     },
     {
@@ -10605,7 +10444,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "thirdparty_citadel_examples_citadelcli_citadelcli_citadelcliapp",
-      "community": 81,
+      "community": 15,
       "norm_label": "citadelcliapp.swift"
     },
     {
@@ -10615,7 +10454,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "thirdparty_citadel_examples_citadelcli_citadelcli_citadelcliapp_citadelcliapp",
-      "community": 9,
+      "community": 15,
       "norm_label": "citadelcliapp"
     },
     {
@@ -10625,7 +10464,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "thirdparty_citadel_examples_citadelcli_citadelcli_citadelcliapp_swift_scene",
-      "community": 9,
+      "community": 15,
       "norm_label": "scene"
     },
     {
@@ -10665,7 +10504,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "thirdparty_citadel_examples_citadelcli_citadelcli_citadelcliapp_event",
-      "community": 109,
+      "community": 15,
       "norm_label": "event"
     },
     {
@@ -10675,7 +10514,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "thirdparty_citadel_examples_citadelcli_citadelcli_citadelcliapp_event_send",
-      "community": 109,
+      "community": 15,
       "norm_label": "send"
     },
     {
@@ -10685,7 +10524,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "thirdparty_citadel_examples_citadelcli_citadelcli_citadelcliapp_swift_bytebuffer",
-      "community": 109,
+      "community": 15,
       "norm_label": "bytebuffer"
     },
     {
@@ -10785,7 +10624,7 @@
       "source_location": "L77",
       "_origin": "ast",
       "id": "thirdparty_citadel_examples_citadelcli_citadelcli_citadelcliapp_coordinator_send",
-      "community": 109,
+      "community": 15,
       "norm_label": ".send()"
     },
     {
@@ -10795,7 +10634,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "thirdparty_citadel_examples_citadelcli_citadelcli_citadelcliapp_swift_arrayslice",
-      "community": 109,
+      "community": 15,
       "norm_label": "arrayslice"
     },
     {
@@ -10805,7 +10644,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "thirdparty_citadel_examples_citadelcli_citadelcli_citadelcliapp_swift_uint8",
-      "community": 109,
+      "community": 15,
       "norm_label": "uint8"
     },
     {
@@ -10915,7 +10754,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "thirdparty_citadel_examples_citadelcli_citadelcli_contentview",
-      "community": 81,
+      "community": 9,
       "norm_label": "contentview.swift"
     },
     {
@@ -10925,7 +10764,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "thirdparty_citadel_examples_citadelcli_citadelcli_contentview_contentview",
-      "community": 81,
+      "community": 9,
       "norm_label": "contentview"
     },
     {
@@ -10991,6 +10830,17 @@
       "norm_label": "citadelcliuitests.swift"
     },
     {
+      "label": "XCTest",
+      "file_type": "code",
+      "type": "module",
+      "source_file": "ThirdParty/Citadel/Tests/CitadelTests/WithExecTests.swift",
+      "source_location": "L4",
+      "_origin": "ast",
+      "id": "xctest",
+      "community": 13,
+      "norm_label": "xctest"
+    },
+    {
       "label": "CitadelCLIUITests",
       "file_type": "code",
       "source_file": "ThirdParty/Citadel/Examples/CitadelCLI/CitadelCLIUITests/CitadelCLIUITests.swift",
@@ -10999,6 +10849,16 @@
       "id": "thirdparty_citadel_examples_citadelcli_citadelcliuitests_citadelcliuitests_citadelcliuitests",
       "community": 68,
       "norm_label": "citadelcliuitests"
+    },
+    {
+      "label": "XCTestCase",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "xctestcase",
+      "community": 68,
+      "norm_label": "xctestcase"
     },
     {
       "label": ".setUpWithError()",
@@ -11240,7 +11100,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "thirdparty_citadel_examples_terminalappserver_sources_main",
-      "community": 53,
+      "community": 36,
       "norm_label": "main.swift"
     },
     {
@@ -11262,7 +11122,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "swifttui",
-      "community": 53,
+      "community": 36,
       "norm_label": "swifttui"
     },
     {
@@ -11272,7 +11132,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "thirdparty_citadel_examples_terminalappserver_sources_main_examplesshserver",
-      "community": 53,
+      "community": 73,
       "norm_label": "examplesshserver"
     },
     {
@@ -11282,7 +11142,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "thirdparty_citadel_examples_terminalappserver_sources_main_examplesshserver_main",
-      "community": 53,
+      "community": 73,
       "norm_label": ".main()"
     },
     {
@@ -11302,7 +11162,7 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "thirdparty_citadel_examples_terminalappserver_sources_main_customappshell",
-      "community": 53,
+      "community": 73,
       "norm_label": "customappshell"
     },
     {
@@ -11332,7 +11192,7 @@
       "source_location": "L92",
       "_origin": "ast",
       "id": "thirdparty_citadel_examples_terminalappserver_sources_main_loginhandler",
-      "community": 53,
+      "community": 82,
       "norm_label": "loginhandler"
     },
     {
@@ -11352,7 +11212,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "thirdparty_citadel_examples_terminalappserver_sources_main_swift_string",
-      "community": 53,
+      "community": 82,
       "norm_label": "string"
     },
     {
@@ -11362,7 +11222,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "thirdparty_citadel_examples_terminalappserver_sources_main_swift_niosshavailableuserauthenticationmethods",
-      "community": 53,
+      "community": 82,
       "norm_label": "niosshavailableuserauthenticationmethods"
     },
     {
@@ -11372,7 +11232,7 @@
       "source_location": "L100",
       "_origin": "ast",
       "id": "thirdparty_citadel_examples_terminalappserver_sources_main_loginhandler_requestreceived",
-      "community": 53,
+      "community": 82,
       "norm_label": ".requestreceived()"
     },
     {
@@ -11382,7 +11242,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "thirdparty_citadel_examples_terminalappserver_sources_main_swift_niosshuserauthenticationrequest",
-      "community": 53,
+      "community": 82,
       "norm_label": "niosshuserauthenticationrequest"
     },
     {
@@ -11392,7 +11252,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "thirdparty_citadel_examples_terminalappserver_sources_main_swift_eventlooppromise",
-      "community": 53,
+      "community": 82,
       "norm_label": "eventlooppromise"
     },
     {
@@ -11402,7 +11262,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "thirdparty_citadel_examples_terminalappserver_sources_main_swift_niosshuserauthenticationoutcome",
-      "community": 53,
+      "community": 82,
       "norm_label": "niosshuserauthenticationoutcome"
     },
     {
@@ -12664,7 +12524,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_algorithms_rsa",
-      "community": 36,
+      "community": 13,
       "norm_label": "rsa.swift"
     },
     {
@@ -12684,7 +12544,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_algorithms_rsa_rsa",
-      "community": 36,
+      "community": 13,
       "norm_label": "rsa"
     },
     {
@@ -12694,7 +12554,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_algorithms_rsa_insecure_rsa",
-      "community": 36,
+      "community": 13,
       "norm_label": "insecure.rsa"
     },
     {
@@ -13214,7 +13074,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_bcrypt",
-      "community": 112,
+      "community": 13,
       "norm_label": "bcrypt.swift"
     },
     {
@@ -13225,7 +13085,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "ccitadelbcrypt",
-      "community": 112,
+      "community": 14,
       "norm_label": "ccitadelbcrypt"
     },
     {
@@ -13235,7 +13095,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_bcrypt_sha512",
-      "community": 112,
+      "community": 13,
       "norm_label": "_sha512"
     },
     {
@@ -13245,7 +13105,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_bcrypt_swift_bool",
-      "community": 112,
+      "community": 13,
       "norm_label": "bool"
     },
     {
@@ -13816,7 +13676,7 @@
       "source_location": "L197",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_client_sshclient_jump",
-      "community": 35,
+      "community": 57,
       "norm_label": ".jump()"
     },
     {
@@ -13948,7 +13808,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_clientsession_sshclientinboundchannelhandler",
-      "community": 35,
+      "community": 57,
       "norm_label": "sshclientinboundchannelhandler"
     },
     {
@@ -13958,7 +13818,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_clientsession_sshclientinboundchannelhandler_init",
-      "community": 35,
+      "community": 57,
       "norm_label": ".init()"
     },
     {
@@ -14058,7 +13918,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_clientsession_swift_channel",
-      "community": 35,
+      "community": 31,
       "norm_label": "channel"
     },
     {
@@ -14108,7 +13968,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_clientsession_swift_eventlooppromise",
-      "community": 57,
+      "community": 35,
       "norm_label": "eventlooppromise"
     },
     {
@@ -14258,7 +14118,7 @@
       "source_location": "L129",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_clientsession_sshclientsession",
-      "community": 35,
+      "community": 31,
       "norm_label": "sshclientsession"
     },
     {
@@ -14268,7 +14128,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "nioloopboundbox",
-      "community": 35,
+      "community": 31,
       "norm_label": "nioloopboundbox"
     },
     {
@@ -14278,7 +14138,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_clientsession_swift_niosshhandler",
-      "community": 35,
+      "community": 31,
       "norm_label": "niosshhandler"
     },
     {
@@ -14288,7 +14148,7 @@
       "source_location": "L134",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_clientsession_sshclientsession_init",
-      "community": 35,
+      "community": 31,
       "norm_label": ".init()"
     },
     {
@@ -14298,7 +14158,7 @@
       "source_location": "L146",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_clientsession_sshclientsession_addhandlers",
-      "community": 35,
+      "community": 57,
       "norm_label": ".addhandlers()"
     },
     {
@@ -14308,7 +14168,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "autoclosure",
-      "community": 35,
+      "community": 57,
       "norm_label": "autoclosure"
     },
     {
@@ -14328,7 +14188,7 @@
       "source_location": "L304",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_clientsession_invalidhostkey",
-      "community": 57,
+      "community": 35,
       "norm_label": "invalidhostkey"
     },
     {
@@ -14338,7 +14198,7 @@
       "source_location": "L307",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_clientsession_sshhostkeyvalidator",
-      "community": 57,
+      "community": 45,
       "norm_label": "sshhostkeyvalidator"
     },
     {
@@ -14348,7 +14208,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "niosshclientserverauthenticationdelegate",
-      "community": 57,
+      "community": 45,
       "norm_label": "niosshclientserverauthenticationdelegate"
     },
     {
@@ -14358,7 +14218,7 @@
       "source_location": "L308",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_clientsession_method",
-      "community": 57,
+      "community": 45,
       "norm_label": "method"
     },
     {
@@ -14368,7 +14228,7 @@
       "source_location": "L309",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_clientsession_method_trustedkeys",
-      "community": 57,
+      "community": 45,
       "norm_label": "trustedkeys"
     },
     {
@@ -14378,7 +14238,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_clientsession_swift_niosshpublickey",
-      "community": 57,
+      "community": 45,
       "norm_label": "niosshpublickey"
     },
     {
@@ -14388,7 +14248,7 @@
       "source_location": "L310",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_clientsession_method_acceptanything",
-      "community": 57,
+      "community": 45,
       "norm_label": "acceptanything"
     },
     {
@@ -14398,7 +14258,7 @@
       "source_location": "L311",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_clientsession_method_custom",
-      "community": 57,
+      "community": 45,
       "norm_label": "custom"
     },
     {
@@ -14408,7 +14268,7 @@
       "source_location": "L316",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_clientsession_sshhostkeyvalidator_validatehostkey",
-      "community": 57,
+      "community": 35,
       "norm_label": ".validatehostkey()"
     },
     {
@@ -14418,7 +14278,7 @@
       "source_location": "L333",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_clientsession_sshhostkeyvalidator_trustedkeys",
-      "community": 57,
+      "community": 45,
       "norm_label": ".trustedkeys()"
     },
     {
@@ -14428,7 +14288,7 @@
       "source_location": "L338",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_clientsession_sshhostkeyvalidator_acceptanything",
-      "community": 57,
+      "community": 45,
       "norm_label": ".acceptanything()"
     },
     {
@@ -14438,7 +14298,7 @@
       "source_location": "L343",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_clientsession_sshhostkeyvalidator_custom",
-      "community": 57,
+      "community": 45,
       "norm_label": ".custom()"
     },
     {
@@ -14698,7 +14558,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_directtcpip_server_directtcpip_server_directtcpipforwardingdelegate",
-      "community": 108,
+      "community": 119,
       "norm_label": "directtcpipforwardingdelegate"
     },
     {
@@ -14728,7 +14588,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_directtcpip_server_directtcpip_server_swift_string",
-      "community": 108,
+      "community": 119,
       "norm_label": "string"
     },
     {
@@ -14738,7 +14598,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_directtcpip_server_directtcpip_server_swift_int",
-      "community": 108,
+      "community": 119,
       "norm_label": "int"
     },
     {
@@ -14748,7 +14608,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_directtcpip_server_directtcpip_server_directtcpipforwardingdelegate_init",
-      "community": 108,
+      "community": 119,
       "norm_label": ".init()"
     },
     {
@@ -16023,7 +15883,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_opensshkey_bytebufferconvertible",
-      "community": 14,
+      "community": 83,
       "norm_label": "bytebufferconvertible"
     },
     {
@@ -16473,7 +16333,7 @@
       "source_location": "L425",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_opensshkey_openssh_kdf",
-      "community": 83,
+      "community": 14,
       "norm_label": "openssh.kdf"
     },
     {
@@ -16483,7 +16343,7 @@
       "source_location": "L426",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_opensshkey_openssh_kdf_init",
-      "community": 83,
+      "community": 14,
       "norm_label": ".init()"
     },
     {
@@ -18053,7 +17913,7 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sftp_sftpfileflags_accessmodificationtime",
-      "community": 37,
+      "community": 10,
       "norm_label": "accessmodificationtime"
     },
     {
@@ -19163,7 +19023,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sftp_server_sftpserver_sshcontext",
-      "community": 42,
+      "community": 41,
       "norm_label": "sshcontext"
     },
     {
@@ -19173,7 +19033,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sftp_server_sftpserver_swift_string",
-      "community": 42,
+      "community": 41,
       "norm_label": "string"
     },
     {
@@ -19923,7 +19783,7 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sshauthenticationmethod_sshauthenticationmethod_p521",
-      "community": 38,
+      "community": 73,
       "norm_label": ".p521()"
     },
     {
@@ -19933,7 +19793,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "p521",
-      "community": 38,
+      "community": 73,
       "norm_label": "p521"
     },
     {
@@ -19983,7 +19843,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sshcert",
-      "community": 83,
+      "community": 13,
       "norm_label": "sshcert.swift"
     },
     {
@@ -19993,7 +19853,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sshcert_invalidopensshkey",
-      "community": 83,
+      "community": 14,
       "norm_label": "invalidopensshkey"
     },
     {
@@ -20003,7 +19863,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sshcert_unsupportedfeature",
-      "community": 83,
+      "community": 63,
       "norm_label": "unsupportedfeature"
     },
     {
@@ -20013,7 +19873,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sshcert_unsupportedfeature_multiplekeys",
-      "community": 83,
+      "community": 63,
       "norm_label": "multiplekeys"
     },
     {
@@ -20023,7 +19883,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sshcert_unsupportedfeature_unsupportedpublickeytype",
-      "community": 83,
+      "community": 63,
       "norm_label": "unsupportedpublickeytype"
     },
     {
@@ -20033,7 +19893,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sshcert_unsupportedfeature_unsupportedkdf",
-      "community": 83,
+      "community": 63,
       "norm_label": "unsupportedkdf"
     },
     {
@@ -20043,7 +19903,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sshcert_unsupportedfeature_unsupportedcipher",
-      "community": 83,
+      "community": 63,
       "norm_label": "unsupportedcipher"
     },
     {
@@ -20053,7 +19913,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sshcert_invalidopensshkey_unsupportedfeature",
-      "community": 83,
+      "community": 14,
       "norm_label": ".unsupportedfeature()"
     },
     {
@@ -20343,7 +20203,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sshkeytypedetection_backingkeytype",
-      "community": 17,
+      "community": 117,
       "norm_label": "backingkeytype"
     },
     {
@@ -20353,7 +20213,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sshkeytypedetection_backingkeytype_rsa",
-      "community": 17,
+      "community": 117,
       "norm_label": "rsa"
     },
     {
@@ -20363,7 +20223,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sshkeytypedetection_backingkeytype_ed25519",
-      "community": 17,
+      "community": 117,
       "norm_label": "ed25519"
     },
     {
@@ -20373,7 +20233,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sshkeytypedetection_backingkeytype_ecdsap256",
-      "community": 17,
+      "community": 117,
       "norm_label": "ecdsap256"
     },
     {
@@ -20383,7 +20243,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sshkeytypedetection_backingkeytype_ecdsap384",
-      "community": 17,
+      "community": 117,
       "norm_label": "ecdsap384"
     },
     {
@@ -20393,7 +20253,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sshkeytypedetection_backingkeytype_ecdsap521",
-      "community": 17,
+      "community": 117,
       "norm_label": "ecdsap521"
     },
     {
@@ -20413,7 +20273,7 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sshkeytypedetection_sshkeydetectionerror",
-      "community": 99,
+      "community": 17,
       "norm_label": "sshkeydetectionerror"
     },
     {
@@ -20423,7 +20283,7 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sshkeytypedetection_sshkeydetectionerror_invalidkeyformat",
-      "community": 61,
+      "community": 17,
       "norm_label": "invalidkeyformat"
     },
     {
@@ -20433,7 +20293,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sshkeytypedetection_sshkeydetectionerror_unsupportedkeytype",
-      "community": 99,
+      "community": 17,
       "norm_label": "unsupportedkeytype"
     },
     {
@@ -20443,7 +20303,7 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sshkeytypedetection_sshkeydetectionerror_invalidprivatekeyformat",
-      "community": 99,
+      "community": 17,
       "norm_label": "invalidprivatekeyformat"
     },
     {
@@ -20453,7 +20313,7 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sshkeytypedetection_sshkeydetectionerror_malformedkey",
-      "community": 99,
+      "community": 17,
       "norm_label": "malformedkey"
     },
     {
@@ -20463,7 +20323,7 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sshkeytypedetection_sshkeydetectionerror_encryptedprivatekey",
-      "community": 99,
+      "community": 17,
       "norm_label": "encryptedprivatekey"
     },
     {
@@ -20473,7 +20333,7 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sshkeytypedetection_sshkeydetectionerror_passphraserequired",
-      "community": 99,
+      "community": 17,
       "norm_label": "passphraserequired"
     },
     {
@@ -20483,7 +20343,7 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sshkeytypedetection_sshkeydetectionerror_incorrectpassphrase",
-      "community": 99,
+      "community": 17,
       "norm_label": "incorrectpassphrase"
     },
     {
@@ -20493,7 +20353,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sshkeytypedetection_swift_bool",
-      "community": 99,
+      "community": 17,
       "norm_label": "bool"
     },
     {
@@ -20513,7 +20373,7 @@
       "source_location": "L122",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_sshkeytypedetection_sshkeydetection_detectpublickeytype",
-      "community": 61,
+      "community": 17,
       "norm_label": ".detectpublickeytype()"
     },
     {
@@ -20863,7 +20723,7 @@
       "source_location": "L186",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_server_citadelserverdelegate_tcpforwardingrequest",
-      "community": 47,
+      "community": 41,
       "norm_label": ".tcpforwardingrequest()"
     },
     {
@@ -20873,7 +20733,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "globalrequest",
-      "community": 47,
+      "community": 41,
       "norm_label": "globalrequest"
     },
     {
@@ -20883,7 +20743,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_server_swift_niosshhandler",
-      "community": 47,
+      "community": 41,
       "norm_label": "niosshhandler"
     },
     {
@@ -20993,7 +20853,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_server_swift_int",
-      "community": 73,
+      "community": 118,
       "norm_label": "int"
     },
     {
@@ -21033,7 +20893,7 @@
       "source_location": "L346",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_server_sshprotocoloption",
-      "community": 31,
+      "community": 57,
       "norm_label": "sshprotocoloption"
     },
     {
@@ -21043,7 +20903,7 @@
       "source_location": "L347",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_server_value",
-      "community": 73,
+      "community": 118,
       "norm_label": "value"
     },
     {
@@ -21053,7 +20913,7 @@
       "source_location": "L348",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_server_value_maximumpacketsize",
-      "community": 73,
+      "community": 118,
       "norm_label": "maximumpacketsize"
     },
     {
@@ -21063,7 +20923,7 @@
       "source_location": "L354",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_server_sshprotocoloption_maximumpacketsize",
-      "community": 73,
+      "community": 118,
       "norm_label": ".maximumpacketsize()"
     },
     {
@@ -21073,7 +20933,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadel_server_swift_self",
-      "community": 73,
+      "community": 118,
       "norm_label": "self"
     },
     {
@@ -22364,7 +22224,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadelserverexample_hostkeyfile_niosshprivatekey",
-      "community": 56,
+      "community": 73,
       "norm_label": "niosshprivatekey"
     },
     {
@@ -22434,7 +22294,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadelserverexample_server_examplesshserver",
-      "community": 82,
+      "community": 73,
       "norm_label": "examplesshserver"
     },
     {
@@ -22444,7 +22304,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "thirdparty_citadel_sources_citadelserverexample_server_examplesshserver_main",
-      "community": 82,
+      "community": 73,
       "norm_label": ".main()"
     },
     {
@@ -22534,7 +22394,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "thirdparty_citadel_tests_citadeltests_citadel2tests_citadel2tests",
-      "community": 103,
+      "community": 73,
       "norm_label": "citadel2tests"
     },
     {
@@ -22544,7 +22404,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "thirdparty_citadel_tests_citadeltests_citadel2tests_citadel2tests_withdisconnecttest",
-      "community": 103,
+      "community": 73,
       "norm_label": ".withdisconnecttest()"
     },
     {
@@ -22554,7 +22414,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "thirdparty_citadel_tests_citadeltests_citadel2tests_swift_sshclient",
-      "community": 103,
+      "community": 73,
       "norm_label": "sshclient"
     },
     {
@@ -22564,7 +22424,7 @@
       "source_location": "L83",
       "_origin": "ast",
       "id": "thirdparty_citadel_tests_citadeltests_citadel2tests_citadel2tests_testondisconnectclient",
-      "community": 103,
+      "community": 73,
       "norm_label": ".testondisconnectclient()"
     },
     {
@@ -22574,7 +22434,7 @@
       "source_location": "L89",
       "_origin": "ast",
       "id": "thirdparty_citadel_tests_citadeltests_citadel2tests_citadel2tests_testsftpupload",
-      "community": 38,
+      "community": 73,
       "norm_label": ".testsftpupload()"
     },
     {
@@ -22584,7 +22444,7 @@
       "source_location": "L240",
       "_origin": "ast",
       "id": "thirdparty_citadel_tests_citadeltests_citadel2tests_citadel2tests_testrebex",
-      "community": 103,
+      "community": 73,
       "norm_label": ".testrebex()"
     },
     {
@@ -22594,7 +22454,7 @@
       "source_location": "L259",
       "_origin": "ast",
       "id": "thirdparty_citadel_tests_citadeltests_citadel2tests_citadel2tests_testconnecttoopensshserver",
-      "community": 103,
+      "community": 73,
       "norm_label": ".testconnecttoopensshserver()"
     },
     {
@@ -22604,7 +22464,7 @@
       "source_location": "L284",
       "_origin": "ast",
       "id": "thirdparty_citadel_tests_citadeltests_citadel2tests_citadel2tests_teststdinstream",
-      "community": 103,
+      "community": 73,
       "norm_label": ".teststdinstream()"
     },
     {
@@ -23105,7 +22965,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "thirdparty_citadel_tests_citadeltests_keytests_keytests",
-      "community": 61,
+      "community": 17,
       "norm_label": "keytests"
     },
     {
@@ -23115,7 +22975,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "thirdparty_citadel_tests_citadeltests_keytests_keytests_testrsaprivatekey",
-      "community": 61,
+      "community": 17,
       "norm_label": ".testrsaprivatekey()"
     },
     {
@@ -23125,7 +22985,7 @@
       "source_location": "L76",
       "_origin": "ast",
       "id": "thirdparty_citadel_tests_citadeltests_keytests_keytests_testencrypteded25519privatekey",
-      "community": 61,
+      "community": 17,
       "norm_label": ".testencrypteded25519privatekey()"
     },
     {
@@ -23135,7 +22995,7 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "thirdparty_citadel_tests_citadeltests_keytests_keytests_tested25519privatekey",
-      "community": 61,
+      "community": 17,
       "norm_label": ".tested25519privatekey()"
     },
     {
@@ -23145,7 +23005,7 @@
       "source_location": "L113",
       "_origin": "ast",
       "id": "thirdparty_citadel_tests_citadeltests_keytests_keytests_tested25519privatekeywithoutspacing",
-      "community": 61,
+      "community": 17,
       "norm_label": ".tested25519privatekeywithoutspacing()"
     },
     {
@@ -23155,7 +23015,7 @@
       "source_location": "L128",
       "_origin": "ast",
       "id": "thirdparty_citadel_tests_citadeltests_keytests_keytests_testsshkeytypedetection",
-      "community": 61,
+      "community": 17,
       "norm_label": ".testsshkeytypedetection()"
     },
     {
@@ -23165,7 +23025,7 @@
       "source_location": "L160",
       "_origin": "ast",
       "id": "thirdparty_citadel_tests_citadeltests_keytests_keytests_testsshkeytypedetectionwithwhitespace",
-      "community": 61,
+      "community": 17,
       "norm_label": ".testsshkeytypedetectionwithwhitespace()"
     },
     {
@@ -23175,7 +23035,7 @@
       "source_location": "L167",
       "_origin": "ast",
       "id": "thirdparty_citadel_tests_citadeltests_keytests_keytests_testsshkeytypedetectionerrors",
-      "community": 61,
+      "community": 17,
       "norm_label": ".testsshkeytypedetectionerrors()"
     },
     {
@@ -23185,7 +23045,7 @@
       "source_location": "L202",
       "_origin": "ast",
       "id": "thirdparty_citadel_tests_citadeltests_keytests_keytests_testsshkeytypeallcases",
-      "community": 61,
+      "community": 17,
       "norm_label": ".testsshkeytypeallcases()"
     },
     {
@@ -23195,7 +23055,7 @@
       "source_location": "L214",
       "_origin": "ast",
       "id": "thirdparty_citadel_tests_citadeltests_keytests_keytests_testsshprivatekeytypedetection",
-      "community": 61,
+      "community": 17,
       "norm_label": ".testsshprivatekeytypedetection()"
     },
     {
@@ -23687,86 +23547,6 @@
       "id": "claude_conventions_patterns",
       "community": 72,
       "norm_label": "conventions & patterns"
-    },
-    {
-      "label": "CODEX-HANDOFF.md",
-      "file_type": "document",
-      "source_file": "CODEX-HANDOFF.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "codex_handoff",
-      "community": 93,
-      "norm_label": "codex-handoff.md"
-    },
-    {
-      "label": "Codex Handoff \u2014 Add Server wizard hangs on the vault clone (bead IDE-07d)",
-      "file_type": "document",
-      "source_file": "CODEX-HANDOFF.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "codex_handoff_codex_handoff_add_server_wizard_hangs_on_the_vault_clone_bead_ide_07d",
-      "community": 93,
-      "norm_label": "codex handoff \u2014 add server wizard hangs on the vault clone (bead ide-07d)"
-    },
-    {
-      "label": "The bug",
-      "file_type": "document",
-      "source_file": "CODEX-HANDOFF.md",
-      "source_location": "L7",
-      "_origin": "ast",
-      "id": "codex_handoff_the_bug",
-      "community": 93,
-      "norm_label": "the bug"
-    },
-    {
-      "label": "Diagnosis (evidence gathered)",
-      "file_type": "document",
-      "source_file": "CODEX-HANDOFF.md",
-      "source_location": "L15",
-      "_origin": "ast",
-      "id": "codex_handoff_diagnosis_evidence_gathered",
-      "community": 93,
-      "norm_label": "diagnosis (evidence gathered)"
-    },
-    {
-      "label": "Candidate fix ALREADY on branch `fix/onboarding-clone-hang` (commit 93ee85d)",
-      "file_type": "document",
-      "source_file": "CODEX-HANDOFF.md",
-      "source_location": "L25",
-      "_origin": "ast",
-      "id": "codex_handoff_candidate_fix_already_on_branch_fix_onboarding_clone_hang_commit_93ee85d",
-      "community": 93,
-      "norm_label": "candidate fix already on branch `fix/onboarding-clone-hang` (commit 93ee85d)"
-    },
-    {
-      "label": "Your TODO",
-      "file_type": "document",
-      "source_file": "CODEX-HANDOFF.md",
-      "source_location": "L34",
-      "_origin": "ast",
-      "id": "codex_handoff_your_todo",
-      "community": 93,
-      "norm_label": "your todo"
-    },
-    {
-      "label": "SECOND SYMPTOM (same class): step 6 \"Install dev tools\" HANGS",
-      "file_type": "document",
-      "source_file": "CODEX-HANDOFF.md",
-      "source_location": "L57",
-      "_origin": "ast",
-      "id": "codex_handoff_second_symptom_same_class_step_6_install_dev_tools_hangs",
-      "community": 93,
-      "norm_label": "second symptom (same class): step 6 \"install dev tools\" hangs"
-    },
-    {
-      "label": "Rules",
-      "file_type": "document",
-      "source_file": "CODEX-HANDOFF.md",
-      "source_location": "L76",
-      "_origin": "ast",
-      "id": "codex_handoff_rules",
-      "community": 93,
-      "norm_label": "rules"
     },
     {
       "label": "README.md",
@@ -26605,7 +26385,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L76",
+      "source_location": "L64",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings",
       "target": "aronnaxide_models_appsettings_keys",
@@ -27352,7 +27132,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L94",
+      "source_location": "L82",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings",
       "target": "aronnaxide_models_appsettings_appsettings_addhost",
@@ -27362,7 +27142,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L254",
+      "source_location": "L242",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings",
       "target": "aronnaxide_models_appsettings_appsettings_init",
@@ -27372,7 +27152,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L120",
+      "source_location": "L108",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings",
       "target": "aronnaxide_models_appsettings_appsettings_iscustomhost",
@@ -27382,7 +27162,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L197",
+      "source_location": "L185",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings",
       "target": "aronnaxide_models_appsettings_appsettings_isprojecthidden",
@@ -27412,7 +27192,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L131",
+      "source_location": "L119",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings",
       "target": "aronnaxide_models_appsettings_appsettings_movehosts",
@@ -27422,7 +27202,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L143",
+      "source_location": "L131",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings",
       "target": "aronnaxide_models_appsettings_appsettings_moveprojects",
@@ -27432,7 +27212,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L160",
+      "source_location": "L148",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings",
       "target": "aronnaxide_models_appsettings_appsettings_order",
@@ -27442,7 +27222,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L139",
+      "source_location": "L127",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings",
       "target": "aronnaxide_models_appsettings_appsettings_orderedprojects",
@@ -27452,7 +27232,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L122",
+      "source_location": "L110",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings",
       "target": "aronnaxide_models_appsettings_appsettings_rebuildhosts",
@@ -27462,7 +27242,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L169",
+      "source_location": "L157",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings",
       "target": "aronnaxide_models_appsettings_appsettings_reconcilehostorder",
@@ -27472,7 +27252,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L102",
+      "source_location": "L90",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings",
       "target": "aronnaxide_models_appsettings_appsettings_removehost",
@@ -27482,7 +27262,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L181",
+      "source_location": "L169",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings",
       "target": "aronnaxide_models_appsettings_appsettings_savecustomhosts",
@@ -27492,7 +27272,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L198",
+      "source_location": "L186",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings",
       "target": "aronnaxide_models_appsettings_appsettings_setprojecthidden",
@@ -27522,7 +27302,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L195",
+      "source_location": "L183",
       "weight": 1.0,
       "context": "field",
       "source": "aronnaxide_models_appsettings_appsettings",
@@ -27533,7 +27313,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L247",
+      "source_location": "L235",
       "weight": 1.0,
       "context": "field",
       "source": "aronnaxide_models_appsettings_appsettings",
@@ -27544,7 +27324,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L301",
+      "source_location": "L289",
       "weight": 1.0,
       "context": "field",
       "source": "aronnaxide_models_appsettings_appsettings",
@@ -27566,7 +27346,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L69",
+      "source_location": "L57",
       "weight": 1.0,
       "context": "field",
       "source": "aronnaxide_models_appsettings_appsettings",
@@ -27577,7 +27357,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L72",
+      "source_location": "L60",
       "weight": 1.0,
       "context": "field",
       "source": "aronnaxide_models_appsettings_appsettings",
@@ -28014,7 +27794,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L120",
+      "source_location": "L108",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_models_appsettings_appsettings_iscustomhost",
@@ -28025,7 +27805,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L197",
+      "source_location": "L185",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_models_appsettings_appsettings_isprojecthidden",
@@ -28036,7 +27816,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L160",
+      "source_location": "L148",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_models_appsettings_appsettings_order",
@@ -28047,7 +27827,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L102",
+      "source_location": "L90",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_models_appsettings_appsettings_removehost",
@@ -28058,7 +27838,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L198",
+      "source_location": "L186",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_models_appsettings_appsettings_setprojecthidden",
@@ -28113,7 +27893,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L120",
+      "source_location": "L108",
       "weight": 1.0,
       "context": "return_type",
       "source": "aronnaxide_models_appsettings_appsettings_iscustomhost",
@@ -28124,7 +27904,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L197",
+      "source_location": "L185",
       "weight": 1.0,
       "context": "return_type",
       "source": "aronnaxide_models_appsettings_appsettings_isprojecthidden",
@@ -28146,7 +27926,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L198",
+      "source_location": "L186",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_models_appsettings_appsettings_setprojecthidden",
@@ -28191,7 +27971,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L109",
+      "source_location": "L97",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings_removehost",
       "target": "aronnaxide_models_appsettings_appsettings_setprotected",
@@ -28202,7 +27982,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L110",
+      "source_location": "L98",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings_removehost",
       "target": "aronnaxide_models_appsettings_appsettings_setreadonly",
@@ -28213,7 +27993,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L98",
+      "source_location": "L86",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings_addhost",
       "target": "aronnaxide_models_appsettings_appsettings_rebuildhosts",
@@ -28224,7 +28004,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L97",
+      "source_location": "L85",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings_addhost",
       "target": "aronnaxide_models_appsettings_appsettings_savecustomhosts",
@@ -28234,7 +28014,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L94",
+      "source_location": "L82",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_models_appsettings_appsettings_addhost",
@@ -28257,7 +28037,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L116",
+      "source_location": "L104",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings_removehost",
       "target": "aronnaxide_models_appsettings_appsettings_rebuildhosts",
@@ -28268,7 +28048,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L105",
+      "source_location": "L93",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings_removehost",
       "target": "aronnaxide_models_appsettings_appsettings_savecustomhosts",
@@ -28280,7 +28060,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L103",
+      "source_location": "L91",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings_removehost",
       "target": "aronnaxide_models_fleet_host"
@@ -28291,7 +28071,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L120",
+      "source_location": "L108",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings_iscustomhost",
       "target": "aronnaxide_models_fleet_host"
@@ -28301,7 +28081,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L295",
+      "source_location": "L283",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings_init",
       "target": "aronnaxide_models_appsettings_appsettings_rebuildhosts",
@@ -28312,7 +28092,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L136",
+      "source_location": "L124",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings_movehosts",
       "target": "aronnaxide_models_appsettings_appsettings_rebuildhosts",
@@ -28323,7 +28103,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L127",
+      "source_location": "L115",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings_rebuildhosts",
       "target": "aronnaxide_models_appsettings_appsettings_order",
@@ -28334,7 +28114,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L128",
+      "source_location": "L116",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings_rebuildhosts",
       "target": "aronnaxide_models_appsettings_appsettings_reconcilehostorder",
@@ -28344,7 +28124,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L131",
+      "source_location": "L119",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_models_appsettings_appsettings_movehosts",
@@ -28355,7 +28135,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L131",
+      "source_location": "L119",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_models_appsettings_appsettings_movehosts",
@@ -28366,7 +28146,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L143",
+      "source_location": "L131",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_models_appsettings_appsettings_moveprojects",
@@ -28377,7 +28157,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L143",
+      "source_location": "L131",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_models_appsettings_appsettings_moveprojects",
@@ -28389,7 +28169,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L140",
+      "source_location": "L128",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings_orderedprojects",
       "target": "aronnaxide_models_appsettings_appsettings_order",
@@ -28399,7 +28179,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L139",
+      "source_location": "L127",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_models_appsettings_appsettings_orderedprojects",
@@ -28410,7 +28190,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L143",
+      "source_location": "L131",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_models_appsettings_appsettings_moveprojects",
@@ -28421,7 +28201,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L160",
+      "source_location": "L148",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_models_appsettings_appsettings_order",
@@ -28433,7 +28213,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L287",
+      "source_location": "L275",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings_init",
       "target": "aronnaxide_services_agentcontroller_claudemode",
@@ -28444,7 +28224,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L288",
+      "source_location": "L276",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings_init",
       "target": "aronnaxide_services_agentcontroller_codexmode",
@@ -28456,7 +28236,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L257",
+      "source_location": "L245",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings_init",
       "target": "aronnaxide_services_sshconfigparser_sshconfigparser_loadhosts"
@@ -28467,7 +28247,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "AronnaxIDE/Models/AppSettings.swift",
-      "source_location": "L298",
+      "source_location": "L286",
       "weight": 1.0,
       "source": "aronnaxide_models_appsettings_appsettings_init",
       "target": "aronnaxide_services_sshmanager_sshmanager_prewarmtailscale"
@@ -29393,7 +29173,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L402",
+      "source_location": "L383",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_services_sshmanager_sshmanager_closemaster",
@@ -29426,7 +29206,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L318",
+      "source_location": "L299",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_services_sshmanager_sshmanager_isreachable",
@@ -29437,18 +29217,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L296",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "aronnaxide_services_sshmanager_sshmanager_launchhealingstalemaster",
-      "target": "aronnaxide_models_fleet_host",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L330",
+      "source_location": "L311",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_services_sshmanager_sshmanager_loginshellarguments",
@@ -29459,7 +29228,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L375",
+      "source_location": "L356",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_services_sshmanager_sshmanager_portforwardarguments",
@@ -29481,7 +29250,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L420",
+      "source_location": "L401",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_services_sshmanager_sshmanager_resetmasteronce",
@@ -29514,7 +29283,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L309",
+      "source_location": "L291",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_services_sshmanager_sshmanager_runshell",
@@ -29569,7 +29338,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L351",
+      "source_location": "L332",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_services_sshmanager_sshmanager_streamarguments",
@@ -31268,7 +31037,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L203",
+      "source_location": "L91",
       "weight": 1.0,
       "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview",
       "target": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_applysetupifneeded",
@@ -31278,7 +31047,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L253",
+      "source_location": "L137",
       "weight": 1.0,
       "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview",
       "target": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_cell",
@@ -31288,7 +31057,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L212",
+      "source_location": "L100",
       "weight": 1.0,
       "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview",
       "target": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_deinit",
@@ -31298,17 +31067,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L181",
-      "weight": 1.0,
-      "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview",
-      "target": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_handlehover",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L229",
+      "source_location": "L113",
       "weight": 1.0,
       "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview",
       "target": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_handlescroll",
@@ -31318,37 +31077,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L55",
-      "weight": 1.0,
-      "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview",
-      "target": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_hasmarkedtext",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L72",
-      "weight": 1.0,
-      "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview",
-      "target": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_inserttext",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L57",
-      "weight": 1.0,
-      "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview",
-      "target": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_markedrange",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L109",
+      "source_location": "L31",
       "weight": 1.0,
       "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview",
       "target": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_performkeyequivalent",
@@ -31358,17 +31087,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L78",
-      "weight": 1.0,
-      "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview",
-      "target": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_refreshdictationoverlay",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L216",
+      "source_location": "L104",
       "weight": 1.0,
       "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview",
       "target": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_removescrollmonitor",
@@ -31378,37 +31097,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L41",
-      "weight": 1.0,
-      "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview",
-      "target": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_selectedrange",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L62",
-      "weight": 1.0,
-      "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview",
-      "target": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_setmarkedtext",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L67",
-      "weight": 1.0,
-      "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview",
-      "target": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_unmarktext",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L142",
+      "source_location": "L64",
       "weight": 1.0,
       "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview",
       "target": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_viewdidmovetowindow",
@@ -31418,7 +31107,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L20",
+      "source_location": "L19",
       "weight": 1.0,
       "context": "field",
       "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview",
@@ -31429,7 +31118,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L26",
+      "source_location": "L25",
       "weight": 1.0,
       "context": "field",
       "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview",
@@ -31444,17 +31133,6 @@
       "weight": 1.0,
       "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview",
       "target": "localprocessterminalview",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L48",
-      "weight": 1.0,
-      "context": "field",
-      "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview",
-      "target": "nstextfield",
       "confidence_score": 1.0
     },
     {
@@ -31483,40 +31161,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L72",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_inserttext",
-      "target": "aronnaxide_panes_clipboardterminalview_swift_any",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L62",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_setmarkedtext",
-      "target": "aronnaxide_panes_clipboardterminalview_swift_any",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L55",
-      "weight": 1.0,
-      "context": "return_type",
-      "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_hasmarkedtext",
-      "target": "aronnaxide_panes_clipboardterminalview_swift_bool",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L109",
+      "source_location": "L31",
       "weight": 1.0,
       "context": "return_type",
       "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_performkeyequivalent",
@@ -31525,196 +31170,9 @@
     },
     {
       "relation": "references",
-      "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L41",
-      "weight": 1.0,
-      "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_selectedrange",
-      "target": "nsrange",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L72",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_inserttext",
-      "target": "nsrange",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L57",
-      "weight": 1.0,
-      "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_markedrange",
-      "target": "nsrange",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L99",
-      "weight": 1.0,
-      "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_refreshdictationoverlay",
-      "target": "nsrange",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L62",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_setmarkedtext",
-      "target": "nsrange",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "AronnaxIDE/Panes/GitDeployPanel.swift",
-      "source_location": "L354",
-      "weight": 1.0,
-      "source": "aronnaxide_panes_gitdeploypanel_gitdeploypanel_maskedremote",
-      "target": "nsrange"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "AronnaxIDE/Panes/VaultPane.swift",
-      "source_location": "L650",
-      "weight": 1.0,
-      "source": "aronnaxide_panes_vaultpane_markdownpreview_linkifywikilinks",
-      "target": "nsrange"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "AronnaxIDE/Services/GitController.swift",
-      "source_location": "L339",
-      "weight": 1.0,
-      "source": "aronnaxide_services_gitcontroller_gitcontroller_identity",
-      "target": "nsrange"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "AronnaxIDE/Services/GitController.swift",
-      "source_location": "L285",
-      "weight": 1.0,
-      "source": "aronnaxide_services_gitcontroller_gitcontroller_parsegreetinguser",
-      "target": "nsrange"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "AronnaxIDE/Services/GitController.swift",
-      "source_location": "L208",
-      "weight": 1.0,
-      "source": "aronnaxide_services_gitcontroller_gitcontroller_parseremote",
-      "target": "nsrange"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "AronnaxIDE/Services/ProjectService.swift",
-      "source_location": "L97",
-      "weight": 1.0,
-      "source": "aronnaxide_services_projectservice_projectservice_owner",
-      "target": "nsrange"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "AronnaxIDE/Services/UsageService.swift",
-      "source_location": "L259",
-      "weight": 1.0,
-      "source": "aronnaxide_services_usageservice_usageservice_match",
-      "target": "nsrange"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "AronnaxIDE/Services/UsageService.swift",
-      "source_location": "L210",
-      "weight": 1.0,
-      "source": "aronnaxide_services_usageservice_usageservice_normalizereset",
-      "target": "nsrange"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L85",
-      "weight": 1.0,
-      "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_refreshdictationoverlay",
-      "target": "nstextfield",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L64",
-      "weight": 1.0,
-      "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_setmarkedtext",
-      "target": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_refreshdictationoverlay",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L69",
-      "weight": 1.0,
-      "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_unmarktext",
-      "target": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_refreshdictationoverlay",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L74",
-      "weight": 1.0,
-      "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_inserttext",
-      "target": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_refreshdictationoverlay",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L109",
+      "source_location": "L31",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_performkeyequivalent",
@@ -31725,18 +31183,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L181",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_handlehover",
-      "target": "nsevent",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L229",
+      "source_location": "L113",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_handlescroll",
@@ -31748,7 +31195,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L147",
+      "source_location": "L69",
       "weight": 1.0,
       "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_viewdidmovetowindow",
       "target": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_applysetupifneeded",
@@ -31759,18 +31206,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L159",
-      "weight": 1.0,
-      "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_viewdidmovetowindow",
-      "target": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_handlehover",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L150",
+      "source_location": "L72",
       "weight": 1.0,
       "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_viewdidmovetowindow",
       "target": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_handlescroll",
@@ -31781,7 +31217,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L145",
+      "source_location": "L67",
       "weight": 1.0,
       "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_viewdidmovetowindow",
       "target": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_removescrollmonitor",
@@ -31792,7 +31228,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L213",
+      "source_location": "L101",
       "weight": 1.0,
       "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_deinit",
       "target": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_removescrollmonitor",
@@ -31803,7 +31239,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L239",
+      "source_location": "L123",
       "weight": 1.0,
       "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_handlescroll",
       "target": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_cell",
@@ -31814,7 +31250,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L243",
+      "source_location": "L127",
       "weight": 1.0,
       "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_handlescroll",
       "target": "aronnaxide_panes_clipboardterminalview_swift_int",
@@ -31825,7 +31261,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L242",
+      "source_location": "L126",
       "weight": 1.0,
       "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_handlescroll",
       "target": "nspoint",
@@ -31836,7 +31272,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L253",
+      "source_location": "L137",
       "weight": 1.0,
       "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_cell",
       "target": "aronnaxide_panes_clipboardterminalview_swift_int",
@@ -31846,7 +31282,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Panes/ClipboardTerminalView.swift",
-      "source_location": "L253",
+      "source_location": "L137",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_panes_clipboardterminalview_clipboardterminalview_cell",
@@ -40815,20 +40251,9 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L434",
+      "source_location": "L415",
       "weight": 1.0,
       "source": "aronnaxide_services_sshmanager_sshmanager_launch",
-      "target": "aronnaxide_services_sshmanager_commandresult",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L296",
-      "weight": 1.0,
-      "context": "return_type",
-      "source": "aronnaxide_services_sshmanager_sshmanager_launchhealingstalemaster",
       "target": "aronnaxide_services_sshmanager_commandresult",
       "confidence_score": 1.0
     },
@@ -40847,7 +40272,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L309",
+      "source_location": "L291",
       "weight": 1.0,
       "context": "return_type",
       "source": "aronnaxide_services_sshmanager_sshmanager_runshell",
@@ -40869,7 +40294,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L365",
+      "source_location": "L346",
       "weight": 1.0,
       "context": "field",
       "source": "aronnaxide_services_sshmanager_sshmanager",
@@ -40891,7 +40316,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L434",
+      "source_location": "L415",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_services_sshmanager_sshmanager_launch",
@@ -40902,18 +40327,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L296",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "aronnaxide_services_sshmanager_sshmanager_launchhealingstalemaster",
-      "target": "aronnaxide_services_sshmanager_swift_string",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L330",
+      "source_location": "L311",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_services_sshmanager_sshmanager_loginshellarguments",
@@ -40924,7 +40338,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L375",
+      "source_location": "L356",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_services_sshmanager_sshmanager_portforwardarguments",
@@ -40957,7 +40371,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L309",
+      "source_location": "L291",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_services_sshmanager_sshmanager_runshell",
@@ -41012,7 +40426,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L351",
+      "source_location": "L332",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_services_sshmanager_sshmanager_streamarguments",
@@ -41045,7 +40459,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L318",
+      "source_location": "L299",
       "weight": 1.0,
       "context": "return_type",
       "source": "aronnaxide_services_sshmanager_sshmanager_isreachable",
@@ -41056,7 +40470,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L330",
+      "source_location": "L311",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_services_sshmanager_sshmanager_loginshellarguments",
@@ -41067,7 +40481,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L420",
+      "source_location": "L401",
       "weight": 1.0,
       "context": "return_type",
       "source": "aronnaxide_services_sshmanager_sshmanager_resetmasteronce",
@@ -41110,7 +40524,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L449",
+      "source_location": "L430",
       "weight": 1.0,
       "source": "aronnaxide_services_sshmanager_sshmanager_launch",
       "target": "aronnaxide_services_sshmanager_ssherror_launchfailed",
@@ -41120,7 +40534,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L402",
+      "source_location": "L383",
       "weight": 1.0,
       "source": "aronnaxide_services_sshmanager_sshmanager",
       "target": "aronnaxide_services_sshmanager_sshmanager_closemaster",
@@ -41160,7 +40574,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L318",
+      "source_location": "L299",
       "weight": 1.0,
       "source": "aronnaxide_services_sshmanager_sshmanager",
       "target": "aronnaxide_services_sshmanager_sshmanager_isreachable",
@@ -41170,7 +40584,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L434",
+      "source_location": "L415",
       "weight": 1.0,
       "source": "aronnaxide_services_sshmanager_sshmanager",
       "target": "aronnaxide_services_sshmanager_sshmanager_launch",
@@ -41180,17 +40594,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L296",
-      "weight": 1.0,
-      "source": "aronnaxide_services_sshmanager_sshmanager",
-      "target": "aronnaxide_services_sshmanager_sshmanager_launchhealingstalemaster",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L330",
+      "source_location": "L311",
       "weight": 1.0,
       "source": "aronnaxide_services_sshmanager_sshmanager",
       "target": "aronnaxide_services_sshmanager_sshmanager_loginshellarguments",
@@ -41200,7 +40604,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L375",
+      "source_location": "L356",
       "weight": 1.0,
       "source": "aronnaxide_services_sshmanager_sshmanager",
       "target": "aronnaxide_services_sshmanager_sshmanager_portforwardarguments",
@@ -41220,7 +40624,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L512",
+      "source_location": "L493",
       "weight": 1.0,
       "source": "aronnaxide_services_sshmanager_sshmanager",
       "target": "aronnaxide_services_sshmanager_sshmanager_readtoend",
@@ -41230,7 +40634,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L420",
+      "source_location": "L401",
       "weight": 1.0,
       "source": "aronnaxide_services_sshmanager_sshmanager",
       "target": "aronnaxide_services_sshmanager_sshmanager_resetmasteronce",
@@ -41260,7 +40664,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L309",
+      "source_location": "L291",
       "weight": 1.0,
       "source": "aronnaxide_services_sshmanager_sshmanager",
       "target": "aronnaxide_services_sshmanager_sshmanager_runshell",
@@ -41330,7 +40734,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L351",
+      "source_location": "L332",
       "weight": 1.0,
       "source": "aronnaxide_services_sshmanager_sshmanager",
       "target": "aronnaxide_services_sshmanager_sshmanager_streamarguments",
@@ -41394,7 +40798,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L375",
+      "source_location": "L356",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_services_sshmanager_sshmanager_portforwardarguments",
@@ -41405,7 +40809,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L420",
+      "source_location": "L401",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_services_sshmanager_sshmanager_resetmasteronce",
@@ -41461,7 +40865,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L406",
+      "source_location": "L387",
       "weight": 1.0,
       "source": "aronnaxide_services_sshmanager_sshmanager_closemaster",
       "target": "aronnaxide_services_sshmanager_sshmanager_controlpath",
@@ -41483,7 +40887,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L379",
+      "source_location": "L360",
       "weight": 1.0,
       "source": "aronnaxide_services_sshmanager_sshmanager_portforwardarguments",
       "target": "aronnaxide_services_sshmanager_sshmanager_sharedoptions",
@@ -41571,7 +40975,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L311",
+      "source_location": "L293",
       "weight": 1.0,
       "source": "aronnaxide_services_sshmanager_sshmanager_runshell",
       "target": "aronnaxide_services_sshmanager_sshmanager_ensuretailscaleresolved",
@@ -41637,7 +41041,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L481",
+      "source_location": "L462",
       "weight": 1.0,
       "source": "aronnaxide_services_sshmanager_sshmanager_launch",
       "target": "aronnaxide_services_sshmanager_swift_data",
@@ -41648,7 +41052,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L512",
+      "source_location": "L493",
       "weight": 1.0,
       "source": "aronnaxide_services_sshmanager_sshmanager_readtoend",
       "target": "aronnaxide_services_sshmanager_swift_data",
@@ -41703,7 +41107,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L342",
+      "source_location": "L323",
       "weight": 1.0,
       "source": "aronnaxide_services_sshmanager_sshmanager_loginshellarguments",
       "target": "aronnaxide_services_sshmanager_sshmanager_shellescaped",
@@ -41714,7 +41118,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L352",
+      "source_location": "L333",
       "weight": 1.0,
       "source": "aronnaxide_services_sshmanager_sshmanager_streamarguments",
       "target": "aronnaxide_services_sshmanager_sshmanager_shellescaped",
@@ -41736,7 +41140,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L343",
+      "source_location": "L324",
       "weight": 1.0,
       "source": "aronnaxide_services_sshmanager_sshmanager_loginshellarguments",
       "target": "aronnaxide_services_sshmanager_sshmanager_ssharguments",
@@ -41747,7 +41151,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L284",
+      "source_location": "L283",
       "weight": 1.0,
       "source": "aronnaxide_services_sshmanager_sshmanager_run",
       "target": "aronnaxide_services_sshmanager_sshmanager_ssharguments",
@@ -41758,7 +41162,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L313",
+      "source_location": "L294",
       "weight": 1.0,
       "source": "aronnaxide_services_sshmanager_sshmanager_runshell",
       "target": "aronnaxide_services_sshmanager_sshmanager_ssharguments",
@@ -41769,7 +41173,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L353",
+      "source_location": "L334",
       "weight": 1.0,
       "source": "aronnaxide_services_sshmanager_sshmanager_streamarguments",
       "target": "aronnaxide_services_sshmanager_sshmanager_ssharguments",
@@ -41780,7 +41184,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L412",
+      "source_location": "L393",
       "weight": 1.0,
       "source": "aronnaxide_services_sshmanager_sshmanager_closemaster",
       "target": "aronnaxide_services_sshmanager_sshmanager_run",
@@ -41791,7 +41195,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L319",
+      "source_location": "L300",
       "weight": 1.0,
       "source": "aronnaxide_services_sshmanager_sshmanager_isreachable",
       "target": "aronnaxide_services_sshmanager_sshmanager_run",
@@ -41802,87 +41206,10 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L447",
+      "source_location": "L428",
       "weight": 1.0,
       "source": "aronnaxide_services_sshmanager_sshmanager_launch",
       "target": "aronnaxide_services_sshmanager_sshmanager_run",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L283",
-      "weight": 1.0,
-      "source": "aronnaxide_services_sshmanager_sshmanager_run",
-      "target": "aronnaxide_services_sshmanager_sshmanager_launchhealingstalemaster",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L301",
-      "weight": 1.0,
-      "source": "aronnaxide_services_sshmanager_sshmanager_launchhealingstalemaster",
-      "target": "aronnaxide_services_sshmanager_sshmanager_closemaster",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L299",
-      "weight": 1.0,
-      "source": "aronnaxide_services_sshmanager_sshmanager_launchhealingstalemaster",
-      "target": "aronnaxide_services_sshmanager_sshmanager_launch",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L296",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "aronnaxide_services_sshmanager_sshmanager_launchhealingstalemaster",
-      "target": "aronnaxide_services_sshmanager_swift_timeinterval",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L312",
-      "weight": 1.0,
-      "source": "aronnaxide_services_sshmanager_sshmanager_runshell",
-      "target": "aronnaxide_services_sshmanager_sshmanager_launchhealingstalemaster",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L434",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "aronnaxide_services_sshmanager_sshmanager_launch",
-      "target": "aronnaxide_services_sshmanager_swift_timeinterval",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L309",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "source": "aronnaxide_services_sshmanager_sshmanager_runshell",
-      "target": "aronnaxide_services_sshmanager_swift_timeinterval",
       "confidence_score": 1.0
     },
     {
@@ -41911,12 +41238,45 @@
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
+      "source_file": "AronnaxIDE/Services/SSHManager.swift",
+      "source_location": "L295",
+      "weight": 1.0,
+      "source": "aronnaxide_services_sshmanager_sshmanager_runshell",
+      "target": "aronnaxide_services_sshmanager_sshmanager_launch",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "AronnaxIDE/Services/SSHManager.swift",
+      "source_location": "L291",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "aronnaxide_services_sshmanager_sshmanager_runshell",
+      "target": "aronnaxide_services_sshmanager_swift_timeinterval",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "AronnaxIDE/Services/UsageService.swift",
       "source_location": "L81",
       "weight": 1.0,
       "source": "aronnaxide_services_usageservice_usageservice_capture",
       "target": "aronnaxide_services_sshmanager_sshmanager_runshell"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "AronnaxIDE/Services/SSHManager.swift",
+      "source_location": "L415",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "aronnaxide_services_sshmanager_sshmanager_launch",
+      "target": "aronnaxide_services_sshmanager_swift_timeinterval",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -41934,7 +41294,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L428",
+      "source_location": "L409",
       "weight": 1.0,
       "source": "aronnaxide_services_sshmanager_sshmanager_resetmasteronce",
       "target": "aronnaxide_services_sshmanager_sshmanager_closemaster",
@@ -41945,7 +41305,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L491",
+      "source_location": "L472",
       "weight": 1.0,
       "source": "aronnaxide_services_sshmanager_sshmanager_launch",
       "target": "aronnaxide_services_sshmanager_sshmanager_readtoend",
@@ -41955,7 +41315,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AronnaxIDE/Services/SSHManager.swift",
-      "source_location": "L512",
+      "source_location": "L493",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "aronnaxide_services_sshmanager_sshmanager_readtoend",
@@ -45115,194 +44475,6 @@
       "weight": 1.0,
       "source": "aronnaxide_writeguard_view_writeconfirm",
       "target": "binding",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDEUITests/LaunchProbe.swift",
-      "source_location": "L3",
-      "weight": 1.0,
-      "source": "aronnaxideuitests_launchprobe",
-      "target": "aronnaxideuitests_launchprobe_stabilitytests",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDEUITests/LaunchProbe.swift",
-      "source_location": "L1",
-      "weight": 1.0,
-      "source": "aronnaxideuitests_launchprobe",
-      "target": "xctest",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "ThirdParty/Citadel/Examples/CitadelCLI/CitadelCLIUITests/CitadelCLIUITests.swift",
-      "source_location": "L8",
-      "weight": 1.0,
-      "source": "thirdparty_citadel_examples_citadelcli_citadelcliuitests_citadelcliuitests",
-      "target": "xctest",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "ThirdParty/Citadel/Examples/CitadelCLI/CitadelCLIUITests/CitadelCLIUITestsLaunchTests.swift",
-      "source_location": "L8",
-      "weight": 1.0,
-      "source": "thirdparty_citadel_examples_citadelcli_citadelcliuitests_citadelcliuitestslaunchtests",
-      "target": "xctest",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "ThirdParty/Citadel/Tests/CitadelTests/Citadel2Tests.swift",
-      "source_location": "L4",
-      "weight": 1.0,
-      "source": "thirdparty_citadel_tests_citadeltests_citadel2tests",
-      "target": "xctest",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "ThirdParty/Citadel/Tests/CitadelTests/EndToEndTests.swift",
-      "source_location": "L5",
-      "weight": 1.0,
-      "source": "thirdparty_citadel_tests_citadeltests_endtoendtests",
-      "target": "xctest",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "ThirdParty/Citadel/Tests/CitadelTests/KeyTests.swift",
-      "source_location": "L9",
-      "weight": 1.0,
-      "source": "thirdparty_citadel_tests_citadeltests_keytests",
-      "target": "xctest",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "ThirdParty/Citadel/Tests/CitadelTests/RemotePortForwardTests.swift",
-      "source_location": "L5",
-      "weight": 1.0,
-      "source": "thirdparty_citadel_tests_citadeltests_remoteportforwardtests",
-      "target": "xctest",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "ThirdParty/Citadel/Tests/CitadelTests/WithExecTests.swift",
-      "source_location": "L4",
-      "weight": 1.0,
-      "source": "thirdparty_citadel_tests_citadeltests_withexectests",
-      "target": "xctest",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDEUITests/LaunchProbe.swift",
-      "source_location": "L6",
-      "weight": 1.0,
-      "source": "aronnaxideuitests_launchprobe_stabilitytests",
-      "target": "aronnaxideuitests_launchprobe_stabilitytests_testlaunchesandcmdcstable",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "inherits",
-      "confidence": "EXTRACTED",
-      "source_file": "AronnaxIDEUITests/LaunchProbe.swift",
-      "source_location": "L3",
-      "weight": 1.0,
-      "source": "aronnaxideuitests_launchprobe_stabilitytests",
-      "target": "xctestcase",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "inherits",
-      "confidence": "EXTRACTED",
-      "source_file": "ThirdParty/Citadel/Examples/CitadelCLI/CitadelCLIUITests/CitadelCLIUITests.swift",
-      "source_location": "L10",
-      "weight": 1.0,
-      "source": "thirdparty_citadel_examples_citadelcli_citadelcliuitests_citadelcliuitests_citadelcliuitests",
-      "target": "xctestcase",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "inherits",
-      "confidence": "EXTRACTED",
-      "source_file": "ThirdParty/Citadel/Examples/CitadelCLI/CitadelCLIUITests/CitadelCLIUITestsLaunchTests.swift",
-      "source_location": "L10",
-      "weight": 1.0,
-      "source": "thirdparty_citadel_examples_citadelcli_citadelcliuitests_citadelcliuitestslaunchtests_citadelcliuitestslaunchtests",
-      "target": "xctestcase",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "inherits",
-      "confidence": "EXTRACTED",
-      "source_file": "ThirdParty/Citadel/Tests/CitadelTests/Citadel2Tests.swift",
-      "source_location": "L9",
-      "weight": 1.0,
-      "source": "thirdparty_citadel_tests_citadeltests_citadel2tests_citadel2tests",
-      "target": "xctestcase",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "inherits",
-      "confidence": "EXTRACTED",
-      "source_file": "ThirdParty/Citadel/Tests/CitadelTests/EndToEndTests.swift",
-      "source_location": "L24",
-      "weight": 1.0,
-      "source": "thirdparty_citadel_tests_citadeltests_endtoendtests_endtoendtests",
-      "target": "xctestcase",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "inherits",
-      "confidence": "EXTRACTED",
-      "source_file": "ThirdParty/Citadel/Tests/CitadelTests/KeyTests.swift",
-      "source_location": "L26",
-      "weight": 1.0,
-      "source": "thirdparty_citadel_tests_citadeltests_keytests_keytests",
-      "target": "xctestcase",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "inherits",
-      "confidence": "EXTRACTED",
-      "source_file": "ThirdParty/Citadel/Tests/CitadelTests/RemotePortForwardTests.swift",
-      "source_location": "L7",
-      "weight": 1.0,
-      "source": "thirdparty_citadel_tests_citadeltests_remoteportforwardtests_remoteportforwardtests",
-      "target": "xctestcase",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "inherits",
-      "confidence": "EXTRACTED",
-      "source_file": "ThirdParty/Citadel/Tests/CitadelTests/WithExecTests.swift",
-      "source_location": "L7",
-      "weight": 1.0,
-      "source": "thirdparty_citadel_tests_citadeltests_withexectests_withexectests",
-      "target": "xctestcase",
       "confidence_score": 1.0
     },
     {
@@ -53489,6 +52661,83 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "ThirdParty/Citadel/Examples/CitadelCLI/CitadelCLIUITests/CitadelCLIUITests.swift",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "thirdparty_citadel_examples_citadelcli_citadelcliuitests_citadelcliuitests",
+      "target": "xctest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "ThirdParty/Citadel/Examples/CitadelCLI/CitadelCLIUITests/CitadelCLIUITestsLaunchTests.swift",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "thirdparty_citadel_examples_citadelcli_citadelcliuitests_citadelcliuitestslaunchtests",
+      "target": "xctest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "ThirdParty/Citadel/Tests/CitadelTests/Citadel2Tests.swift",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "thirdparty_citadel_tests_citadeltests_citadel2tests",
+      "target": "xctest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "ThirdParty/Citadel/Tests/CitadelTests/EndToEndTests.swift",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "thirdparty_citadel_tests_citadeltests_endtoendtests",
+      "target": "xctest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "ThirdParty/Citadel/Tests/CitadelTests/KeyTests.swift",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "thirdparty_citadel_tests_citadeltests_keytests",
+      "target": "xctest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "ThirdParty/Citadel/Tests/CitadelTests/RemotePortForwardTests.swift",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "thirdparty_citadel_tests_citadeltests_remoteportforwardtests",
+      "target": "xctest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "ThirdParty/Citadel/Tests/CitadelTests/WithExecTests.swift",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "thirdparty_citadel_tests_citadeltests_withexectests",
+      "target": "xctest",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "ThirdParty/Citadel/Examples/CitadelCLI/CitadelCLIUITests/CitadelCLIUITests.swift",
@@ -53526,6 +52775,76 @@
       "weight": 1.0,
       "source": "thirdparty_citadel_examples_citadelcli_citadelcliuitests_citadelcliuitests_citadelcliuitests",
       "target": "thirdparty_citadel_examples_citadelcli_citadelcliuitests_citadelcliuitests_citadelcliuitests_testlaunchperformance",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "ThirdParty/Citadel/Examples/CitadelCLI/CitadelCLIUITests/CitadelCLIUITests.swift",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "thirdparty_citadel_examples_citadelcli_citadelcliuitests_citadelcliuitests_citadelcliuitests",
+      "target": "xctestcase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "ThirdParty/Citadel/Examples/CitadelCLI/CitadelCLIUITests/CitadelCLIUITestsLaunchTests.swift",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "thirdparty_citadel_examples_citadelcli_citadelcliuitests_citadelcliuitestslaunchtests_citadelcliuitestslaunchtests",
+      "target": "xctestcase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "ThirdParty/Citadel/Tests/CitadelTests/Citadel2Tests.swift",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "thirdparty_citadel_tests_citadeltests_citadel2tests_citadel2tests",
+      "target": "xctestcase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "ThirdParty/Citadel/Tests/CitadelTests/EndToEndTests.swift",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "thirdparty_citadel_tests_citadeltests_endtoendtests_endtoendtests",
+      "target": "xctestcase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "ThirdParty/Citadel/Tests/CitadelTests/KeyTests.swift",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "thirdparty_citadel_tests_citadeltests_keytests_keytests",
+      "target": "xctestcase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "ThirdParty/Citadel/Tests/CitadelTests/RemotePortForwardTests.swift",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "thirdparty_citadel_tests_citadeltests_remoteportforwardtests_remoteportforwardtests",
+      "target": "xctestcase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "ThirdParty/Citadel/Tests/CitadelTests/WithExecTests.swift",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "thirdparty_citadel_tests_citadeltests_withexectests_withexectests",
+      "target": "xctestcase",
       "confidence_score": 1.0
     },
     {
@@ -81409,76 +80728,6 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "CODEX-HANDOFF.md",
-      "source_location": "L1",
-      "weight": 1.0,
-      "source": "codex_handoff",
-      "target": "codex_handoff_codex_handoff_add_server_wizard_hangs_on_the_vault_clone_bead_ide_07d",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CODEX-HANDOFF.md",
-      "source_location": "L25",
-      "weight": 1.0,
-      "source": "codex_handoff_codex_handoff_add_server_wizard_hangs_on_the_vault_clone_bead_ide_07d",
-      "target": "codex_handoff_candidate_fix_already_on_branch_fix_onboarding_clone_hang_commit_93ee85d",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CODEX-HANDOFF.md",
-      "source_location": "L15",
-      "weight": 1.0,
-      "source": "codex_handoff_codex_handoff_add_server_wizard_hangs_on_the_vault_clone_bead_ide_07d",
-      "target": "codex_handoff_diagnosis_evidence_gathered",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CODEX-HANDOFF.md",
-      "source_location": "L76",
-      "weight": 1.0,
-      "source": "codex_handoff_codex_handoff_add_server_wizard_hangs_on_the_vault_clone_bead_ide_07d",
-      "target": "codex_handoff_rules",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CODEX-HANDOFF.md",
-      "source_location": "L57",
-      "weight": 1.0,
-      "source": "codex_handoff_codex_handoff_add_server_wizard_hangs_on_the_vault_clone_bead_ide_07d",
-      "target": "codex_handoff_second_symptom_same_class_step_6_install_dev_tools_hangs",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CODEX-HANDOFF.md",
-      "source_location": "L7",
-      "weight": 1.0,
-      "source": "codex_handoff_codex_handoff_add_server_wizard_hangs_on_the_vault_clone_bead_ide_07d",
-      "target": "codex_handoff_the_bug",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CODEX-HANDOFF.md",
-      "source_location": "L34",
-      "weight": 1.0,
-      "source": "codex_handoff_codex_handoff_add_server_wizard_hangs_on_the_vault_clone_bead_ide_07d",
-      "target": "codex_handoff_your_todo",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "README.md",
       "source_location": "L1",
       "weight": 1.0,
@@ -82028,5 +81277,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "78198030eac37d0e0ce256247184c425c7c0cf60"
+  "built_at_commit": "c245d1356e98254dcf0d5752317e234bd562c738"
 }
