@@ -34,6 +34,14 @@ final class SSHConnection: ObservableObject {
 
     func start() { ensureConnecting() }
 
+    /// A user-initiated reconnect (a pane's tap-to-reconnect). Clears the fatal-failure latch
+    /// so a prior auth rejection — which may have been transient — doesn't leave the affordance
+    /// permanently dead, then attempts to connect again.
+    func retry() {
+        didFail = false
+        ensureConnecting()
+    }
+
     /// Start a connect attempt if one isn't already running. `connect()` clears `connectTask`
     /// when it finishes (see its `defer`), so this can also *re*connect after the transport
     /// dropped while foregrounded — not only on first launch.

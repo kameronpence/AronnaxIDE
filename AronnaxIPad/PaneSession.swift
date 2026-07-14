@@ -61,6 +61,13 @@ final class PaneSession: ObservableObject, Identifiable {
         ptyTask = Task { [weak self] in await self?.runPTY() }
     }
 
+    /// The pane's tap-to-reconnect action: clear any fatal connection latch, then reopen. Distinct
+    /// from `attach()` so a normal surface switch doesn't reset the shared connection.
+    func manualReconnect() {
+        connection.retry()
+        attach()
+    }
+
     /// Switch this pane's surface and/or project, reopening its single channel.
     func restart(target: AgentTarget, workdir: String) {
         self.target = target

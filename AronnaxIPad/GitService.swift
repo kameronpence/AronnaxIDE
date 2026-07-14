@@ -2,9 +2,11 @@ import Foundation
 
 /// A working-tree change from `git status --porcelain` (2-char XY code + path).
 struct GitChange: Identifiable {
-    let id = UUID()
     let code: String
     let path: String
+    /// Stable across reloads (a path is unique within one status output) so the list diffs
+    /// instead of re-animating every row on refresh.
+    var id: String { code + path }
     /// The full set of porcelain-v1 unmerged (conflict) codes — all must be detected as a whole,
     /// since e.g. `AA`/`DD` would otherwise look like an ordinary add/delete on the first column.
     private static let unmerged: Set<String> = ["DD", "AU", "UD", "UA", "DU", "AA", "UU"]

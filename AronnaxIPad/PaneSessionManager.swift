@@ -17,19 +17,29 @@ final class PaneSessionManager: ObservableObject {
     ///  - surface switch → reopen the channel on the new target;
     ///  - project switch → agents reattach to the new project's tmux session, but a plain
     ///    terminal keeps running (its workdir is just noted for a future reopen).
-    func session(for id: UUID, target: AgentTarget, workdir: String) -> PaneSession {
-        if let existing = sessions[id] {
-            if existing.target != target {
-                existing.restart(target: target, workdir: workdir)
-            } else if existing.workdir != workdir {
-                if target == .terminal { existing.updateWorkdir(workdir) }
-                else { existing.restart(target: target, workdir: workdir) }
-            }
-            return existing
-        }
-        let created = PaneSession(id: id, target: target, workdir: workdir, connection: connection)
+    /// Get-or-create the session for a leaf. This is a PURE getter — no restart side effects — so
+    /// it's safe to call during SwiftUI body evaluation. Surface/project changes are applied
+    /// separately via `apply(...)` from a view's `.onChange`, so `@Published` mutation never races
+    /// the render pass. The initial values are used only when the session is first created.
+    func session(for id: UUID, initialTarget: AgentTarget, initialWorkdir: String) -> PaneSession {
+        if let existing = sessions[id] { return existing }
+        let created = PaneSession(id: id, target: initialTarget, workdir: initialWorkdir, connection: connection)
         sessions[id] = created
         return created
+    }
+
+    /// Apply a surface/project change to a leaf's session — called from `.onChange` (not body):
+    ///  - surface switch → reopen the channel on the new target;
+    ///  - project switch → agents reattach to the new project's tmux session, but a plain
+    ///    terminal keeps running (its workdir is just noted for a future reopen).
+    func apply(target: AgentTarget, workdir: String, to id: UUID) {
+        guard let session = sessions[id] else { return }
+        if session.target != target {
+            session.restart(target: target, workdir: workdir)
+        } else if session.workdir != workdir {
+            if target == .terminal { session.updateWorkdir(workdir) }
+            else { session.restart(target: target, workdir: workdir) }
+        }
     }
 
     /// Tear down and forget one leaf's session (leaf closed).

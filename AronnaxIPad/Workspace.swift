@@ -367,15 +367,26 @@ private struct LeafPaneView: View {
         )
         .padding(2)
         .simultaneousGesture(TapGesture().onEnded { model.focus(id) })
+        // Apply surface/project changes OUTSIDE body (so the session's @Published mutation doesn't
+        // race the render pass). Only for terminal surfaces — a switch to a data surface has its
+        // session retired by the agentLeafIDs GC instead.
+        .onChange(of: target) { _, newTarget in
+            if newTarget.isTerminal { manager.apply(target: newTarget, workdir: workdir, to: id) }
+        }
+        .onChange(of: workdir) { _, newWorkdir in
+            if target.isTerminal { manager.apply(target: target, workdir: newWorkdir, to: id) }
+        }
     }
 
     /// The pane body: a PTY-backed terminal surface, or a non-terminal data surface (Beads).
     @ViewBuilder private var surface: some View {
         switch target {
         case .terminal, .claude, .codex:
-            // The session is keyed by this leaf's id; switching among terminal surfaces reopens
-            // its PTY in place. Data leaves never create a session (GC'd via agentLeafIDs).
-            LeafSurfaceView(session: manager.session(for: id, target: target, workdir: workdir),
+            // Pure get-or-create (no side effects in body); target/workdir changes are applied via
+            // the .onChange handlers on the body. Data leaves never create a session (GC'd via
+            // agentLeafIDs).
+            LeafSurfaceView(session: manager.session(for: id, initialTarget: target,
+                                                     initialWorkdir: workdir),
                             isFocused: hasKeyboard)
         case .beads:
             BeadsView(connection: manager.connection, workdir: workdir)
@@ -435,7 +446,7 @@ private struct LeafSurfaceView: View {
         TerminalSurface(session: session, isFocused: isFocused)
             .overlay(alignment: .bottom) {
                 if session.ended {
-                    Button { session.attach() } label: {
+                    Button { session.manualReconnect() } label: {
                         Label("\(session.status) — tap to reconnect", systemImage: "arrow.clockwise")
                             .font(.callout)
                             .padding(.horizontal, 12).padding(.vertical, 8)
