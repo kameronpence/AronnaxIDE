@@ -91,7 +91,13 @@ final class PaneSession: ObservableObject, Identifiable {
     }
 
     private func runPTY() async {
-        guard let client = await connection.client() else { return }
+        // client() returns nil only when the connection failed fatally (bad key/auth) or was torn
+        // down — surface that as an ended pane (with a reconnect affordance) rather than a silent
+        // blank, unless we were intentionally cancelled.
+        guard let client = await connection.client() else {
+            if !Task.isCancelled { status = "\(target.label) unavailable"; ended = true }
+            return
+        }
         // The connect wait can outlive this task (surface switch / teardown cancels it while
         // still waiting). Bail before opening a channel so a stale task can't leave a stray PTY.
         if Task.isCancelled { return }
