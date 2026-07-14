@@ -43,6 +43,69 @@ final class ClipboardTerminalView: LocalProcessTerminalView {
         return range.location == NSNotFound ? NSRange(location: 0, length: 0) : range
     }
 
+    /// The in-progress dictation ("marked") text and the overlay that shows it live.
+    private var markedText = ""
+    private var dictationOverlay: NSTextField?
+
+    /// SwiftTerm's `setMarkedText` is a no-op, so the terminal shows nothing while you dictate
+    /// and only the committed result appears — unlike every other text field. macOS delivers the
+    /// live transcription through the marked-text protocol, so we implement it: report the marked
+    /// state, and draw the provisional text as an overlay at the caret. On commit, `insertText`
+    /// clears the overlay and lets SwiftTerm send the final text to the shell/agent as input.
+    override func hasMarkedText() -> Bool { !markedText.isEmpty }
+
+    override func markedRange() -> NSRange {
+        markedText.isEmpty ? NSRange(location: NSNotFound, length: 0)
+                           : NSRange(location: 0, length: (markedText as NSString).length)
+    }
+
+    override func setMarkedText(_ string: Any, selectedRange: NSRange, replacementRange: NSRange) {
+        markedText = (string as? NSAttributedString)?.string ?? (string as? String) ?? ""
+        refreshDictationOverlay()
+    }
+
+    override func unmarkText() {
+        markedText = ""
+        refreshDictationOverlay()
+    }
+
+    override func insertText(_ string: Any, replacementRange: NSRange) {
+        markedText = ""
+        refreshDictationOverlay()
+        super.insertText(string, replacementRange: replacementRange)   // final text → the shell
+    }
+
+    private func refreshDictationOverlay() {
+        guard !markedText.isEmpty else {
+            dictationOverlay?.removeFromSuperview()
+            dictationOverlay = nil
+            return
+        }
+        let field = dictationOverlay ?? {
+            let f = NSTextField(labelWithString: "")
+            f.font = NSFont.monospacedSystemFont(ofSize: 13, weight: .regular)
+            f.textColor = NSColor.systemBlue
+            f.backgroundColor = NSColor(calibratedWhite: 0.96, alpha: 0.96)
+            f.drawsBackground = true
+            f.isBordered = false
+            f.lineBreakMode = .byCharWrapping
+            f.maximumNumberOfLines = 0
+            addSubview(f)
+            dictationOverlay = f
+            return f
+        }()
+        field.stringValue = markedText
+        // Anchor at the caret: firstRect gives the caret in screen coords; map back to this view.
+        let caretScreen = firstRect(forCharacterRange: NSRange(location: 0, length: 0), actualRange: nil)
+        if let window {
+            let originView = convert(window.convertPoint(fromScreen: caretScreen.origin), from: nil)
+            let maxW = max(80, bounds.width - originView.x - 8)
+            let size = field.sizeThatFits(NSSize(width: maxW, height: .greatestFiniteMagnitude))
+            field.frame = NSRect(x: originView.x, y: originView.y,
+                                 width: min(size.width, maxW), height: size.height)
+        }
+    }
+
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
         // Only the focused terminal may claim clipboard shortcuts; otherwise defer so
         // the event reaches the pane the user is actually working in.
