@@ -41,6 +41,11 @@ targets:
         CFBundleName: AronnaxIDE
         CFBundleIconName: AppIcon
         NSHumanReadableCopyright: ""
+        # macOS Dictation runs on-device in the app's process and needs microphone access
+        # (TCC), which is gated by this usage string. Without it macOS silently refuses to
+        # start Dictation in the app — the fix for "dictation won't start here but works
+        # elsewhere". Non-sandboxed + non-hardened, so the string alone is enough (no entitlement).
+        NSMicrophoneUsageDescription: "AronnaxIDE uses the microphone for macOS Dictation when typing into the terminal and coding panes."
         # The Browser pane loads the mini's localhost dev servers over http via
         # forwarded loopback IPs (127.0.0.1:<port>). ATS's NSAllowsLocalNetworking
         # does NOT cover raw IP literals, so WKWebView would block them (works in
