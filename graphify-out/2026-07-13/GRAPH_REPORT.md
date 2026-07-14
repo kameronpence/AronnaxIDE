@@ -1,16 +1,16 @@
-# Graph Report - AronnaxIDE  (2026-07-13)
+# Graph Report - AronnaxIDE  (2026-07-07)
 
 ## Corpus Check
-- 162 files · ~138,269 words
+- 141 files · ~118,458 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 2415 nodes · 5363 edges · 120 communities (117 shown, 3 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 153 edges (avg confidence: 0.8)
+- 2118 nodes · 4718 edges · 103 communities (100 shown, 3 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 137 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `c245d135`
+- Built from commit: `a5f67f47`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -115,39 +115,20 @@
 - [[_COMMUNITY_HostKey|HostKey]]
 - [[_COMMUNITY_AronnaxIDE development workflow — Claude creates, Codex verifies|AronnaxIDE development workflow — Claude creates, Codex verifies]]
 - [[_COMMUNITY__SHA512|_SHA512]]
-- [[_COMMUNITY_CodingKeys|CodingKeys]]
-- [[_COMMUNITY_ObservableObject|ObservableObject]]
-- [[_COMMUNITY_AgentTarget|AgentTarget]]
-- [[_COMMUNITY_ProjectPrefs|ProjectPrefs]]
-- [[_COMMUNITY_DataToBufferCodec|DataToBufferCodec]]
-- [[_COMMUNITY_.initializeDirectTCPIPChannel|.initializeDirectTCPIPChannel]]
-- [[_COMMUNITY_WorkspaceTab|WorkspaceTab]]
-- [[_COMMUNITY_AronnaxTerminalView|AronnaxTerminalView]]
-- [[_COMMUNITY_.parse|.parse]]
-- [[_COMMUNITY_TerminalSurface|TerminalSurface]]
-- [[_COMMUNITY_PreviewWatcher|PreviewWatcher]]
-- [[_COMMUNITY_Combine|Combine]]
-- [[_COMMUNITY_PubkeyParseError|PubkeyParseError]]
-- [[_COMMUNITY_SSHClientError|SSHClientError]]
-- [[_COMMUNITY_BackingKeyType|BackingKeyType]]
-- [[_COMMUNITY_Value|Value]]
-- [[_COMMUNITY_DirectTCPIPForwardingDelegate|DirectTCPIPForwardingDelegate]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `Host` - 86 edges
-2. `SFTPMessage` - 84 edges
-3. `View` - 74 edges
-4. `Foundation` - 59 edges
-5. `AppSettings` - 45 edges
-6. `Error` - 43 edges
-7. `SSHConnection` - 39 edges
-8. `NIOSSH` - 38 edges
-9. `NIO` - 38 edges
-10. `ServerOnboarding` - 35 edges
+1. `SFTPMessage` - 84 edges
+2. `Host` - 81 edges
+3. `View` - 52 edges
+4. `Foundation` - 50 edges
+5. `Error` - 42 edges
+6. `AppSettings` - 40 edges
+7. `NIO` - 38 edges
+8. `NIOSSH` - 36 edges
+9. `SFTPServerInboundHandler` - 35 edges
+10. `SFTPMessageType` - 34 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `ContentView` --references--> `View`  [EXTRACTED]
-  ThirdParty/Citadel/Examples/CitadelCLI/CitadelCLI/ContentView.swift → AronnaxIDE/WriteGuard.swift
 - `Coordinator` --references--> `Date`  [EXTRACTED]
   AronnaxIDE/Panes/TerminalPane.swift → ThirdParty/Citadel/Sources/CitadelServerExample/EchoShell/Extensions.swift
 - `BeadsError` --implements--> `Error`  [EXTRACTED]
@@ -156,39 +137,41 @@
   AronnaxIDE/Services/GitController.swift → ThirdParty/Citadel/Sources/Citadel/DirectTCPIP/Server/DirectTCPIP+Server.swift
 - `HealthController` --references--> `Date`  [EXTRACTED]
   AronnaxIDE/Services/HealthController.swift → ThirdParty/Citadel/Sources/CitadelServerExample/EchoShell/Extensions.swift
+- `RemoteFSError` --implements--> `Error`  [EXTRACTED]
+  AronnaxIDE/Services/RemoteFS.swift → ThirdParty/Citadel/Sources/Citadel/DirectTCPIP/Server/DirectTCPIP+Server.swift
 
 ## Import Cycles
 - None detected.
 
-## Communities (120 total, 3 thin omitted)
+## Communities (103 total, 3 thin omitted)
 
 ### Community 0 - "SFTPClient"
-Cohesion: 0.05
-Nodes (45): ByteToMessageDecoder, DecodingState, MessageToByteEncoder, NIOLockedValueBox, ReturnType, SFTPError, connectionClosed, errorStatus (+37 more)
+Cohesion: 0.06
+Nodes (42): ByteToMessageDecoder, DecodingState, NIOLockedValueBox, ReturnType, SFTPError, connectionClosed, errorStatus, fileHandleInvalid (+34 more)
 
 ### Community 1 - "RSA.swift"
-Cohesion: 0.06
-Nodes (34): Buffer, ContiguousBytes, NIOSSHPrivateKeyProtocol, NIOSSHPublicKeyProtocol, ByteBuffer, HashFunction, SharedSecretLengthHelper, BIGNUM (+26 more)
+Cohesion: 0.05
+Nodes (42): Buffer, ContiguousBytes, Hasher, NIOSSHPrivateKeyProtocol, NIOSSHPublicKeyProtocol, ByteBuffer, HashFunction, SharedSecretLengthHelper (+34 more)
 
 ### Community 2 - "LogStreamController"
-Cohesion: 0.09
-Nodes (19): Color, WorkspaceTopBar, ConnectionMonitor, Status, checking, connected, disconnected, Bool (+11 more)
+Cohesion: 0.05
+Nodes (36): Color, WorkspaceTopBar, Keys, ConnectionMonitor, Status, checking, connected, disconnected (+28 more)
 
 ### Community 3 - "SSHShellContext"
-Cohesion: 0.10
-Nodes (31): Terminal, MyTerminalView, AsyncStream, SSHShellContext, AsyncStream, Bool, Int, WindowSize (+23 more)
+Cohesion: 0.07
+Nodes (44): CloseMode, Terminal, MyTerminalView, AsyncStream, SSHShellContext, AsyncStream, Bool, Int (+36 more)
 
 ### Community 4 - "VaultModel"
-Cohesion: 0.10
-Nodes (21): MarkdownPreview, Bool, Never, String, Task, TimeInterval, Timer, Void (+13 more)
+Cohesion: 0.08
+Nodes (24): MarkdownPreview, Bool, Never, String, Task, TimeInterval, Timer, Void (+16 more)
 
 ### Community 5 - "ExecHandler"
-Cohesion: 0.13
-Nodes (13): AnyObject, ExecCommandContext, ExecDelegate, ExecExitContext, ExecHandler, Any, Channel, ChannelHandlerContext (+5 more)
+Cohesion: 0.06
+Nodes (32): AnyObject, ChannelInboundHandler, ChannelOutboundHandler, MessageToByteEncoder, SSHChannelDataUnwrapper, SSHInboundChannelDataWrapper, SSHOutboundChannelDataUnwrapper, SSHOutboundChannelDataWrapper (+24 more)
 
 ### Community 6 - "TTYHandler"
-Cohesion: 0.20
-Nodes (10): SSHClient, Any, ByteBuffer, ChannelHandlerContext, EventLoopPromise, Int, NIOAny, String (+2 more)
+Cohesion: 0.06
+Nodes (33): ChannelDuplexHandler, DataToBufferCodec, SSHClient, Channel, ChannelHandlerContext, EventLoopFuture, EventLoopPromise, NIOAny (+25 more)
 
 ### Community 7 - "DiffieHellmanGroup14Sha1"
 Cohesion: 0.09
@@ -199,76 +182,76 @@ Cohesion: 0.05
 Nodes (46): Comparable, SFTPMessageType, attributes, closeFile, data, extended, extendedReply, fsetstat (+38 more)
 
 ### Community 9 - "View"
-Cohesion: 0.09
-Nodes (16): App, AronnaxIDEApp, Scene, AddServerWizardWindow, BeadsViewMode, graph, list, ComingSoon (+8 more)
+Cohesion: 0.08
+Nodes (20): AddServerWizard, AddServerWizardWindow, String, GitDeployPanel, Bool, Color, Void, LogViewer (+12 more)
 
 ### Community 10 - "UsageService"
 Cohesion: 0.10
 Nodes (20): AgentUsage, ProbeAgent, claude, codex, SidebarUsageFooter, Bool, Color, Double (+12 more)
 
 ### Community 11 - "WorkspaceModel"
-Cohesion: 0.16
-Nodes (16): LeafPaneView, PaneNodeView, PaneTree, leaf, split, SplitAxis, horizontal, vertical (+8 more)
+Cohesion: 0.11
+Nodes (26): ContentView, WorkspaceSurface, WorkspaceTab, beads, browser, coding, git, health (+18 more)
 
 ### Community 12 - "SFTPServerInboundHandler"
 Cohesion: 0.13
 Nodes (17): SFTPDirectoryHandleIterator, SFTPServerInboundHandler, Any, ByteBuffer, ChannelHandlerContext, escaping, EventLoop, EventLoopFuture (+9 more)
 
 ### Community 13 - "Foundation"
-Cohesion: 0.10
-Nodes (19): ArgumentParser, BigInt, CCryptoBoringSSL, ColorizeSwift, Crypto, _CryptoExtras, Foundation, Logging (+11 more)
+Cohesion: 0.14
+Nodes (13): ArgumentParser, BigInt, CCryptoBoringSSL, ColorizeSwift, Crypto, _CryptoExtras, Foundation, Logging (+5 more)
 
 ### Community 14 - "OpenSSHKey.swift"
-Cohesion: 0.09
-Nodes (33): CCitadelBcrypt, OpaquePointer, SSHKey, ByteBuffer, Cipher, aes128ctr, aes256ctr, none (+25 more)
+Cohesion: 0.10
+Nodes (29): CCitadelBcrypt, OpaquePointer, SSHKey, ByteBuffer, ByteBufferConvertible, Cipher, aes128ctr, aes256ctr (+21 more)
 
 ### Community 15 - "Coordinator"
-Cohesion: 0.10
-Nodes (20): NSViewRepresentable, TerminalViewDelegate, CitadelCLIApp, Coordinator, Event, changeSize, send, SSHView (+12 more)
+Cohesion: 0.08
+Nodes (24): App, AronnaxIDEApp, Scene, AronnaxApp, Scene, TerminalViewDelegate, CitadelCLIApp, Coordinator (+16 more)
 
 ### Community 16 - "ServerOnboarding"
-Cohesion: 0.09
-Nodes (21): AddServerWizard, Bool, String, Phase, done, failed, idle, running (+13 more)
+Cohesion: 0.13
+Nodes (11): Role, app, you, ServerOnboarding, Step, Bool, Int, Never (+3 more)
 
 ### Community 17 - "SSHKeyType"
 Cohesion: 0.09
-Nodes (18): CustomStringConvertible, LocalizedError, RawRepresentable, SSHKeyDetection, SSHKeyDetectionError, encryptedPrivateKey, incorrectPassphrase, invalidKeyFormat (+10 more)
+Nodes (16): CustomStringConvertible, NIOCore, RawRepresentable, BackingKeyType, ecdsaP256, ecdsaP384, ecdsaP521, ed25519 (+8 more)
 
 ### Community 18 - "Sendable"
 Cohesion: 0.30
 Nodes (32): Sendable, Attributes, CloseFile, FileData, FileSetStat, FileStat, Handle, Initialize (+24 more)
 
 ### Community 19 - "GitController"
-Cohesion: 0.08
-Nodes (20): GitDeployPanel, GitPanelModel, Bool, Color, String, Void, ActionRun, GitController (+12 more)
+Cohesion: 0.18
+Nodes (9): GitController, GitError, command, GitStatus, RemoteRef, Bool, Int, String (+1 more)
 
 ### Community 20 - "CodingKeys"
-Cohesion: 0.18
-Nodes (15): GitHubAccount, HostReach, direct, proxyJump, Project, String, BdDependency, BdIssue (+7 more)
+Cohesion: 0.11
+Nodes (24): BdDependency, BdIssue, BeadsController, BeadsError, command, CodingKeys, blockedByCount, dependencies (+16 more)
 
 ### Community 21 - "Coordinator"
-Cohesion: 0.12
-Nodes (18): Coordinator, HostTerminalView, MasterAction, forceReset, keep, resetOnce, Bool, Context (+10 more)
+Cohesion: 0.14
+Nodes (16): Coordinator, HostTerminalView, MasterAction, forceReset, keep, resetOnce, Bool, Context (+8 more)
 
 ### Community 22 - "blf.c"
 Cohesion: 0.21
 Nodes (23): blf_ctx, u_int8_t, citadel_bcrypt_hashpass(), citadel_encode_base64(), decode_base64(), bcrypt_hash(), citadel_bcrypt_pbkdf(), u_int8_t (+15 more)
 
 ### Community 23 - "SSHManager"
-Cohesion: 0.15
-Nodes (17): Host, Bool, CommandResult, DataBox, SSHError, launchFailed, SSHManager, Bool (+9 more)
+Cohesion: 0.17
+Nodes (12): CommandResult, SSHError, launchFailed, SSHManager, Bool, Data, FileHandle, Int (+4 more)
 
 ### Community 24 - "Error"
-Cohesion: 0.17
-Nodes (12): ExitHandler, HandleRegistrationResult, alreadyRegistered, success, Error, forbidden, ExecOutputHandler, Int (+4 more)
+Cohesion: 0.10
+Nodes (22): ExitHandler, Error, forbidden, AuthenticationFailed, SSHChannelError, invalidDataType, SSHClientError, allAuthenticationOptionsFailed (+14 more)
 
 ### Community 25 - "Coordinator"
 Cohesion: 0.15
 Nodes (13): AgentTerminalView, Coordinator, Bool, Context, Coordinator, Int, Int32, LocalProcessTerminalView (+5 more)
 
 ### Community 26 - "TTY.swift"
-Cohesion: 0.20
-Nodes (13): AsyncSequence, CommandMode, command, pty, tty, SSHClient, Bool, Channel (+5 more)
+Cohesion: 0.18
+Nodes (18): AsyncSequence, CommandMode, command, pty, tty, Continuation, ExecCommandStream, SSHClient (+10 more)
 
 ### Community 27 - "AES128CTR"
 Cohesion: 0.11
@@ -280,31 +263,35 @@ Nodes (26): SFTPMessage, attributes, closeFile, data, fsetstat, fstat, handle, i
 
 ### Community 29 - "ClaudeMode"
 Cohesion: 0.10
-Nodes (21): AgentColumn, AgentLayout, both, claude, codex, CodingPane, AgentController, ClaudeMode (+13 more)
+Nodes (20): AgentColumn, AgentLayout, both, claude, codex, CodingPane, AgentController, ClaudeMode (+12 more)
 
 ### Community 30 - "String"
 Cohesion: 0.17
 Nodes (10): BdCreateSheet, BdIssueDetailSheet, BdIssueRow, BeadsModel, BeadsPanel, Bool, Color, Int (+2 more)
 
 ### Community 31 - "SSHClient"
+Cohesion: 0.14
+Nodes (15): SSHClient, Bool, Channel, ChannelHandler, EventLoop, Int, MultiThreadedEventLoopGroup, Set (+7 more)
+
+### Community 32 - "Host"
 Cohesion: 0.16
-Nodes (14): NIOLoopBoundBox, SSHClient, Bool, Channel, ChannelHandler, EventLoop, Int, MultiThreadedEventLoopGroup (+6 more)
+Nodes (15): GitHubAccount, Host, HostReach, direct, proxyJump, Project, Bool, String (+7 more)
 
 ### Community 33 - "Remote Port Forwarding Example"
 Cohesion: 0.10
 Nodes (20): 1. Set up a local service, 2. Run the example, 3. Test the connection, "Address already in use", Advanced Usage, Code Walkthrough, Command-Line Options, Common Issues (+12 more)
 
 ### Community 34 - "SSHTerminalSession"
-Cohesion: 0.06
-Nodes (31): ContentView, SSHTerminalSession, AgentTarget, AronnaxTerminalView, AsyncStream, Bool, Int, Never (+23 more)
+Cohesion: 0.17
+Nodes (10): SSHTerminalSession, AsyncStream, Bool, Int, Never, SSHClient, String, Task (+2 more)
 
 ### Community 35 - ".addHandlers"
-Cohesion: 0.16
-Nodes (9): ClientHandshakeHandler, InvalidHostKey, Any, ChannelHandlerContext, EventLoop, EventLoopFuture, EventLoopPromise, SSHChannelType (+1 more)
+Cohesion: 0.18
+Nodes (12): autoclosure, NIOLoopBoundBox, ClientHandshakeHandler, SSHClientInboundChannelHandler, SSHClientSession, Any, Channel, ChannelHandlerContext (+4 more)
 
 ### Community 36 - "ExecHandler.swift"
-Cohesion: 0.20
-Nodes (8): Bionic, Darwin, Dispatch, Glibc, Musl, NIOFoundationCompat, NIOPosix, SwiftTUI
+Cohesion: 0.11
+Nodes (16): Bionic, Darwin, Dispatch, Glibc, Musl, NIOFoundationCompat, NIOPosix, SwiftTUI (+8 more)
 
 ### Community 37 - "SFTPFileAttributes"
 Cohesion: 0.18
@@ -315,7 +302,7 @@ Cohesion: 0.16
 Nodes (12): NIOSSHClientUserAuthenticationDelegate, NIOSSHUserAuthenticationOffer, P256, P384, Implementation, custom, user, SSHAuthenticationMethod (+4 more)
 
 ### Community 39 - "GlueHandler"
-Cohesion: 0.18
+Cohesion: 0.19
 Nodes (5): GlueHandler, Any, Bool, ChannelHandlerContext, NIOAny
 
 ### Community 40 - "Citadel"
@@ -323,24 +310,24 @@ Cohesion: 0.29
 Nodes (5): Citadel, SFTPDelegate, ShouldNotGetHere, String, UInt32
 
 ### Community 41 - "SSHServer"
-Cohesion: 0.12
-Nodes (15): GlobalRequest, GlobalRequestDelegate, DirectTCPIPDelegate, RemotePortForwardDelegate, CitadelServerDelegate, CloseErrorHandler, SSHServer, Channel (+7 more)
+Cohesion: 0.15
+Nodes (13): GlobalRequest, GlobalRequestDelegate, RemotePortForwardDelegate, CitadelServerDelegate, SSHServer, Channel, EventLoopFuture, NIOSSHHandler (+5 more)
 
 ### Community 42 - "AsyncRemotePortForwardDelegate"
 Cohesion: 0.22
 Nodes (14): NIOAsyncChannel, SocketAddress, AsyncRemotePortForwardDelegate, ServerChannelStorage, ByteBuffer, Channel, EventLoop, EventLoopFuture (+6 more)
 
 ### Community 43 - "BrowserModel"
-Cohesion: 0.13
-Nodes (21): LeafPaneView, LeafSurfaceView, PaneNodeView, PaneTree, leaf, split, SplitAxis, horizontal (+13 more)
+Cohesion: 0.16
+Nodes (9): BrowserModel, Context, WKWebView, WebView, NSObject, NSViewRepresentable, WebKit, WKNavigation (+1 more)
 
 ### Community 44 - "Coordinator"
-Cohesion: 0.10
-Nodes (22): Bead, BeadsService, CodingKeys, id, issueType, priority, status, title (+14 more)
+Cohesion: 0.20
+Nodes (8): Coordinator, ArraySlice, Data, Double, Int, String, TerminalView, UInt8
 
 ### Community 45 - "SSHHostKeyValidator"
-Cohesion: 0.27
-Nodes (7): NIOSSHClientServerAuthenticationDelegate, Method, acceptAnything, custom, trustedKeys, SSHHostKeyValidator, NIOSSHPublicKey
+Cohesion: 0.15
+Nodes (13): NIOSSHClientServerAuthenticationDelegate, NIOTransportServices, HandleRegistrationResult, alreadyRegistered, success, InvalidHostKey, Method, acceptAnything (+5 more)
 
 ### Community 46 - "HealthController"
 Cohesion: 0.21
@@ -348,75 +335,71 @@ Nodes (10): HealthController, HostHealth, Bool, Double, Never, String, Task, Tim
 
 ### Community 47 - "SubsystemHandler"
 Cohesion: 0.19
-Nodes (8): SubsystemHandler, Any, ChannelHandlerContext, EventLoop, EventLoopPromise, NIOAny, SFTPDelegate, Void
+Nodes (7): SubsystemHandler, Any, ChannelHandlerContext, EventLoop, EventLoopPromise, NIOAny, Void
 
 ### Community 48 - "SFTPRequest"
 Cohesion: 0.12
 Nodes (16): SFTPRequest, closeFile, fsetstat, fstat, mkdir, opendir, openFile, read (+8 more)
 
 ### Community 49 - "PortForwardManager"
-Cohesion: 0.06
-Nodes (28): AnyCancellable, AppKit, BrowserModel, BrowserPane, Bool, Context, Int, String (+20 more)
+Cohesion: 0.30
+Nodes (8): AnyCancellable, Forward, PortForwardManager, Spec, Bool, Int, Process, String
 
 ### Community 50 - "ClipboardTerminalView"
-Cohesion: 0.14
-Nodes (10): SSHConnection, Bool, ByteBuffer, Int, Never, SSHClient, String, Task (+2 more)
+Cohesion: 0.20
+Nodes (8): AppKit, ClipboardTerminalView, Any, Bool, Int, LocalProcessTerminalView, NSEvent, NSPoint
 
 ### Community 51 - "AppSettings"
-Cohesion: 0.18
-Nodes (7): AppSettings, Bool, Int, Set, String, T, IndexSet
+Cohesion: 0.28
+Nodes (4): AppSettings, Bool, Set, String
 
 ### Community 52 - "AronnaxTerminalView"
-Cohesion: 0.21
-Nodes (8): AronnaxTerminalView, Bool, CGFloat, UIGestureRecognizer, UIKeyCommand, UIPanGestureRecognizer, TerminalView, UIGestureRecognizerDelegate
+Cohesion: 0.17
+Nodes (9): AronnaxTerminalView, Bool, CGFloat, Context, TerminalView, UIGestureRecognizer, UIGestureRecognizerDelegate, UIKeyCommand (+1 more)
 
 ### Community 53 - "DependencyGraphView"
-Cohesion: 0.33
-Nodes (5): DependencyGraphView, MermaidGraph, Context, String, WKWebView
-
-### Community 54 - "GitPanelModel"
-Cohesion: 0.12
-Nodes (16): Phase, empty, failed, idle, loaded, loading, String, VaultNote (+8 more)
+Cohesion: 0.22
+Nodes (8): BeadsViewMode, graph, list, DependencyGraphView, MermaidGraph, Context, String, WKWebView
 
 ### Community 55 - ".runTest"
 Cohesion: 0.22
 Nodes (5): Duration, SSHClient, Void, TestTimeout, WithExecTests
 
 ### Community 56 - ".runTest"
-Cohesion: 0.23
-Nodes (4): ExpectedError, EndToEndTests, Bool, SSHClient
+Cohesion: 0.22
+Nodes (5): ExpectedError, NIOSSHPrivateKey, EndToEndTests, Bool, SSHClient
 
 ### Community 57 - "SSHClientSettings"
-Cohesion: 0.23
-Nodes (12): autoclosure, TCPIPForwardHandler, SSHClientInboundChannelHandler, SSHClientSettings, ChannelHandler, escaping, EventLoopGroup, Int (+4 more)
+Cohesion: 0.24
+Nodes (10): TCPIPForwardHandler, SSHClientSettings, ChannelHandler, escaping, EventLoop, EventLoopGroup, Int, Set (+2 more)
 
 ### Community 58 - "SSHAlgorithms"
 Cohesion: 0.15
 Nodes (10): SSHAlgorithms, SSHAlgorithms.Modification<NIOSSHKeyExchangeAlgorithmProtocol.Type>, SSHAlgorithms.Modification<(NIOSSHPublicKeyProtocol.Type, NIOSSHSignatureProtocol.Type)>, SSHAlgorithms.Modification<NIOSSHTransportProtection.Type>, NIOSSHKeyExchangeAlgorithmProtocol, NIOSSHPublicKeyProtocol, NIOSSHSignatureProtocol, NIOSSHTransportProtection (+2 more)
 
 ### Community 59 - "CitadelError"
-Cohesion: 0.09
-Nodes (22): AuthenticationFailed, CitadelError, channelCreationFailed, channelFailure, commandOutputTooLarge, cryptographicError, excessPadding, insufficientPadding (+14 more)
+Cohesion: 0.13
+Nodes (15): CitadelError, channelCreationFailed, channelFailure, commandOutputTooLarge, cryptographicError, excessPadding, insufficientPadding, invalidDecryptedPlaintextLength (+7 more)
 
 ### Community 60 - "BrowserPane"
-Cohesion: 0.15
-Nodes (17): GitChange, GitCommit, GitInfo, GitService, Phase, empty, failed, idle (+9 more)
+Cohesion: 0.29
+Nodes (5): BrowserPane, Bool, Int, String, URL
 
 ### Community 61 - "HostHealthPanel"
-Cohesion: 0.17
-Nodes (10): FlowChips, HostHealthPanel, Bool, Color, String, LogViewer, String, View (+2 more)
+Cohesion: 0.26
+Nodes (7): FlowChips, HostHealthPanel, Bool, Color, String, Content, Item
 
 ### Community 62 - "README.md"
 Cohesion: 0.15
 Nodes (12): Client Usage, Contributing, Exec Server, Executing Commands, FAQ, Helpers, Jump Hosts, Servers (+4 more)
 
 ### Community 63 - "UnsupportedFeature"
-Cohesion: 0.40
-Nodes (5): UnsupportedFeature, multipleKeys, unsupportedCipher, unsupportedKDF, unsupportedPublicKeyType
+Cohesion: 0.17
+Nodes (10): KDFType, bcrypt, none, OpenSSH.KDF, InvalidOpenSSHKey, UnsupportedFeature, multipleKeys, unsupportedCipher (+2 more)
 
 ### Community 64 - ".host"
-Cohesion: 0.16
-Nodes (11): PaneSession, AgentTarget, AronnaxTerminalView, AsyncStream, Int, Never, String, Task (+3 more)
+Cohesion: 0.21
+Nodes (8): CloseErrorHandler, Logger, MultiThreadedEventLoopGroup, NIOSSHServerUserAuthenticationDelegate, Set, SSHClientConfiguration, SSHServerConfiguration, ExampleSSHServer
 
 ### Community 65 - "Mode"
 Cohesion: 0.24
@@ -439,11 +422,11 @@ Cohesion: 0.18
 Nodes (9): SFTPResponse, attributes, data, fsetstat, handle, mkdir, name, setstat (+1 more)
 
 ### Community 70 - "ProjectService"
-Cohesion: 0.32
-Nodes (6): ContentView, DiscoveredProject, ProjectService, Bool, String, WorkspaceModel
+Cohesion: 0.42
+Nodes (4): DiscoveredProject, ProjectService, Bool, String
 
 ### Community 71 - "AgentTarget"
-Cohesion: 0.28
+Cohesion: 0.24
 Nodes (5): AgentCommands, AgentTarget, claude, codex, terminal
 
 ### Community 72 - "Project Instructions for AI Agents"
@@ -451,8 +434,8 @@ Cohesion: 0.20
 Nodes (9): Architecture Overview, Beads Issue Tracker, Build & Test  ⚠️ READ THIS FIRST, Conventions & Patterns, Project Instructions for AI Agents, Quick Reference, Rules, Session Completion (+1 more)
 
 ### Community 73 - "Citadel2Tests"
-Cohesion: 0.11
-Nodes (12): P521, CustomAppShell, ExampleSSHServer, MultiThreadedEventLoopGroup, NIOSSHServerUserAuthenticationDelegate, Set, SSHClientConfiguration, SSHServerConfiguration (+4 more)
+Cohesion: 0.22
+Nodes (3): P521, Citadel2Tests, SSHClient
 
 ### Community 74 - "Terminal"
 Cohesion: 0.36
@@ -482,41 +465,45 @@ Nodes (6): CitadelCLIUITestsLaunchTests, Bool, Modification, add, replace, T
 Cohesion: 0.22
 Nodes (8): CommandFailed, Output, channelSuccess, eof, exit, stderr, stdout, Int
 
+### Community 81 - "SwiftTerm"
+Cohesion: 0.29
+Nodes (5): Coordinator, TerminalSurface, SwiftTerm, UIKit, UIViewRepresentable
+
 ### Community 82 - "LoginHandler"
-Cohesion: 0.13
-Nodes (13): NIOSSHServerUserAuthenticationDelegate, LoginHandler, EventLoopPromise, NIOSSHAvailableUserAuthenticationMethods, NIOSSHUserAuthenticationOutcome, NIOSSHUserAuthenticationRequest, String, LoginHandler (+5 more)
+Cohesion: 0.25
+Nodes (7): NIOSSHServerUserAuthenticationDelegate, LoginHandler, EventLoopPromise, NIOSSHAvailableUserAuthenticationMethods, NIOSSHUserAuthenticationOutcome, NIOSSHUserAuthenticationRequest, String
 
 ### Community 83 - "Curve25519.Signing.PublicKey"
-Cohesion: 0.17
-Nodes (11): ByteBufferConvertible, OpenSSH, OpenSSHPrivateKey, Curve25519.Signing.PrivateKey, Curve25519.Signing.PublicKey, Insecure.RSA.PrivateKey, Insecure.RSA.PublicKey, ByteBuffer (+3 more)
+Cohesion: 0.29
+Nodes (5): Curve25519.Signing.PublicKey, Insecure.RSA.PublicKey, ByteBuffer, Curve25519, Int
 
 ### Community 84 - "SSHKeyDetectionError"
-Cohesion: 0.14
-Nodes (16): ChannelInboundHandler, ChannelOutboundHandler, SSHChannelDataUnwrapper, SSHInboundChannelDataWrapper, SSHOutboundChannelDataUnwrapper, SSHOutboundChannelDataWrapper, ChannelHandlerContext, EventLoopPromise (+8 more)
+Cohesion: 0.25
+Nodes (8): SSHKeyDetectionError, encryptedPrivateKey, incorrectPassphrase, invalidPrivateKeyFormat, malformedKey, passphraseRequired, unsupportedKeyType, Bool
 
 ### Community 85 - "BeadsFilter"
 Cohesion: 0.29
 Nodes (7): BeadsFilter, active, all, blocked, closed, open, ready
 
 ### Community 86 - "KeyBar"
-Cohesion: 0.26
-Nodes (9): LogLine, LogStreamController, Bool, Data, FileHandle, Int, Int32, Process (+1 more)
+Cohesion: 0.29
+Nodes (5): KeyBar, CGFloat, CGSize, NSCoder, UIView
 
 ### Community 87 - "ExecCommandOutput"
-Cohesion: 0.24
-Nodes (10): AsyncIteratorProtocol, AsyncIterator, Continuation, ExecCommandOutput, stderr, stdout, ExecCommandStream, AsyncThrowingStream (+2 more)
+Cohesion: 0.33
+Nodes (5): AsyncIteratorProtocol, AsyncIterator, ExecCommandOutput, stderr, stdout
 
 ### Community 88 - "Editing AronnaxIDE *with* AronnaxIDE"
 Cohesion: 0.29
 Nodes (6): Editing AronnaxIDE *with* AronnaxIDE, Make a change, Notes, See / build the change on the Mac, Ship it to your installed app, The mental model (important)
 
 ### Community 89 - "Curve25519.Signing.PrivateKey"
-Cohesion: 0.17
-Nodes (13): HealthService, HealthSession, Phase, failed, idle, loaded, loading, Bool (+5 more)
+Cohesion: 0.43
+Nodes (5): OpenSSH, OpenSSHPrivateKey, Curve25519.Signing.PrivateKey, Insecure.RSA.PrivateKey, Data
 
 ### Community 90 - "Phase"
-Cohesion: 0.16
-Nodes (13): CloseMode, ShellDelegate, ShellServerInboundHandler, ShellServerSubsystem, Any, Channel, ChannelHandlerContext, EventLoop (+5 more)
+Cohesion: 0.33
+Nodes (6): Phase, done, failed, idle, running, waitingOnYou
 
 ### Community 91 - "SSHServerError"
 Cohesion: 0.33
@@ -527,8 +514,8 @@ Cohesion: 0.33
 Nodes (6): SSHServerError, alreadyListening, invalidChannelType, invalidCommand, invalidDataType, notListening
 
 ### Community 93 - "SidebarView"
-Cohesion: 0.48
-Nodes (4): SidebarView, Bool, Int, Void
+Cohesion: 0.50
+Nodes (3): SidebarView, Bool, Int
 
 ### Community 94 - "CitadelCLITests.swift"
 Cohesion: 0.40
@@ -546,97 +533,25 @@ Nodes (3): HostKey, Data, URL
 Cohesion: 0.50
 Nodes (3): AronnaxIDE development workflow — Claude creates, Codex verifies, Principles, The per-task loop
 
-### Community 99 - "_SHA512"
-Cohesion: 0.20
-Nodes (8): Coordinator, ArraySlice, Data, Double, Int, String, TerminalView, UInt8
-
-### Community 103 - "CodingKeys"
-Cohesion: 0.13
-Nodes (15): CodingKeys, blockedByCount, dependencies, dependencyCount, dependentCount, dependsOnId, description, id (+7 more)
-
-### Community 104 - "ObservableObject"
-Cohesion: 0.19
-Nodes (8): PaneSessionManager, AgentTarget, Set, String, UUID, RootView, String, ObservableObject
-
-### Community 105 - "AgentTarget"
-Cohesion: 0.16
-Nodes (10): AgentCommands, AgentTarget, beads, claude, codex, git, health, terminal (+2 more)
-
-### Community 106 - "ProjectPrefs"
-Cohesion: 0.19
-Nodes (8): ProjectPrefs, Bool, Set, String, ProjectSidebar, Bool, Int, String
-
-### Community 107 - "DataToBufferCodec"
-Cohesion: 0.19
-Nodes (10): ChannelDuplexHandler, DataToBufferCodec, SSHClient, Channel, ChannelHandlerContext, EventLoopFuture, EventLoopPromise, NIOAny (+2 more)
-
-### Community 108 - ".initializeDirectTCPIPChannel"
-Cohesion: 0.26
-Nodes (9): ProxyChannelHandler, ByteBuffer, Channel, ChannelHandlerContext, EventLoopFuture, EventLoopPromise, NIOAny, SSHChannelType (+1 more)
-
-### Community 109 - "WorkspaceTab"
-Cohesion: 0.20
-Nodes (10): WorkspaceSurface, WorkspaceTab, beads, browser, coding, git, health, logs (+2 more)
-
-### Community 110 - "AronnaxTerminalView"
-Cohesion: 0.25
-Nodes (6): AronnaxTerminalView, Bool, CGFloat, UIGestureRecognizer, UIKeyCommand, UIPanGestureRecognizer
-
-### Community 111 - ".parse"
-Cohesion: 0.50
-Nodes (3): Builder, SSHConfigParser, String
-
-### Community 112 - "TerminalSurface"
-Cohesion: 0.32
-Nodes (5): AronnaxTerminalView, Bool, Context, Coordinator, TerminalSurface
-
-### Community 113 - "PreviewWatcher"
-Cohesion: 0.38
-Nodes (4): PreviewWatcher, String, TimeInterval, Timer
-
-### Community 114 - "Combine"
-Cohesion: 0.33
-Nodes (3): Keys, Combine, Network
-
-### Community 115 - "PubkeyParseError"
-Cohesion: 0.33
-Nodes (6): PubkeyParseError, forbiddenTrailingData, invalidAlgorithmIdentifier, invalidInitialSequence, invalidRSAPubkey, invalidSubjectPubkey
-
-### Community 116 - "SSHClientError"
-Cohesion: 0.33
-Nodes (6): SSHClientError, allAuthenticationOptionsFailed, channelCreationFailed, unsupportedHostBasedAuthentication, unsupportedPasswordAuthentication, unsupportedPrivateKeyAuthentication
-
-### Community 117 - "BackingKeyType"
-Cohesion: 0.33
-Nodes (6): BackingKeyType, ecdsaP256, ecdsaP384, ecdsaP521, ed25519, rsa
-
-### Community 118 - "Value"
-Cohesion: 0.40
-Nodes (4): Int, Self, Value, maximumPacketSize
-
-### Community 119 - "DirectTCPIPForwardingDelegate"
-Cohesion: 0.50
-Nodes (3): DirectTCPIPForwardingDelegate, Int, String
-
 ## Knowledge Gaps
-- **374 isolated node(s):** `terminal`, `coding`, `browser`, `vault`, `beads` (+369 more)
+- **339 isolated node(s):** `terminal`, `coding`, `browser`, `vault`, `beads` (+334 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **3 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Foundation` connect `Foundation` to `LogStreamController`, `SSHShellContext`, `VaultModel`, `ExecHandler`, `UsageService`, `OpenSSHKey.swift`, `ServerOnboarding`, `Sendable`, `GitController`, `CodingKeys`, `SSHManager`, `ClaudeMode`, `ExecHandler.swift`, `SFTPFileAttributes`, `Coordinator`, `HealthController`, `PortForwardManager`, `GitPanelModel`, `BrowserPane`, `ProjectService`, `AgentTarget`, `Terminal`, `KeyBar`, `ExecCommandOutput`, `Curve25519.Signing.PrivateKey`, `ObservableObject`, `AgentTarget`, `ProjectPrefs`, `.parse`, `Combine`?**
-  _High betweenness centrality (0.210) - this node is a cross-community bridge._
-- **Why does `Error` connect `Error` to `SFTPClient`, `RSA.swift`, `SSHShellContext`, `VaultModel`, `Foundation`, `OpenSSHKey.swift`, `Sendable`, `GitController`, `CodingKeys`, `SSHManager`, `TTY.swift`, `SSHTerminalSession`, `.addHandlers`, `GlueHandler`, `Citadel`, `SSHServer`, `PortForwardManager`, `ClipboardTerminalView`, `.runTest`, `.runTest`, `CitadelError`, `ExecCommandHandler`, `Output`, `ExecCommandOutput`, `SSHServerError`, `SSHServerError`, `PubkeyParseError`, `SSHClientError`?**
-  _High betweenness centrality (0.104) - this node is a cross-community bridge._
-- **Why does `Host` connect `SSHManager` to `LogStreamController`, `VaultModel`, `UsageService`, `WorkspaceModel`, `ServerOnboarding`, `GitController`, `CodingKeys`, `Coordinator`, `Coordinator`, `ClaudeMode`, `String`, `Host`, `HealthController`, `PortForwardManager`, `AppSettings`, `ProjectService`, `KeyBar`, `.parse`, `PreviewWatcher`?**
-  _High betweenness centrality (0.102) - this node is a cross-community bridge._
-- **Are the 4 inferred relationships involving `Host` (e.g. with `.isCustomHost()` and `.removeHost()`) actually correct?**
-  _`Host` has 4 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `Foundation` connect `Foundation` to `RSA.swift`, `LogStreamController`, `SSHShellContext`, `VaultModel`, `ExecHandler`, `UsageService`, `OpenSSHKey.swift`, `ServerOnboarding`, `SSHKeyType`, `Sendable`, `GitController`, `CodingKeys`, `SSHManager`, `TTY.swift`, `ClaudeMode`, `Host`, `ExecHandler.swift`, `SFTPFileAttributes`, `HealthController`, `PortForwardManager`, `ProjectService`, `AgentTarget`, `Terminal`?**
+  _High betweenness centrality (0.250) - this node is a cross-community bridge._
+- **Why does `Error` connect `Error` to `SFTPClient`, `RSA.swift`, `SSHShellContext`, `VaultModel`, `TTYHandler`, `Sendable`, `GitController`, `CodingKeys`, `SSHManager`, `TTY.swift`, `SSHTerminalSession`, `.addHandlers`, `GlueHandler`, `Citadel`, `BrowserModel`, `SSHHostKeyValidator`, `SubsystemHandler`, `.runTest`, `.runTest`, `CitadelError`, `UnsupportedFeature`, `ExecCommandHandler`, `Output`, `ExecCommandOutput`, `SSHServerError`, `SSHServerError`?**
+  _High betweenness centrality (0.108) - this node is a cross-community bridge._
+- **Why does `Host` connect `Host` to `LogStreamController`, `VaultModel`, `ProjectService`, `UsageService`, `HealthController`, `ServerOnboarding`, `PortForwardManager`, `AppSettings`, `CodingKeys`, `Coordinator`, `GitPanelModel`, `GitController`, `SSHManager`, `Coordinator`, `BrowserPane`, `String`?**
+  _High betweenness centrality (0.096) - this node is a cross-community bridge._
+- **Are the 3 inferred relationships involving `Host` (e.g. with `.isCustomHost()` and `.removeHost()`) actually correct?**
+  _`Host` has 3 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `terminal`, `coding`, `browser` to the rest of the system?**
-  _374 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _339 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `SFTPClient` be split into smaller, more focused modules?**
-  _Cohesion score 0.05030864197530864 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05543859649122807 - nodes in this community are weakly interconnected._
 - **Should `RSA.swift` be split into smaller, more focused modules?**
-  _Cohesion score 0.0625 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05368382080710848 - nodes in this community are weakly interconnected._

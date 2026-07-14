@@ -1,12 +1,12 @@
 {
   ".beads/backup/backup_state.json": {
-    "mtime": 1783994834.03307,
-    "ast_hash": "185847cdbcafb6028115220e1134d0f3",
+    "mtime": 1783474208.3249426,
+    "ast_hash": "6096b01b3207db1613b282071a43d209",
     "semantic_hash": ""
   },
   ".beads/export-state.json": {
-    "mtime": 1783994834.3161561,
-    "ast_hash": "fb2da6af823af1a5738fdc1a09cd8a23",
+    "mtime": 1783474208.623366,
+    "ast_hash": "14fc0a7b0b5695643ac75cdc436ed4c1",
     "semantic_hash": ""
   },
   ".beads/hooks/post-checkout": {
@@ -45,8 +45,8 @@
     "semantic_hash": ""
   },
   ".claude/settings.local.json": {
-    "mtime": 1783841006.3324947,
-    "ast_hash": "b2dc43d15465d72d8acfd741a8ef6f9e",
+    "mtime": 1783140473.4611616,
+    "ast_hash": "e3abe7f0ce079764542c53877f22e6b7",
     "semantic_hash": ""
   },
   "AronnaxIDE/AronnaxIDEApp.swift": {
@@ -85,23 +85,23 @@
     "semantic_hash": ""
   },
   "AronnaxIDE/ContentView.swift": {
-    "mtime": 1783551737.0679066,
-    "ast_hash": "33a898baf4edbbf5d6a5ade45169287f",
+    "mtime": 1783155322.7985275,
+    "ast_hash": "ac009fd1f117189fba5c77f8c0ee5f88",
     "semantic_hash": ""
   },
   "AronnaxIDE/Models/AppSettings.swift": {
-    "mtime": 1783958711.4268546,
-    "ast_hash": "0b9dc77ae52f60cc615ba154123ae4c2",
+    "mtime": 1783155322.7988565,
+    "ast_hash": "c01537098c084a53d8fddda4a3b3d883",
     "semantic_hash": ""
   },
   "AronnaxIDE/Models/Fleet.swift": {
-    "mtime": 1783648997.4502633,
-    "ast_hash": "df4166072b65e901ded6478b3ec5deaf",
+    "mtime": 1782511899.0,
+    "ast_hash": "b3b5e3af90f4fb0f1d1ffa3406ba48d7",
     "semantic_hash": ""
   },
   "AronnaxIDE/Panes/AddServerWizard.swift": {
-    "mtime": 1783551737.0683336,
-    "ast_hash": "838376074b712eefa9a3cf523e8df6a3",
+    "mtime": 1782875700.0,
+    "ast_hash": "5e38dc2980f6ac8a5a5fded3d4ee3812",
     "semantic_hash": ""
   },
   "AronnaxIDE/Panes/BeadsPanel.swift": {
@@ -115,12 +115,12 @@
     "semantic_hash": ""
   },
   "AronnaxIDE/Panes/ClipboardTerminalView.swift": {
-    "mtime": 1783958711.4272063,
+    "mtime": 1782958902.0,
     "ast_hash": "b1ed2465f9ce90de3ee7f80458b9c4ac",
     "semantic_hash": ""
   },
   "AronnaxIDE/Panes/CodingPane.swift": {
-    "mtime": 1783831951.981278,
+    "mtime": 1782959343.0,
     "ast_hash": "bbe9f4472ee7099e9f26a33df40b3e08",
     "semantic_hash": ""
   },
@@ -150,8 +150,8 @@
     "semantic_hash": ""
   },
   "AronnaxIDE/Panes/TerminalPane.swift": {
-    "mtime": 1783831964.1879716,
-    "ast_hash": "8fed873ee9593c442b3e0e377629ceeb",
+    "mtime": 1782875700.0,
+    "ast_hash": "9dd714d8c5956b44ed254e7afa86802f",
     "semantic_hash": ""
   },
   "AronnaxIDE/Panes/VaultPane.swift": {
@@ -160,7 +160,7 @@
     "semantic_hash": ""
   },
   "AronnaxIDE/Services/AgentController.swift": {
-    "mtime": 1783831936.3524175,
+    "mtime": 1782875700.0,
     "ast_hash": "2d581fff6ca97fd655ef2b306cdbf90e",
     "semantic_hash": ""
   },
@@ -215,13 +215,13 @@
     "semantic_hash": ""
   },
   "AronnaxIDE/Services/SSHManager.swift": {
-    "mtime": 1783958711.4276357,
-    "ast_hash": "0974b3ba338586aa8af59320bdc681d2",
+    "mtime": 1782875700.0,
+    "ast_hash": "e4875c3b7bd6fb1e86d72316d7f74362",
     "semantic_hash": ""
   },
   "AronnaxIDE/Services/ServerOnboarding.swift": {
-    "mtime": 1783659396.102292,
-    "ast_hash": "9fe282e2747f1d7bc2c6d1691a1dc5c4",
+    "mtime": 1782875700.0,
+    "ast_hash": "ffa58e4371229b8065474b83a777d76f",
     "semantic_hash": ""
   },
   "AronnaxIDE/Services/UsageService.swift": {
@@ -275,13 +275,13 @@
     "semantic_hash": ""
   },
   "AronnaxIOS/ContentView.swift": {
-    "mtime": 1783958711.4641674,
-    "ast_hash": "3a1ddad981eebe76b4c7bad03cd11bbe",
+    "mtime": 1783323001.4128845,
+    "ast_hash": "b0d4b51b09c66ccca85fece546fb15d2",
     "semantic_hash": ""
   },
   "AronnaxIOS/SSHTerminalSession.swift": {
-    "mtime": 1783958711.464331,
-    "ast_hash": "d4153a8091b235629bdb7c356c996691",
+    "mtime": 1783322990.0249484,
+    "ast_hash": "d026116aacbe9db910e21c05cb39e551",
     "semantic_hash": ""
   },
   "AronnaxIOS/TerminalSurface.swift": {
@@ -725,8 +725,8 @@
     "semantic_hash": ""
   },
   "project.yml": {
-    "mtime": 1783958711.4339445,
-    "ast_hash": "35562be603db1d9bf32a49026670b163",
+    "mtime": 1783406930.84129,
+    "ast_hash": "2794f4ac67a4a0840552988d74f3584b",
     "semantic_hash": ""
   },
   "AronnaxIDE/Assets.xcassets/AppIcon.appiconset/icon_1024.png": {
@@ -771,116 +771,6 @@
   },
   "AronnaxIOS/Assets.xcassets/AppIcon.appiconset/AppIcon1024.png": {
     "mtime": 1783060087.0,
-    "ast_hash": "13909b17b147b198046501e904d6d2bb",
-    "semantic_hash": ""
-  },
-  "AronnaxIPad/AgentCommands.swift": {
-    "mtime": 1783958711.4283118,
-    "ast_hash": "2514bceac9a70e6fdfffe294e2359e93",
-    "semantic_hash": ""
-  },
-  "AronnaxIPad/AronnaxIPadApp.swift": {
-    "mtime": 1783958711.4285529,
-    "ast_hash": "8a84b82c897192905c5dda8975886c16",
-    "semantic_hash": ""
-  },
-  "AronnaxIPad/AronnaxTerminalView.swift": {
-    "mtime": 1783958711.4287958,
-    "ast_hash": "b18e5356adf5170cade1c4f649a697fc",
-    "semantic_hash": ""
-  },
-  "AronnaxIPad/Assets.xcassets/AppIcon.appiconset/Contents.json": {
-    "mtime": 1783958711.4300551,
-    "ast_hash": "4c3af117706f59f4e2f4403b4213579a",
-    "semantic_hash": ""
-  },
-  "AronnaxIPad/Assets.xcassets/Contents.json": {
-    "mtime": 1783958711.430137,
-    "ast_hash": "6f266f38436c1b8465f1c0b241ffd07e",
-    "semantic_hash": ""
-  },
-  "AronnaxIPad/BeadsService.swift": {
-    "mtime": 1783958711.430368,
-    "ast_hash": "d10381a0267adc79b160ba563b310d01",
-    "semantic_hash": ""
-  },
-  "AronnaxIPad/BeadsView.swift": {
-    "mtime": 1783958711.430702,
-    "ast_hash": "8ef58204d0d5c4ceb39c653bbff5e7a3",
-    "semantic_hash": ""
-  },
-  "AronnaxIPad/GitService.swift": {
-    "mtime": 1783992097.3320122,
-    "ast_hash": "800f0d94fb6054c6e38e2bd5fb22f2af",
-    "semantic_hash": ""
-  },
-  "AronnaxIPad/GitView.swift": {
-    "mtime": 1783958711.4311538,
-    "ast_hash": "fde8538cb2a790247b82a6a9141d5cd9",
-    "semantic_hash": ""
-  },
-  "AronnaxIPad/HealthService.swift": {
-    "mtime": 1783958711.431374,
-    "ast_hash": "c36603445034cb89027a23dfc72389ce",
-    "semantic_hash": ""
-  },
-  "AronnaxIPad/HealthView.swift": {
-    "mtime": 1783958711.4316156,
-    "ast_hash": "4085c9e415578dc606dab86a259fcea7",
-    "semantic_hash": ""
-  },
-  "AronnaxIPad/PaneSession.swift": {
-    "mtime": 1783992113.4907262,
-    "ast_hash": "9b6d308fa8b6fad3b4a6e845c0952baf",
-    "semantic_hash": ""
-  },
-  "AronnaxIPad/PaneSessionManager.swift": {
-    "mtime": 1783992161.1527917,
-    "ast_hash": "c891bea8c605e3c30e5bfa2b89b5c609",
-    "semantic_hash": ""
-  },
-  "AronnaxIPad/ProjectPrefs.swift": {
-    "mtime": 1783988428.2878683,
-    "ast_hash": "cd9c549a8bd236f8608e76ef7c6ee8bd",
-    "semantic_hash": ""
-  },
-  "AronnaxIPad/ProjectSidebar.swift": {
-    "mtime": 1783988451.840917,
-    "ast_hash": "62ea12ebb6a9ba70285c1a585a751bd6",
-    "semantic_hash": ""
-  },
-  "AronnaxIPad/RootView.swift": {
-    "mtime": 1783958711.432648,
-    "ast_hash": "3758ceb972ae424bc1f93902d4cffa27",
-    "semantic_hash": ""
-  },
-  "AronnaxIPad/SSHConnection.swift": {
-    "mtime": 1783992107.8320987,
-    "ast_hash": "3a2c8d8a2638205e576834a2d10e3ace",
-    "semantic_hash": ""
-  },
-  "AronnaxIPad/TerminalSurface.swift": {
-    "mtime": 1783958711.433005,
-    "ast_hash": "6c8a5ac42d1737dd3ead8424620eb566",
-    "semantic_hash": ""
-  },
-  "AronnaxIPad/VaultService.swift": {
-    "mtime": 1783958711.4332242,
-    "ast_hash": "16bce350d9b73e1f0974e84b250d9385",
-    "semantic_hash": ""
-  },
-  "AronnaxIPad/VaultView.swift": {
-    "mtime": 1783958711.4334486,
-    "ast_hash": "5cb43568273bb47172af2631bc6e1084",
-    "semantic_hash": ""
-  },
-  "AronnaxIPad/Workspace.swift": {
-    "mtime": 1783992175.7504885,
-    "ast_hash": "0b0f53893a0ca6d2d9dfd22bb90171ff",
-    "semantic_hash": ""
-  },
-  "AronnaxIPad/Assets.xcassets/AppIcon.appiconset/AppIcon1024.png": {
-    "mtime": 1783958711.429945,
     "ast_hash": "13909b17b147b198046501e904d6d2bb",
     "semantic_hash": ""
   }
