@@ -112,11 +112,7 @@
   "110": "AronnaxTerminalView",
   "111": ".parse",
   "112": "TerminalSurface",
-  "113": "PreviewWatcher",
   "114": "Combine",
   "115": "PubkeyParseError",
-  "116": "SSHClientError",
-  "117": "BackingKeyType",
-  "118": "Value",
-  "119": "DirectTCPIPForwardingDelegate"
+  "116": "SSHClientError"
 }
