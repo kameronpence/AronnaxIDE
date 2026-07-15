@@ -285,19 +285,33 @@ final class SSHManager {
         }
     }
 
-    /// Runs an ssh invocation and, if **ssh itself** fails (exit 255 — a stale/dead shared
-    /// ControlMaster after a network change, a jump-host round-trip, etc.), drops the master
-    /// and retries once with a fresh connection. This is the self-heal the interactive panes
+    /// Runs an ssh invocation and, on either of two failure modes, drops the shared master and
+    /// retries **once** on a fresh connection. This is the self-heal the interactive panes
     /// already do on reconnect; without it a one-shot command (project scan, vault list, git
-    /// status) rides the dead tunnel, fails silently, and — with no retry — leaves the sidebar
-    /// blank until the whole app is restarted. Exit 255 means ssh never ran the remote command,
-    /// so re-running is safe even for writes. Any other exit code (a real remote-command result)
-    /// is returned as-is.
+    /// status, a wizard step) rides the dead tunnel and — with no retry — leaves the UI blank
+    /// or spinning until the whole app is restarted.
+    ///
+    ///  - **exit 255** — ssh itself failed (a stale/dead shared ControlMaster after a network
+    ///    change, a jump-host round-trip, etc.). ssh never ran the remote command, so re-running
+    ///    is safe even for writes.
+    ///  - **exit 124** — our timeout fired, i.e. the command *hung*. The usual cause is a
+    ///    black-holed ControlMaster after a network change (e.g. a Tailscale blip): the master's
+    ///    TCP is dead but not yet detected, so a mux client attaches and hangs with no
+    ///    ConnectTimeout of its own. Healing 255 alone isn't enough here — the hung client never
+    ///    reaches 255, so without this every retry re-attaches to the same dead master and hangs
+    ///    again (the "wizard stuck after a network drop, Retry does nothing" bug). Tearing the
+    ///    master down forces the retry through a fresh TCP connect bounded by ConnectTimeout=10,
+    ///    so it either succeeds or fails cleanly in ~10s instead of hanging forever. A command
+    ///    that hangs on a healthy link never happened (it didn't complete), so re-running it is
+    ///    likewise safe; a genuinely slow-but-alive command simply times out again and is
+    ///    returned as-is.
+    ///
+    /// Any other exit code (a real remote-command result) is returned as-is.
     private func launchHealingStaleMaster(for host: Host, input: String? = nil,
                                           timeoutSeconds: TimeInterval? = nil,
                                           buildArgs: () -> [String]) async throws -> CommandResult {
         let first = try await launch(arguments: buildArgs(), input: input, timeoutSeconds: timeoutSeconds)
-        guard first.exitCode == 255 else { return first }
+        guard first.exitCode == 255 || first.exitCode == 124 else { return first }
         closeMaster(for: host)   // tear down the dead tunnel so ControlMaster=auto rebuilds it
         return try await launch(arguments: buildArgs(), input: input, timeoutSeconds: timeoutSeconds)
     }

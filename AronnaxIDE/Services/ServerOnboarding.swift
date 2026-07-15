@@ -122,6 +122,15 @@ final class ServerOnboarding: ObservableObject {
         )
     }
 
+    // MARK: - Step 0 → 1: leave the details form
+    /// The details form has no async work of its own, so nothing else marks it done —
+    /// mark step 0 complete (so its rail row turns green) before starting the foothold.
+    func startFoothold() async {
+        set(0, .done)
+        current = 1
+        await prepareFoothold()
+    }
+
     // MARK: - Step 1: foothold key to paste onto the box
     /// Loads the public key Kameron must add to the fresh box's authorized_keys.
     /// This is always THIS Mac's key: the app connects from here, and even when the
@@ -154,6 +163,7 @@ final class ServerOnboarding: ObservableObject {
         set(2, .running, "Trying to connect…")
         let reachable = await SSHManager.shared.isReachable(host)
         if reachable {
+            set(1, .done)                      // foothold key is confirmed working now
             set(2, .done, "Connected to \(host.displayName).")
             await generateDeployKey()          // hand off to the app-driven steps
         } else {
