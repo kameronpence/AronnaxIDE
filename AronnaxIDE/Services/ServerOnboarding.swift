@@ -43,7 +43,8 @@ final class ServerOnboarding: ObservableObject {
         Step(id: 4, title: "Add the deploy key to GitHub",   role: .you),
         Step(id: 5, title: "Clone the vault + memory rules", role: .app),
         Step(id: 6, title: "Install dev tools",              role: .app),
-        Step(id: 7, title: "Verify + finish",                role: .app),
+        Step(id: 7, title: "Set up Obsidian second memory",  role: .app),
+        Step(id: 8, title: "Verify + finish",                role: .app),
     ]
 
     private let settings: AppSettings
@@ -266,7 +267,7 @@ final class ServerOnboarding: ObservableObject {
         }
         if missing.isEmpty {
             set(6, .done, "zsh, tmux, claude, bd, cr, codex all present.")
-            await finish()
+            await setupObsidianMCP()
         } else {
             await installTools(missing)   // install, then re-check
         }
@@ -346,7 +347,7 @@ final class ServerOnboarding: ObservableObject {
             detail += " Sign in on the box: " + needAuth.map { authHint($0) }.joined(separator: ", ") + "."
         }
         set(6, .done, detail)
-        await finish()
+        await setupObsidianMCP()
     }
 
     private func authHint(_ tool: String) -> String {
@@ -368,11 +369,136 @@ final class ServerOnboarding: ObservableObject {
         return tail.isEmpty ? "exit \(result.exitCode)" : "exit \(result.exitCode): \(tail)"
     }
 
-    // MARK: - Step 7 (app): verify the round-trip + commit the host to the app
-    func finish() async {
+    // The filesystem-based Obsidian "second memory" MCP server: obsidian-mcp-server on
+    // PyPI, installed with uv as ~/.local/bin/obsidian-mcp. No Obsidian app / API key —
+    // it reads the vault straight off disk, so agents on the box get the same
+    // obsidian_list/search/append/daily tools the mini has.
+    private var obsidianBin: String { "\(resolvedHome)/.local/bin/obsidian-mcp" }
+    // The server takes its vault ONLY from its own config file (it does NOT read any
+    // OBSIDIAN_VAULT_PATH env var — verified against the source: get_vault_path() reads
+    // config["vault_path"] from here and nothing else). Both clients share this one file.
+    private var obsidianConfig: String { "\(resolvedHome)/.config/obsidian-mcp/config.json" }
+
+    // MARK: - Step 7 (app): install + wire the Obsidian second-memory MCP into Claude + Codex
+    func setupObsidianMCP() async {
         guard !Task.isCancelled else { return }
         current = 7
-        set(7, .running, "Verifying read + write access…")
+        set(7, .running, "Installing the Obsidian second-memory server…")
+        let binEsc = SSHManager.shellEscaped(obsidianBin)
+
+        // 1. Install uv (if missing) then the filesystem-based obsidian-mcp-server, and
+        //    confirm the binary landed. The version is PINNED: the bare PyPI name
+        //    `obsidian-mcp-server` is shared by several unrelated forks (one env-var-based
+        //    with an `obsidian-mcp-server` entry point, this one config.json-based with an
+        //    `obsidian-mcp` entry point). Pinning 0.2.0 guarantees the entry-point name and
+        //    the config mechanism below always match. `uv tool install` is idempotent;
+        //    tolerate the "already installed" exit and rely on the binary check as the gate.
+        let install = """
+        export PATH="$HOME/.local/bin:$PATH"
+        command -v uv >/dev/null 2>&1 || curl -LsSf https://astral.sh/uv/install.sh | sh >/dev/null 2>&1
+        export PATH="$HOME/.local/bin:$PATH"
+        uv tool install 'obsidian-mcp-server==0.2.0' >/dev/null 2>&1 || uv tool upgrade obsidian-mcp-server >/dev/null 2>&1 || true
+        [ -x \(binEsc) ] && echo OBSIDIAN_OK || { echo OBSIDIAN_MISSING; exit 1; }
+        """
+        let i = await runStep(install, seconds: 240)
+        guard i?.ok == true, i?.stdout.contains("OBSIDIAN_OK") == true else {
+            set(7, .failed, "Couldn't install the Obsidian MCP server (uv → obsidian-mcp-server) on "
+                + "the box — the installer timed out or the box can't reach astral.sh / PyPI. "
+                + "\(failureTail(i)) Retry.")
+            return
+        }
+
+        // 2. Point the server at the vault — THIS is what actually configures it. Merge
+        //    into config.json with python (idempotent, preserves daily-notes settings);
+        //    the vault path passes as an env var so there's no shell-quoting/injection.
+        set(7, .running, "Pointing the server at the vault…")
+        let cfgPy = """
+        import json, os
+        p = os.path.expanduser(os.environ['OBS_CFG'])
+        d = {}
+        if os.path.isfile(p):
+            try:
+                d = json.load(open(p))
+            except Exception:
+                d = {}
+        d['vault_path'] = os.environ['OBS_VAULT']
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        json.dump(d, open(p, 'w'), indent=2)
+        print('VAULT_OK')
+        """
+        let cfg = await runStep(
+            "OBS_CFG=\(SSHManager.shellEscaped(obsidianConfig)) OBS_VAULT=\(SSHManager.shellEscaped(vaultDir)) python3",
+            input: cfgPy, seconds: 40)
+        guard cfg?.ok == true, cfg?.stdout.contains("VAULT_OK") == true else {
+            set(7, .failed, "Installed the server but couldn't write its vault config (\(obsidianConfig)) — \(failureTail(cfg)) Retry.")
+            return
+        }
+
+        // 3. Register the server with Codex (~/.codex/config.toml). TOML has no stdlib
+        //    writer, so append the [mcp_servers.obsidian] block guarded by a grep
+        //    (idempotent) after backing up. The vault comes from config.json (step 2), so
+        //    this only needs the launch command.
+        set(7, .running, "Registering Obsidian with Codex…")
+        let codex = """
+        CFG="$HOME/.codex/config.toml"
+        mkdir -p "$(dirname "$CFG")"; touch "$CFG"
+        if grep -q '\\[mcp_servers.obsidian\\]' "$CFG" 2>/dev/null; then
+          echo CODEX_ALREADY
+        else
+          cp "$CFG" "$CFG.bak-$(date +%s)" 2>/dev/null || true
+          printf '\\n[mcp_servers.obsidian]\\ncommand = "%s"\\nargs = []\\n' \(binEsc) >> "$CFG"
+          echo CODEX_WROTE
+        fi
+        """
+        let c = await runStep(codex, seconds: 40)
+        guard c?.ok == true,
+              c?.stdout.contains("CODEX_WROTE") == true || c?.stdout.contains("CODEX_ALREADY") == true else {
+            set(7, .failed, "Installed the server but couldn't write ~/.codex/config.toml — \(failureTail(c)) Retry.")
+            return
+        }
+
+        // 4. Register the server with Claude Code (~/.claude.json, user scope). That file
+        //    is JSON, so merge with python — idempotent, preserves every other key.
+        set(7, .running, "Registering Obsidian with Claude…")
+        let claudePy = """
+        import json, os, time
+        p = os.path.expanduser('~/.claude.json')
+        d = {}
+        if os.path.isfile(p):
+            try:
+                d = json.load(open(p))
+            except Exception:
+                d = {}
+            try:
+                import shutil
+                shutil.copy(p, p + '.bak-%d' % int(time.time()))
+            except Exception:
+                pass
+        d.setdefault('mcpServers', {})
+        d['mcpServers']['obsidian'] = {
+            'type': 'stdio',
+            'command': os.environ['OBS_BIN'],
+            'args': [],
+        }
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        json.dump(d, open(p, 'w'), indent=2)
+        print('CLAUDE_OK')
+        """
+        let cl = await runStep("OBS_BIN=\(binEsc) python3", input: claudePy, seconds: 40)
+        guard cl?.ok == true, cl?.stdout.contains("CLAUDE_OK") == true else {
+            set(7, .failed, "Installed the server + Codex config but couldn't write ~/.claude.json — \(failureTail(cl)) Retry.")
+            return
+        }
+
+        set(7, .done, "Obsidian second memory wired into Claude + Codex (vault at \(vaultDir)).")
+        await finish()
+    }
+
+    // MARK: - Step 8 (app): verify the round-trip + commit the host to the app
+    func finish() async {
+        guard !Task.isCancelled else { return }
+        current = 8
+        set(8, .running, "Verifying read + write access…")
         // Read check (pull), then a non-destructive WRITE check: push --dry-run of the
         // current HEAD to a throwaway ref exercises receive-pack (which a read-only
         // deploy key can't) without creating a commit, touching the working tree, or
@@ -389,10 +515,10 @@ final class ServerOnboarding: ObservableObject {
             settings.hostVaultPaths[host.id] = vaultDir
             let proj = projectDir.trimmingCharacters(in: .whitespaces)
             if !proj.isEmpty { settings.hostProjectPaths[host.id] = proj }
-            set(7, .done, "\(host.displayName) is set up and added to the app.")
+            set(8, .done, "\(host.displayName) is set up and added to the app.")
             finished = true
         } else {
-            set(7, .failed, "Verify failed — the deploy key likely needs WRITE access "
+            set(8, .failed, "Verify failed — the deploy key likely needs WRITE access "
                 + "(re-add it with “Allow write access”), then Retry.")
         }
     }
@@ -405,22 +531,26 @@ final class ServerOnboarding: ObservableObject {
         case 4: await verifyDeployKey()
         case 5: await cloneVault()
         case 6: await checkTools()
-        case 7: await finish()
+        case 7: await setupObsidianMCP()
+        case 8: await finish()
         default: break
         }
     }
 
     /// The memory-system block appended to a server's global CLAUDE.md — same rules as
-    /// the mini, adapted for a box with no Obsidian (plain file reads).
+    /// the mini. The add-server wizard installs the filesystem-based Obsidian MCP, so the
+    /// second-memory tools are available here too (no Obsidian app needed).
     static let memoryRules = """
     # Shared Memory — AI_OS Vault
 
     Your long-term memory is the AI_OS vault at /root/AI_OS — a git repo synced through
     GitHub, shared with the agents on the mini and the other servers.
 
-    ## This box is a server (no Obsidian)
-    Read CTX files and notes as plain files (cat / grep / rg). The vault's search/read/reindex
-    tools are Obsidian-only and not available here.
+    ## Second memory (Obsidian MCP)
+    This box has the filesystem-based Obsidian MCP server wired into Claude + Codex — it
+    reads the vault directly (no Obsidian app). Use its obsidian_list / obsidian_search /
+    obsidian_append / obsidian_daily tools to read and write notes; fall back to plain
+    file reads (cat / grep / rg) if the MCP tools aren't loaded.
 
     ## Session start
     1. git -C /root/AI_OS pull --rebase --autostash 2>/dev/null || true

@@ -1,12 +1,12 @@
 {
   ".beads/backup/backup_state.json": {
-    "mtime": 1783994834.03307,
-    "ast_hash": "185847cdbcafb6028115220e1134d0f3",
+    "mtime": 1784012539.8820248,
+    "ast_hash": "ed4b2f538e291871b90f057a394bbf4e",
     "semantic_hash": ""
   },
   ".beads/export-state.json": {
-    "mtime": 1783994834.3161561,
-    "ast_hash": "fb2da6af823af1a5738fdc1a09cd8a23",
+    "mtime": 1784012540.1551049,
+    "ast_hash": "606143116f594607f3b5837c0263b726",
     "semantic_hash": ""
   },
   ".beads/hooks/post-checkout": {
@@ -90,8 +90,8 @@
     "semantic_hash": ""
   },
   "AronnaxIDE/Models/AppSettings.swift": {
-    "mtime": 1783958711.4268546,
-    "ast_hash": "0b9dc77ae52f60cc615ba154123ae4c2",
+    "mtime": 1783995024.3456073,
+    "ast_hash": "b6c627012991fbc6021cae848db0c1da",
     "semantic_hash": ""
   },
   "AronnaxIDE/Models/Fleet.swift": {
@@ -115,8 +115,8 @@
     "semantic_hash": ""
   },
   "AronnaxIDE/Panes/ClipboardTerminalView.swift": {
-    "mtime": 1783958711.4272063,
-    "ast_hash": "b1ed2465f9ce90de3ee7f80458b9c4ac",
+    "mtime": 1784009416.2944849,
+    "ast_hash": "e5eb667df27d6ce943d738cc4a112793",
     "semantic_hash": ""
   },
   "AronnaxIDE/Panes/CodingPane.swift": {
@@ -215,8 +215,8 @@
     "semantic_hash": ""
   },
   "AronnaxIDE/Services/SSHManager.swift": {
-    "mtime": 1783958711.4276357,
-    "ast_hash": "0974b3ba338586aa8af59320bdc681d2",
+    "mtime": 1783995024.3465903,
+    "ast_hash": "5ff0c0f95ebc92e92ca228be8c5281a1",
     "semantic_hash": ""
   },
   "AronnaxIDE/Services/ServerOnboarding.swift": {
@@ -275,12 +275,12 @@
     "semantic_hash": ""
   },
   "AronnaxIOS/ContentView.swift": {
-    "mtime": 1783958711.4641674,
+    "mtime": 1783995024.9051514,
     "ast_hash": "3a1ddad981eebe76b4c7bad03cd11bbe",
     "semantic_hash": ""
   },
   "AronnaxIOS/SSHTerminalSession.swift": {
-    "mtime": 1783958711.464331,
+    "mtime": 1783995024.9053993,
     "ast_hash": "d4153a8091b235629bdb7c356c996691",
     "semantic_hash": ""
   },
@@ -725,8 +725,8 @@
     "semantic_hash": ""
   },
   "project.yml": {
-    "mtime": 1783958711.4339445,
-    "ast_hash": "35562be603db1d9bf32a49026670b163",
+    "mtime": 1784008247.674064,
+    "ast_hash": "3fa739d47a56d27da678048927a9bd56",
     "semantic_hash": ""
   },
   "AronnaxIDE/Assets.xcassets/AppIcon.appiconset/icon_1024.png": {
@@ -775,113 +775,123 @@
     "semantic_hash": ""
   },
   "AronnaxIPad/AgentCommands.swift": {
-    "mtime": 1783958711.4283118,
+    "mtime": 1783995024.9056532,
     "ast_hash": "2514bceac9a70e6fdfffe294e2359e93",
     "semantic_hash": ""
   },
   "AronnaxIPad/AronnaxIPadApp.swift": {
-    "mtime": 1783958711.4285529,
+    "mtime": 1783995024.9058366,
     "ast_hash": "8a84b82c897192905c5dda8975886c16",
     "semantic_hash": ""
   },
   "AronnaxIPad/AronnaxTerminalView.swift": {
-    "mtime": 1783958711.4287958,
+    "mtime": 1783995024.9061012,
     "ast_hash": "b18e5356adf5170cade1c4f649a697fc",
     "semantic_hash": ""
   },
   "AronnaxIPad/Assets.xcassets/AppIcon.appiconset/Contents.json": {
-    "mtime": 1783958711.4300551,
+    "mtime": 1783995024.90759,
     "ast_hash": "4c3af117706f59f4e2f4403b4213579a",
     "semantic_hash": ""
   },
   "AronnaxIPad/Assets.xcassets/Contents.json": {
-    "mtime": 1783958711.430137,
+    "mtime": 1783995024.9076517,
     "ast_hash": "6f266f38436c1b8465f1c0b241ffd07e",
     "semantic_hash": ""
   },
   "AronnaxIPad/BeadsService.swift": {
-    "mtime": 1783958711.430368,
+    "mtime": 1783995024.9078507,
     "ast_hash": "d10381a0267adc79b160ba563b310d01",
     "semantic_hash": ""
   },
   "AronnaxIPad/BeadsView.swift": {
-    "mtime": 1783958711.430702,
+    "mtime": 1783995024.908097,
     "ast_hash": "8ef58204d0d5c4ceb39c653bbff5e7a3",
     "semantic_hash": ""
   },
   "AronnaxIPad/GitService.swift": {
-    "mtime": 1783992097.3320122,
+    "mtime": 1783995024.908269,
     "ast_hash": "800f0d94fb6054c6e38e2bd5fb22f2af",
     "semantic_hash": ""
   },
   "AronnaxIPad/GitView.swift": {
-    "mtime": 1783958711.4311538,
+    "mtime": 1783995024.9085243,
     "ast_hash": "fde8538cb2a790247b82a6a9141d5cd9",
     "semantic_hash": ""
   },
   "AronnaxIPad/HealthService.swift": {
-    "mtime": 1783958711.431374,
+    "mtime": 1783995024.9086952,
     "ast_hash": "c36603445034cb89027a23dfc72389ce",
     "semantic_hash": ""
   },
   "AronnaxIPad/HealthView.swift": {
-    "mtime": 1783958711.4316156,
+    "mtime": 1783995024.908889,
     "ast_hash": "4085c9e415578dc606dab86a259fcea7",
     "semantic_hash": ""
   },
   "AronnaxIPad/PaneSession.swift": {
-    "mtime": 1783992113.4907262,
+    "mtime": 1783995024.9092546,
     "ast_hash": "9b6d308fa8b6fad3b4a6e845c0952baf",
     "semantic_hash": ""
   },
   "AronnaxIPad/PaneSessionManager.swift": {
-    "mtime": 1783992161.1527917,
+    "mtime": 1783995024.9094224,
     "ast_hash": "c891bea8c605e3c30e5bfa2b89b5c609",
     "semantic_hash": ""
   },
   "AronnaxIPad/ProjectPrefs.swift": {
-    "mtime": 1783988428.2878683,
+    "mtime": 1783995024.9099524,
     "ast_hash": "cd9c549a8bd236f8608e76ef7c6ee8bd",
     "semantic_hash": ""
   },
   "AronnaxIPad/ProjectSidebar.swift": {
-    "mtime": 1783988451.840917,
+    "mtime": 1783995024.910161,
     "ast_hash": "62ea12ebb6a9ba70285c1a585a751bd6",
     "semantic_hash": ""
   },
   "AronnaxIPad/RootView.swift": {
-    "mtime": 1783958711.432648,
+    "mtime": 1783995024.9109674,
     "ast_hash": "3758ceb972ae424bc1f93902d4cffa27",
     "semantic_hash": ""
   },
   "AronnaxIPad/SSHConnection.swift": {
-    "mtime": 1783992107.8320987,
+    "mtime": 1783995024.9111648,
     "ast_hash": "3a2c8d8a2638205e576834a2d10e3ace",
     "semantic_hash": ""
   },
   "AronnaxIPad/TerminalSurface.swift": {
-    "mtime": 1783958711.433005,
+    "mtime": 1783995024.9113998,
     "ast_hash": "6c8a5ac42d1737dd3ead8424620eb566",
     "semantic_hash": ""
   },
   "AronnaxIPad/VaultService.swift": {
-    "mtime": 1783958711.4332242,
+    "mtime": 1783995024.911593,
     "ast_hash": "16bce350d9b73e1f0974e84b250d9385",
     "semantic_hash": ""
   },
   "AronnaxIPad/VaultView.swift": {
-    "mtime": 1783958711.4334486,
+    "mtime": 1783995024.91175,
     "ast_hash": "5cb43568273bb47172af2631bc6e1084",
     "semantic_hash": ""
   },
   "AronnaxIPad/Workspace.swift": {
-    "mtime": 1783992175.7504885,
+    "mtime": 1783995024.9119327,
     "ast_hash": "0b0f53893a0ca6d2d9dfd22bb90171ff",
     "semantic_hash": ""
   },
   "AronnaxIPad/Assets.xcassets/AppIcon.appiconset/AppIcon1024.png": {
-    "mtime": 1783958711.429945,
+    "mtime": 1783995024.907487,
     "ast_hash": "13909b17b147b198046501e904d6d2bb",
+    "semantic_hash": ""
+  },
+  "AronnaxIDEUITests/LaunchProbe.swift": {
+    "mtime": 1783995024.347179,
+    "ast_hash": "24deda57cc955e1c473c687cca79be50",
+    "semantic_hash": ""
+  },
+  "CODEX-HANDOFF.md": {
+    "mtime": 1783995024.3481097,
+    "ast_hash": "60352ae4042a140fa4ab6d3af48c57b2",
     "semantic_hash": ""
   }
 }
