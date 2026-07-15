@@ -82,7 +82,7 @@ struct AddServerWizard: View {
             case 0: detailsForm
             case 1: footholdStep
             case 4: githubStep
-            default: provisioningStatus   // 2, 3, 5, 6, 7 — app working
+            default: provisioningStatus   // 2, 3, 5, 6, 7, 8 — app working
             }
         }
     }
@@ -222,8 +222,8 @@ struct AddServerWizard: View {
         VStack(alignment: .leading, spacing: 14) {
             Label("Done", systemImage: "checkmark.seal.fill")
                 .font(.title2.weight(.semibold)).foregroundStyle(.green)
-            Text("\(model.host.displayName) is set up — vault synced, memory rules in place, "
-                 + "and it's now in your host list.")
+            Text("\(model.host.displayName) is set up — vault synced, memory rules + Obsidian "
+                 + "second memory in place, and it's now in your host list.")
                 .font(.callout)
             if !model.steps[6].detail.isEmpty {
                 Text(model.steps[6].detail).font(.caption).foregroundStyle(.secondary)
