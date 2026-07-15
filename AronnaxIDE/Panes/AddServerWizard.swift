@@ -104,8 +104,7 @@ struct AddServerWizard: View {
             HStack {
                 Spacer()
                 Button("Continue") {
-                    model.current = 1
-                    Task { await model.prepareFoothold() }
+                    Task { await model.startFoothold() }
                 }
                 .keyboardShortcut(.defaultAction)
                 .disabled(!model.formValid)
