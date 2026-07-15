@@ -12,7 +12,7 @@ struct AddServerWizardWindow: View {
 
 struct AddServerWizard: View {
     static let windowID = "add-server"
-    @Environment(\.dismiss) private var dismiss
+    @Environment(\.dismissWindow) private var dismissWindow
     @StateObject private var model: ServerOnboarding
 
     init(settings: AppSettings) {
@@ -234,8 +234,12 @@ struct AddServerWizard: View {
 
     private func closeWizard(reset: Bool = false) {
         if reset { model.reset() }
-        dismiss()
-        NSApp.keyWindow?.close()
+        // Close ONLY the wizard's own window by id. The old `NSApp.keyWindow?.close()`
+        // closed whatever happened to be key at that moment — which, once the wizard
+        // handed focus back, was the MAIN IDE window, so finishing the wizard closed the
+        // app and left the Settings window orphaned. dismissWindow(id:) targets the
+        // wizard scene specifically and leaves the main + Settings windows alone.
+        dismissWindow(id: AddServerWizard.windowID)
     }
 
     private func keyBox(_ key: String) -> some View {
