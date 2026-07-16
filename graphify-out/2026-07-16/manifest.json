@@ -1,12 +1,12 @@
 {
   ".beads/backup/backup_state.json": {
-    "mtime": 1784178221.1439567,
-    "ast_hash": "94d134897df7039a9079d6b6f9693a01",
+    "mtime": 1784165075.6043062,
+    "ast_hash": "8216e09e208b43cf9f430916e18c0237",
     "semantic_hash": ""
   },
   ".beads/export-state.json": {
-    "mtime": 1784178221.472042,
-    "ast_hash": "793c69301e00959ee9aed4303e77618f",
+    "mtime": 1784165160.5226562,
+    "ast_hash": "866ce264ddcb154e80e84d00087cbc29",
     "semantic_hash": ""
   },
   ".beads/hooks/post-checkout": {
@@ -220,8 +220,8 @@
     "semantic_hash": ""
   },
   "AronnaxIDE/Services/ServerOnboarding.swift": {
-    "mtime": 1784174307.468537,
-    "ast_hash": "fadce498d4a5ac873b1bce1a7885b5f9",
+    "mtime": 1784164346.7268515,
+    "ast_hash": "77735d4d2179c9ebc7878f6529b558c2",
     "semantic_hash": ""
   },
   "AronnaxIDE/Services/UsageService.swift": {
