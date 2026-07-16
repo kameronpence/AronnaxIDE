@@ -509,13 +509,24 @@ final class ServerOnboarding: ObservableObject {
             open(p, 'a').close()
         t = open(p).read()
         orig = t
+        VALID = ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')
+        BLOCK = r'^\\[mcp_servers\\.obsidian\\.env\\][ \\t]*\\n(.*?)(?=^\\[|\\Z)'
+        LINE = r'^[ \\t]*LOG_LEVEL[ \\t]*=[ \\t]*["\\']?([^"\\'\\n]*)["\\']?[ \\t]*$'
         if '[mcp_servers.obsidian]' not in t:
             t += '\\n[mcp_servers.obsidian]\\ncommand = "%s"\\nargs = []\\n' % os.environ['OBS_BIN']
-        # Ensure [mcp_servers.obsidian.env] exists and pins LOG_LEVEL.
-        m = re.search(r'^\\[mcp_servers\\.obsidian\\.env\\][ \\t]*\\n(.*?)(?=^\\[|\\Z)', t, re.S | re.M)
+        # Ensure [mcp_servers.obsidian.env] exists and pins a VALID LOG_LEVEL. Presence is
+        # not enough: a box already carrying LOG_LEVEL = "debug" would keep the broken value
+        # and still pass a presence-only check — reporting green on a box whose MCP cannot
+        # start, which is the exact bug this repairs. Only rewrite invalid values, so a
+        # deliberate LOG_LEVEL = "DEBUG" is left alone.
+        m = re.search(BLOCK, t, re.S | re.M)
         if m:
-            if not re.search(r'^[ \\t]*LOG_LEVEL[ \\t]*=', m.group(1), re.M):
+            line = re.search(LINE, m.group(1), re.M)
+            if not line:
                 t = t[:m.end(1)] + 'LOG_LEVEL = "INFO"\\n' + t[m.end(1):]
+            elif line.group(1).strip() not in VALID:
+                s, e = m.start(1) + line.start(0), m.start(1) + line.end(0)
+                t = t[:s] + 'LOG_LEVEL = "INFO"' + t[e:]
         else:
             t += '\\n[mcp_servers.obsidian.env]\\nLOG_LEVEL = "INFO"\\n'
         if t != orig:
@@ -524,11 +535,14 @@ final class ServerOnboarding: ObservableObject {
             print('CODEX_WROTE')
         else:
             print('CODEX_ALREADY')
-        # Prove it, rather than trusting that a write returned 0.
+        # Prove it, rather than trusting that a write returned 0. Assert the VALUE is usable,
+        # not merely that the key is there.
         v = open(p).read()
         assert '[mcp_servers.obsidian]' in v, 'obsidian block missing after write'
-        env = re.search(r'^\\[mcp_servers\\.obsidian\\.env\\][ \\t]*\\n(.*?)(?=^\\[|\\Z)', v, re.S | re.M)
-        assert env and re.search(r'^[ \\t]*LOG_LEVEL[ \\t]*=', env.group(1), re.M), 'LOG_LEVEL not pinned'
+        env = re.search(BLOCK, v, re.S | re.M)
+        assert env, 'no [mcp_servers.obsidian.env] after write'
+        got = re.search(LINE, env.group(1), re.M)
+        assert got and got.group(1).strip() in VALID, 'LOG_LEVEL missing or invalid: %r' % (got and got.group(1))
         print('CODEX_VERIFIED')
         """
         let c = await runStep("OBS_BIN=\(binEsc) python3", input: codexPy, seconds: 40)
