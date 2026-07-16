@@ -234,14 +234,54 @@ final class ServerOnboarding: ObservableObject {
         let cm = SSHManager.shellEscaped(globalClaudeMd)
         // `gitEnv` makes the clone non-interactive + keepalive-bounded so it fails fast
         // instead of hanging; `runStep` is a hard client-side backstop against a stall.
-        let prep = "set -e; export \(Self.gitEnv); [ -d \(vd)/.git ] || git clone -q \(vaultRepoSSH) \(vd); "
+        // Clone if absent, otherwise BRING THE EXISTING CLONE UP TO DATE. An already-
+        // onboarded box has a vault clone that predates the commands/ tree, so without an
+        // update it would fail the install-links.sh probe forever and Retry would replay
+        // the same stale state. Onboarding-only behaviour is what froze every box at its
+        // onboarding build in the first place — this step has to be a re-sync path too.
+        //
+        // `git pull --ff-only` alone is NOT sufficient, and assuming it was is how this
+        // whole class of bug happens: it fast-forwards whatever branch is checked out, so
+        // a box parked on a feature branch would pass and then execute THAT branch's
+        // install-links.sh — recreating the exact drift this is meant to prevent. It also
+        // won't reject a clone sitting ahead of origin. So check explicitly, and let each
+        // failure name itself: on main, clean, and not ahead of origin/main.
+        let prep = "set -e; export \(Self.gitEnv); "
+            + "if [ -d \(vd)/.git ]; then "
+            +   "B=$(git -C \(vd) rev-parse --abbrev-ref HEAD 2>/dev/null); "
+            +   "[ \"$B\" = main ] || { echo \"VAULT_OFF_MAIN=$B\"; exit 3; }; "
+            +   "[ -z \"$(git -C \(vd) status --porcelain)\" ] || { echo VAULT_DIRTY; exit 4; }; "
+            +   "git -C \(vd) fetch -q origin main; "
+            +   "git -C \(vd) merge-base --is-ancestor HEAD origin/main || { echo VAULT_AHEAD; exit 5; }; "
+            +   "git -C \(vd) merge --ff-only -q origin/main; "
+            + "else git clone -q \(vaultRepoSSH) \(vd); fi; "
             + "mkdir -p \(cd); "
             + "git -C \(vd) rev-parse --short HEAD 2>/dev/null | sed 's/^/VAULT_HEAD=/'; "
             + "grep -q 'Shared Memory — AI_OS Vault' \(cm) 2>/dev/null && echo ALREADY || echo NEEDWRITE"
-        guard let r = await runStep(prep, seconds: 120), r.ok else {
-            set(5, .failed, "Couldn't clone the vault onto the box — it timed out or the box "
-                + "can't reach github.com (a stalled transfer). Confirm the box has outbound "
-                + "access to github.com, then Retry."); return
+        let prepResult = await runStep(prep, seconds: 120)
+        guard let r = prepResult, r.ok else {
+            // Say which one it was. "Retry" on a vault that will never fast-forward is the
+            // kind of dead end that hides a real problem for weeks.
+            let out = (prepResult?.stdout ?? "") + (prepResult?.stderr ?? "")
+            let why: String
+            if let line = out.split(separator: "\n").first(where: { $0.contains("VAULT_OFF_MAIN=") }) {
+                let branch = line.replacingOccurrences(of: "VAULT_OFF_MAIN=", with: "")
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                why = "The vault at \(vaultDir) is on '\(branch)', not main. Nothing was pulled — "
+                    + "a vault on a feature branch is exactly how this drifts. "
+                    + "Fix on the box: git -C \(vaultDir) checkout main"
+            } else if out.contains("VAULT_DIRTY") {
+                why = "The vault at \(vaultDir) has uncommitted changes. Not pulling and not guessing — "
+                    + "resolve them on the box, then Retry."
+            } else if out.contains("VAULT_AHEAD") {
+                why = "The vault at \(vaultDir) has local commits that aren't on origin/main. "
+                    + "Not overwriting them — resolve on the box (git -C \(vaultDir) log origin/main..HEAD), then Retry."
+            } else {
+                why = "Couldn't clone or update the vault on the box — it timed out or the box "
+                    + "can't reach github.com (a stalled transfer). Confirm outbound access to "
+                    + "github.com, then Retry."
+            }
+            set(5, .failed, why); return
         }
         if r.stdout.contains("NEEDWRITE") {
             // Append via stdin — avoids a fragile remote heredoc. Point the rules at the
@@ -250,10 +290,10 @@ final class ServerOnboarding: ObservableObject {
             let w = await runStep("cat >> \(cm)", input: "\n" + rules + "\n", seconds: 30)
             guard w?.ok == true else { set(5, .failed, "Cloned, but couldn't write the memory rules."); return }
         }
-        // Install the real slash commands / skills so /resumeproject + /save actually
-        // exist on the box (the memory rules only *describe* them; /resume is a built-in).
-        guard await installAgentCommands() else {
-            set(5, .failed, "Cloned, but couldn't install the /resumeproject + /saveproject commands. Retry.")
+        // Point the box's agent paths at its vault clone, and verify the agents can
+        // actually discover the commands. A failure here names the path that broke.
+        if let why = await installAgentCommands() {
+            set(5, .failed, why)
             return
         }
         await setClaudeRetention()   // stop Claude's 30-day auto-prune of /resume history
@@ -604,110 +644,20 @@ final class ServerOnboarding: ObservableObject {
     - Secrets stay in gitignored .env — never commit them.
     """
 
-    // MARK: - Agent slash commands / skills installed on every server
-    // /resume is Claude's BUILT-IN session picker and can't be overridden by CLAUDE.md,
-    // so the real protocol must be an installed command file. These are the canonical
-    // copies (mirror the mini); installAgentCommands writes them onto the box.
-
-    static let claudeResumeProject = """
-    ---
-    description: Load project state — decisions, roadmap, recent logs, and ready beads
-    allowed-tools: Read, Glob, Bash
-    ---
-
-    # /resumeproject — Load project state
-
-    Get up to speed on the current project without bulk-loading it.
-
-    ## Steps
-    1. **Detect project root.** Walk up from `pwd` for a `CLAUDE.md` or `.git`. That dir = project
-       root. If none found, you're at the vault root (`/root/AI_OS`).
-    2. **Read living state** (summaries only, to save tokens):
-       - `DECISIONS.md` — key decisions + why
-       - `ROADMAP.md` — current plan / what's next
-       - The 3 most recent files in `logs/` — stop at `## Raw Session Log`
-    3. **Load tasks from beads:** run `bd prime` to orient, then `bd ready` for ready/in-progress items.
-    4. **Summarize:** current state, recent decisions, and next tasks — pulled from **beads**, not guessed.
-
-    Arguments: `/resumeproject 10` = read 10 logs instead of 3. Don't load the whole project.
-    """
-
-    static let claudeSave = """
-    ---
-    description: Save the session — update beads, write a log note, CodeRabbit review, commit, push + auto-merge the PR
-    allowed-tools: Read, Write, Edit, Bash, AskUserQuestion
-    ---
-
-    # /saveproject — Save the session
-
-    You-triggered save. **Running this IS Kameron's permission to push and merge** — never push or merge otherwise.
-
-    ## Steps
-    1. **Detect project root** (walk up from `pwd` for `CLAUDE.md`/`.git`).
-    2. **Update beads:** `bd close` finished, `bd update` progress, `bd create` for new pending items.
-       Beads is the task ledger — pending work lives here, not in prose.
-    3. **Write the session log** at `<project>/logs/YYYY-MM-DD-description.md` with frontmatter
-       (title, tags, created, updated, status: complete, type: session). Record what was done +
-       decisions. For pending items, **link the bead IDs** — don't restate them.
-    4. **Update `DECISIONS.md` / `ROADMAP.md`** if decisions or the plan changed. Add `[[wikilinks]]`.
-    5. **CodeRabbit review:** run `cr` on the changes. Address findings. **Never commit unreviewed code.**
-    6. **Commit + push** on the current feature branch (authorized only because Kameron ran `/saveproject`).
-    7. **Open + auto-merge the PR:** create one if none exists (`gh pr create --fill`), then
-       `gh pr merge --squash --delete-branch`. Only skip if not cleanly mergeable — then leave it
-       open and report why.
-    8. **Sync the vault:** `git -C /root/AI_OS add -A && git -C /root/AI_OS commit -m "<what>" && git -C /root/AI_OS push`
-    """
-
-    static let codexResumeProject = """
-    ---
-    name: resumeproject
-    description: Load current project state at session start — decisions, roadmap, recent log summaries, and ready beads. Invoke explicitly when resuming work on a project; do not trigger automatically.
-    auto_trigger: false
-    ---
-
-    # resumeproject — Load project state
-
-    Get up to speed on the current project without bulk-loading it. Do these steps, then summarize and stop:
-
-    1. Detect the project root: walk up from the current directory for a `CLAUDE.md` or `.git`. That
-       directory is the project root. If none is found, you are at the vault root (`/root/AI_OS`).
-    2. Read the living state (summaries only, to save tokens):
-       - `DECISIONS.md` — key decisions and why
-       - `ROADMAP.md` — current plan / what's next
-       - The 3 most recent files in `logs/` — read only the summary, stop at `## Raw Session Log`
-    3. Load tasks from beads: run `bd prime` to orient, then `bd ready` for ready/in-progress items.
-    4. Summarize the current state, recent decisions, and next tasks — pulled from beads, not guessed.
-
-    Remember your role on this project: you are the reviewer. After resuming, wait for Claude's changes
-    to review — do not start editing.
-    """
-
-    static let codexSave = """
-    ---
-    name: saveproject
-    description: Save the session — update beads, write a session log, update DECISIONS/ROADMAP, CodeRabbit review, then commit → push → open + auto-merge the PR, then sync the vault. Identical to Claude's /saveproject. Invoke explicitly to wrap up a session.
-    auto_trigger: false
-    ---
-
-    # saveproject — Save the session
-
-    You-triggered save. **Running this IS Kameron's permission to push AND merge** — never push or merge otherwise. This is **identical to Claude's `/saveproject`**: same steps, same outcome.
-
-    ## Steps
-    1. Detect the project root (walk up from the current directory for `CLAUDE.md`/`.git`).
-    2. Update beads: `bd close` finished, `bd update` progress, `bd create` for new pending items.
-       Beads is the task ledger — pending work lives there, not in prose.
-    3. Write the session log at `<project>/logs/YYYY-MM-DD-description.md` with frontmatter
-       (title, tags, created, updated, status: complete, type: session). Link bead IDs for pending items.
-    4. Update `DECISIONS.md` / `ROADMAP.md` if decisions or the plan changed. Add `[[wikilinks]]`.
-    5. CodeRabbit review: run `cr` on the changes; address findings. Never commit unreviewed code.
-    6. Commit + push on the current feature branch (authorized only because Kameron ran `$saveproject`).
-    7. Open + auto-merge the PR: create one if none exists (`gh pr create --fill`), then
-       `gh pr merge --squash --delete-branch`. Only skip if not cleanly mergeable — then leave it
-       open and report why.
-    8. Sync the vault: `git -C /root/AI_OS add -A && git -C /root/AI_OS commit -m "<what>" && git -C /root/AI_OS push`
-    """
-
+    // MARK: - Agent commands: NOT stored here, deliberately
+    //
+    // The command bodies used to live here as ~100 lines of Swift string literals that
+    // installAgentCommands() cat'd onto each box at onboarding. That is what froze every
+    // box at its onboarding build: gatsa-prod and gatsa-web ran a saveproject half the
+    // current size for weeks — including an UNPINNED `git -C <vault> add -A && commit &&
+    // push` that would commit the vault to whatever branch was checked out — because
+    // shipping new text required re-onboarding, and nobody re-onboarded.
+    //
+    // The bodies now live in the vault at commands/, exactly once, and reach every
+    // machine by symlink. kepler, the boxes' daily timers, and this wizard all run the
+    // same commands/install-links.sh. To change a command, edit the vault — not Swift.
+    //
+    // Putting command text back in this file is the original bug. Don't.
     /// Raise Claude's transcript retention to a year on the box, so /resume history isn't
     /// lost (Claude's default `cleanupPeriodDays` silently deletes sessions older than
     /// 30 days). Merges the key into settings.json, preserving any others.
@@ -729,26 +679,67 @@ final class ServerOnboarding: ObservableObject {
         _ = await runStep("python3", input: py, seconds: 30)
     }
 
-    /// Installs the Claude commands + Codex skills on the box so /resumeproject and
-    /// /saveproject (and their Codex $-skill equivalents) actually exist. Overwrites — these files are
-    /// canonical and versioned with the app; vault-root paths point at this box's clone.
-    private func installAgentCommands() async -> Bool {
-        let skills = "\(resolvedHome)/.agents/skills"
-        let mk = "mkdir -p \(SSHManager.shellEscaped(claudeDir + "/commands")) "
-            + "\(SSHManager.shellEscaped(skills + "/resumeproject")) "
-            + "\(SSHManager.shellEscaped(skills + "/saveproject"))"
-        guard let m = await runStep(mk, seconds: 30), m.ok else { return false }
-        let files: [(String, String)] = [
-            ("\(claudeDir)/commands/resumeproject.md", Self.claudeResumeProject),
-            ("\(claudeDir)/commands/saveproject.md",   Self.claudeSave),
-            ("\(skills)/resumeproject/SKILL.md",       Self.codexResumeProject),
-            ("\(skills)/saveproject/SKILL.md",         Self.codexSave),
-        ]
-        for (path, content) in files {
-            let body = content.replacingOccurrences(of: "/root/AI_OS", with: vaultDir)
-            let w = await runStep("cat > \(SSHManager.shellEscaped(path))", input: body, seconds: 30)
-            guard w?.ok == true else { return false }
+    /// Points the box's agent command/skill paths at its vault clone, by running the
+    /// vault's own `commands/install-links.sh`. Safe to re-run — this is also the
+    /// repair/re-sync path for an already-onboarded box.
+    ///
+    /// This function used to embed the command bodies as Swift string literals and
+    /// `cat >` them onto the box. That was wrong three separate ways, and every one of
+    /// them shipped to production:
+    ///
+    ///  1. It wrote Codex's skills to `~/.agents/skills/`, which Codex does not read.
+    ///     Worse, the whole idea was misconceived: `$saveproject` is not a skill and never
+    ///     has been — it was absent from `~/.codex/skills` on every machine. It works
+    ///     because `~/.codex/AGENTS.md`, which Codex reads globally every session,
+    ///     documents the convention. gatsa-prod had no such file at all, so `$saveproject`
+    ///     genuinely could not work there, while this function reported success.
+    ///
+    ///  2. It only checked that `cat > path` exited 0. A write into a directory nothing
+    ///     reads exits 0 every time, so the step went green for ~2 weeks and 4 onboardings
+    ///     while delivering nothing. A write that succeeds is not evidence a feature works.
+    ///
+    ///  3. It ran only at onboarding, so a box froze at whatever build onboarded it.
+    ///     gatsa-prod and gatsa-web ran a `saveproject` half the current size for weeks,
+    ///     including an UNPINNED `git -C <vault> add -A && commit && push` that would
+    ///     commit the vault to whatever branch happened to be checked out.
+    ///
+    /// The content now lives in the vault, exactly once, and every machine — kepler, the
+    /// daily timers, and this wizard — runs the same script. Do not reintroduce command
+    /// text here: putting bodies back into Swift strings is the original bug.
+    /// Returns nil on success, or the reason it failed — the caller shows that reason.
+    /// The old version returned a bare Bool and the wizard just said "Retry", which is
+    /// how a broken install looked identical to a working one for two weeks.
+    private func installAgentCommands() async -> String? {
+        let script = SSHManager.shellEscaped("\(vaultDir)/commands/install-links.sh")
+
+        // Fail loudly if the vault predates the commands tree, rather than silently
+        // falling back to a stale embedded copy.
+        guard let probe = await runStep("test -f \(script) && echo present", seconds: 30),
+              probe.ok, probe.stdout.contains("present") else {
+            return "The vault at \(vaultDir) has no commands/install-links.sh — is it on main and up to date?"
         }
-        return true
+
+        // The script links the agent paths at the vault AND verifies discovery: every
+        // link resolves, every target exists, is non-empty, and ~/.codex/AGENTS.md is
+        // present and full-parity. It exits non-zero if any of that fails, so a red step
+        // here means the commands are genuinely not installed — not that a write
+        // happened to return 0.
+        let cmd = "VAULT=\(SSHManager.shellEscaped(vaultDir)) "
+            + "TARGET_HOME=\(SSHManager.shellEscaped(resolvedHome)) "
+            + "bash \(script)"
+        guard let r = await runStep(cmd, seconds: 120) else {
+            return "install-links.sh timed out or never completed."
+        }
+        guard r.ok else {
+            // Surface the script's own FAIL lines — they name the exact path that broke.
+            let why = (r.stdout + "\n" + r.stderr)
+                .split(separator: "\n")
+                .filter { $0.contains("FAIL") || $0.contains("MISSING") }
+                .joined(separator: "\n")
+            return why.isEmpty
+                ? "Agent commands failed verification on this box."
+                : "Agent commands failed verification:\n\(why)"
+        }
+        return nil
     }
 }
