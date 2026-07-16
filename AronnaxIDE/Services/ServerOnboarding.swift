@@ -484,26 +484,57 @@ final class ServerOnboarding: ObservableObject {
             return
         }
 
-        // 3. Register the server with Codex (~/.codex/config.toml). TOML has no stdlib
-        //    writer, so append the [mcp_servers.obsidian] block guarded by a grep
-        //    (idempotent) after backing up. The vault comes from config.json (step 2), so
-        //    this only needs the launch command.
+        // 3. Register the server with Codex (~/.codex/config.toml). Python, not a grep +
+        //    append: the old version guarded the whole thing on `grep [mcp_servers.obsidian]`
+        //    and echoed CODEX_ALREADY, so an already-registered box could never be corrected —
+        //    onboarding-only again. This ensures the block AND its env on every run.
+        //
+        //    LOG_LEVEL matters more than it looks. obsidian-mcp-server reads a .env from
+        //    whatever cwd Codex launches it in. Laravel projects set lowercase
+        //    LOG_LEVEL=debug (relayPTC.com/.env:21), and newer builds validate against
+        //    ^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$ — so the server dies in startup
+        //    validation and Codex reports "connection closed: initialize response". An
+        //    explicit env var here beats the project's .env file (verified).
+        //
+        //    The boxes only escape this today by luck: their Laravel .envs happen not to set
+        //    LOG_LEVEL, and they happen to run an older build (1.28.1) without the strict
+        //    check. Either can change on the next `uv tool upgrade` or the next project
+        //    deployed. Pin it so the box doesn't depend on either.
         set(7, .running, "Registering Obsidian with Codex…")
-        let codex = """
-        CFG="$HOME/.codex/config.toml"
-        mkdir -p "$(dirname "$CFG")"; touch "$CFG"
-        if grep -q '\\[mcp_servers.obsidian\\]' "$CFG" 2>/dev/null; then
-          echo CODEX_ALREADY
-        else
-          cp "$CFG" "$CFG.bak-$(date +%s)" 2>/dev/null || true
-          printf '\\n[mcp_servers.obsidian]\\ncommand = "%s"\\nargs = []\\n' \(binEsc) >> "$CFG"
-          echo CODEX_WROTE
-        fi
+        let codexPy = """
+        import os, re, time
+        p = os.path.expanduser('~/.codex/config.toml')
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        if not os.path.exists(p):
+            open(p, 'a').close()
+        t = open(p).read()
+        orig = t
+        if '[mcp_servers.obsidian]' not in t:
+            t += '\\n[mcp_servers.obsidian]\\ncommand = "%s"\\nargs = []\\n' % os.environ['OBS_BIN']
+        # Ensure [mcp_servers.obsidian.env] exists and pins LOG_LEVEL.
+        m = re.search(r'^\\[mcp_servers\\.obsidian\\.env\\][ \\t]*\\n(.*?)(?=^\\[|\\Z)', t, re.S | re.M)
+        if m:
+            if not re.search(r'^[ \\t]*LOG_LEVEL[ \\t]*=', m.group(1), re.M):
+                t = t[:m.end(1)] + 'LOG_LEVEL = "INFO"\\n' + t[m.end(1):]
+        else:
+            t += '\\n[mcp_servers.obsidian.env]\\nLOG_LEVEL = "INFO"\\n'
+        if t != orig:
+            open(p + '.bak-%d' % int(time.time()), 'w').write(orig)
+            open(p, 'w').write(t)
+            print('CODEX_WROTE')
+        else:
+            print('CODEX_ALREADY')
+        # Prove it, rather than trusting that a write returned 0.
+        v = open(p).read()
+        assert '[mcp_servers.obsidian]' in v, 'obsidian block missing after write'
+        env = re.search(r'^\\[mcp_servers\\.obsidian\\.env\\][ \\t]*\\n(.*?)(?=^\\[|\\Z)', v, re.S | re.M)
+        assert env and re.search(r'^[ \\t]*LOG_LEVEL[ \\t]*=', env.group(1), re.M), 'LOG_LEVEL not pinned'
+        print('CODEX_VERIFIED')
         """
-        let c = await runStep(codex, seconds: 40)
-        guard c?.ok == true,
-              c?.stdout.contains("CODEX_WROTE") == true || c?.stdout.contains("CODEX_ALREADY") == true else {
-            set(7, .failed, "Installed the server but couldn't write ~/.codex/config.toml — \(failureTail(c)) Retry.")
+        let c = await runStep("OBS_BIN=\(binEsc) python3", input: codexPy, seconds: 40)
+        guard c?.ok == true, c?.stdout.contains("CODEX_VERIFIED") == true else {
+            set(7, .failed, "Installed the server but couldn't register it in ~/.codex/config.toml "
+                + "with LOG_LEVEL pinned — \(failureTail(c)) Retry.")
             return
         }
 
