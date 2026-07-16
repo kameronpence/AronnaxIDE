@@ -107,14 +107,10 @@
   "105": "AgentTarget",
   "106": "ProjectPrefs",
   "107": "DataToBufferCodec",
-  "108": "UnsupportedFeature",
   "109": "WorkspaceTab",
   "110": "AronnaxTerminalView",
-  "111": "Curve25519.Signing.PrivateKey",
   "112": "TerminalSurface",
-  "113": "MasterAction",
   "114": "Combine",
   "115": "PubkeyParseError",
-  "116": "SSHClientError",
-  "117": "DirectTCPIPForwardingDelegate"
+  "116": "SSHClientError"
 }
