@@ -1,12 +1,12 @@
 {
   ".beads/backup/backup_state.json": {
-    "mtime": 1784165075.6043062,
-    "ast_hash": "8216e09e208b43cf9f430916e18c0237",
+    "mtime": 1784075397.5858097,
+    "ast_hash": "2fec28304ae30fb676da9037c18ee829",
     "semantic_hash": ""
   },
   ".beads/export-state.json": {
-    "mtime": 1784165160.5226562,
-    "ast_hash": "866ce264ddcb154e80e84d00087cbc29",
+    "mtime": 1784075424.1062963,
+    "ast_hash": "b0740552a5a428359cbf46ecaa77f735",
     "semantic_hash": ""
   },
   ".beads/hooks/post-checkout": {
@@ -100,8 +100,8 @@
     "semantic_hash": ""
   },
   "AronnaxIDE/Panes/AddServerWizard.swift": {
-    "mtime": 1784149266.6033998,
-    "ast_hash": "1f4f4a0cb4ef32068399bf5004fa61d5",
+    "mtime": 1784073695.830472,
+    "ast_hash": "6436ed10f2954a93f3a6eee547e56519",
     "semantic_hash": ""
   },
   "AronnaxIDE/Panes/BeadsPanel.swift": {
@@ -215,13 +215,13 @@
     "semantic_hash": ""
   },
   "AronnaxIDE/Services/SSHManager.swift": {
-    "mtime": 1784149027.4873383,
-    "ast_hash": "92856bea3ba0f13e2112a8035dc39409",
+    "mtime": 1783995024.3465903,
+    "ast_hash": "5ff0c0f95ebc92e92ca228be8c5281a1",
     "semantic_hash": ""
   },
   "AronnaxIDE/Services/ServerOnboarding.swift": {
-    "mtime": 1784164346.7268515,
-    "ast_hash": "77735d4d2179c9ebc7878f6529b558c2",
+    "mtime": 1784074554.3953743,
+    "ast_hash": "52996041469e13966b09859b47f0c016",
     "semantic_hash": ""
   },
   "AronnaxIDE/Services/UsageService.swift": {
