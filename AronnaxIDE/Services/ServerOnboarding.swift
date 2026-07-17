@@ -419,174 +419,77 @@ final class ServerOnboarding: ObservableObject {
         return tail.isEmpty ? "exit \(result.exitCode)" : "exit \(result.exitCode): \(tail)"
     }
 
-    // The filesystem-based Obsidian "second memory" MCP server: obsidian-mcp-server on
-    // PyPI, installed with uv as ~/.local/bin/obsidian-mcp. No Obsidian app / API key —
-    // it reads the vault straight off disk, so agents on the box get the same
-    // obsidian_list/search/append/daily tools the mini has.
-    private var obsidianBin: String { "\(resolvedHome)/.local/bin/obsidian-mcp" }
-    // The server takes its vault ONLY from its own config file (it does NOT read any
-    // OBSIDIAN_VAULT_PATH env var — verified against the source: get_vault_path() reads
-    // config["vault_path"] from here and nothing else). Both clients share this one file.
-    private var obsidianConfig: String { "\(resolvedHome)/.config/obsidian-mcp/config.json" }
+    // The Obsidian "second memory" MCP server reads the vault straight off disk — no
+    // Obsidian app, no API key — so agents on a box get the same tools the mini has. Its
+    // binary path, package, pin and config mechanism are the VAULT's business, not this
+    // file's: see commands/install-obsidian-mcp.sh. The paths that used to be hard-coded
+    // here (~/.local/bin/obsidian-mcp + ~/.config/obsidian-mcp/config.json) belonged to a
+    // DIFFERENT project that merely shares a PyPI name, and encoding them in Swift is what
+    // let this wizard install software kepler was not running. Don't put them back.
 
     // MARK: - Step 7 (app): install + wire the Obsidian second-memory MCP into Claude + Codex
-    func setupObsidianMCP() async {
+     func setupObsidianMCP() async {
         guard !Task.isCancelled else { return }
         current = 7
         set(7, .running, "Installing the Obsidian second-memory server…")
-        let binEsc = SSHManager.shellEscaped(obsidianBin)
 
-        // 1. Install uv (if missing) then the filesystem-based obsidian-mcp-server, and
-        //    confirm the binary landed. The version is PINNED: the bare PyPI name
-        //    `obsidian-mcp-server` is shared by several unrelated forks (one env-var-based
-        //    with an `obsidian-mcp-server` entry point, this one config.json-based with an
-        //    `obsidian-mcp` entry point). Pinning 0.2.0 guarantees the entry-point name and
-        //    the config mechanism below always match. `uv tool install` is idempotent;
-        //    tolerate the "already installed" exit and rely on the binary check as the gate.
-        let install = """
-        export PATH="$HOME/.local/bin:$PATH"
-        command -v uv >/dev/null 2>&1 || curl -LsSf https://astral.sh/uv/install.sh | sh >/dev/null 2>&1
-        export PATH="$HOME/.local/bin:$PATH"
-        uv tool install 'obsidian-mcp-server==0.2.0' >/dev/null 2>&1 || uv tool upgrade obsidian-mcp-server >/dev/null 2>&1 || true
-        [ -x \(binEsc) ] && echo OBSIDIAN_OK || { echo OBSIDIAN_MISSING; exit 1; }
-        """
-        let i = await runStep(install, seconds: 240)
-        guard i?.ok == true, i?.stdout.contains("OBSIDIAN_OK") == true else {
-            set(7, .failed, "Couldn't install the Obsidian MCP server (uv → obsidian-mcp-server) on "
-                + "the box — the installer timed out or the box can't reach astral.sh / PyPI. "
-                + "\(failureTail(i)) Retry.")
-            return
-        }
-
-        // 2. Point the server at the vault — THIS is what actually configures it. Merge
-        //    into config.json with python (idempotent, preserves daily-notes settings);
-        //    the vault path passes as an env var so there's no shell-quoting/injection.
-        set(7, .running, "Pointing the server at the vault…")
-        let cfgPy = """
-        import json, os
-        p = os.path.expanduser(os.environ['OBS_CFG'])
-        d = {}
-        if os.path.isfile(p):
-            try:
-                d = json.load(open(p))
-            except Exception:
-                d = {}
-        d['vault_path'] = os.environ['OBS_VAULT']
-        os.makedirs(os.path.dirname(p), exist_ok=True)
-        json.dump(d, open(p, 'w'), indent=2)
-        print('VAULT_OK')
-        """
-        let cfg = await runStep(
-            "OBS_CFG=\(SSHManager.shellEscaped(obsidianConfig)) OBS_VAULT=\(SSHManager.shellEscaped(vaultDir)) python3",
-            input: cfgPy, seconds: 40)
-        guard cfg?.ok == true, cfg?.stdout.contains("VAULT_OK") == true else {
-            set(7, .failed, "Installed the server but couldn't write its vault config (\(obsidianConfig)) — \(failureTail(cfg)) Retry.")
-            return
-        }
-
-        // 3. Register the server with Codex (~/.codex/config.toml). Python, not a grep +
-        //    append: the old version guarded the whole thing on `grep [mcp_servers.obsidian]`
-        //    and echoed CODEX_ALREADY, so an already-registered box could never be corrected —
-        //    onboarding-only again. This ensures the block AND its env on every run.
+        // Delegates to the vault's commands/install-obsidian-mcp.sh — the SAME script
+        // kepler runs. This step used to do the work itself in Swift, and that is exactly
+        // how the fleet drifted: it pinned PyPI `obsidian-mcp-server==0.2.0` while kepler
+        // ran Vasallo94's build (v1.0.0, git). Those are UNRELATED PROJECTS that happen to
+        // share a PyPI name — different entry points (`obsidian-mcp` vs
+        // `obsidian-mcp-server`), different config mechanisms (config.json vs env vars),
+        // different tool names (`obsidian_read` vs `notes.read`). Every box this wizard
+        // onboarded got software your Mac was not running, and nothing reported a problem.
+        // The pin was a reasonable escape from the name collision; the mistake was pinning
+        // it HERE, where kepler could never follow. Standardized on Vasallo94's (built for
+        // Claude Code + Codex agents; it reads the vault's .agents/ folder) at a pinned
+        // COMMIT, 2026-07-17.
         //
-        //    LOG_LEVEL matters more than it looks. obsidian-mcp-server reads a .env from
-        //    whatever cwd Codex launches it in. Laravel projects set lowercase
-        //    LOG_LEVEL=debug (relayPTC.com/.env:21), and newer builds validate against
-        //    ^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$ — so the server dies in startup
-        //    validation and Codex reports "connection closed: initialize response". An
-        //    explicit env var here beats the project's .env file (verified).
-        //
-        //    The boxes only escape this today by luck: their Laravel .envs happen not to set
-        //    LOG_LEVEL, and they happen to run an older build (1.28.1) without the strict
-        //    check. Either can change on the next `uv tool upgrade` or the next project
-        //    deployed. Pin it so the box doesn't depend on either.
-        set(7, .running, "Registering Obsidian with Codex…")
-        let codexPy = """
-        import os, re, time
-        p = os.path.expanduser('~/.codex/config.toml')
-        os.makedirs(os.path.dirname(p), exist_ok=True)
-        if not os.path.exists(p):
-            open(p, 'a').close()
-        t = open(p).read()
-        orig = t
-        VALID = ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')
-        BLOCK = r'^\\[mcp_servers\\.obsidian\\.env\\][ \\t]*\\n(.*?)(?=^\\[|\\Z)'
-        LINE = r'^[ \\t]*LOG_LEVEL[ \\t]*=[ \\t]*["\\']?([^"\\'\\n]*)["\\']?[ \\t]*$'
-        if '[mcp_servers.obsidian]' not in t:
-            t += '\\n[mcp_servers.obsidian]\\ncommand = "%s"\\nargs = []\\n' % os.environ['OBS_BIN']
-        # Ensure [mcp_servers.obsidian.env] exists and pins a VALID LOG_LEVEL. Presence is
-        # not enough: a box already carrying LOG_LEVEL = "debug" would keep the broken value
-        # and still pass a presence-only check — reporting green on a box whose MCP cannot
-        # start, which is the exact bug this repairs. Only rewrite invalid values, so a
-        # deliberate LOG_LEVEL = "DEBUG" is left alone.
-        m = re.search(BLOCK, t, re.S | re.M)
-        if m:
-            line = re.search(LINE, m.group(1), re.M)
-            if not line:
-                t = t[:m.end(1)] + 'LOG_LEVEL = "INFO"\\n' + t[m.end(1):]
-            elif line.group(1).strip() not in VALID:
-                s, e = m.start(1) + line.start(0), m.start(1) + line.end(0)
-                t = t[:s] + 'LOG_LEVEL = "INFO"' + t[e:]
-        else:
-            t += '\\n[mcp_servers.obsidian.env]\\nLOG_LEVEL = "INFO"\\n'
-        if t != orig:
-            open(p + '.bak-%d' % int(time.time()), 'w').write(orig)
-            open(p, 'w').write(t)
-            print('CODEX_WROTE')
-        else:
-            print('CODEX_ALREADY')
-        # Prove it, rather than trusting that a write returned 0. Assert the VALUE is usable,
-        # not merely that the key is there.
-        v = open(p).read()
-        assert '[mcp_servers.obsidian]' in v, 'obsidian block missing after write'
-        env = re.search(BLOCK, v, re.S | re.M)
-        assert env, 'no [mcp_servers.obsidian.env] after write'
-        got = re.search(LINE, env.group(1), re.M)
-        assert got and got.group(1).strip() in VALID, 'LOG_LEVEL missing or invalid: %r' % (got and got.group(1))
-        print('CODEX_VERIFIED')
-        """
-        let c = await runStep("OBS_BIN=\(binEsc) python3", input: codexPy, seconds: 40)
-        guard c?.ok == true, c?.stdout.contains("CODEX_VERIFIED") == true else {
-            set(7, .failed, "Installed the server but couldn't register it in ~/.codex/config.toml "
-                + "with LOG_LEVEL pinned — \(failureTail(c)) Retry.")
+        // Do not reintroduce install or config logic here. Same rule as installAgentCommands().
+        if let why = await runVaultScript("install-obsidian-mcp.sh", seconds: 300) {
+            set(7, .failed, "Couldn't install the Obsidian MCP server on the box — \(why) Retry.")
             return
         }
-
-        // 4. Register the server with Claude Code (~/.claude.json, user scope). That file
-        //    is JSON, so merge with python — idempotent, preserves every other key.
-        set(7, .running, "Registering Obsidian with Claude…")
-        let claudePy = """
-        import json, os, time
-        p = os.path.expanduser('~/.claude.json')
-        d = {}
-        if os.path.isfile(p):
-            try:
-                d = json.load(open(p))
-            except Exception:
-                d = {}
-            try:
-                import shutil
-                shutil.copy(p, p + '.bak-%d' % int(time.time()))
-            except Exception:
-                pass
-        d.setdefault('mcpServers', {})
-        d['mcpServers']['obsidian'] = {
-            'type': 'stdio',
-            'command': os.environ['OBS_BIN'],
-            'args': [],
-        }
-        os.makedirs(os.path.dirname(p), exist_ok=True)
-        json.dump(d, open(p, 'w'), indent=2)
-        print('CLAUDE_OK')
-        """
-        let cl = await runStep("OBS_BIN=\(binEsc) python3", input: claudePy, seconds: 40)
-        guard cl?.ok == true, cl?.stdout.contains("CLAUDE_OK") == true else {
-            set(7, .failed, "Installed the server + Codex config but couldn't write ~/.claude.json — \(failureTail(cl)) Retry.")
-            return
-        }
-
         set(7, .done, "Obsidian second memory wired into Claude + Codex (vault at \(vaultDir)).")
         await finish()
+    }
+
+    /// Run one of the vault's installer scripts on the box, with its own env, and surface
+    /// the script's own failure text.
+    ///
+    /// Every one of these scripts VERIFIES BY OBSERVING — an MCP handshake, a real `bd`
+    /// write, symlinks resolved — and exits non-zero when that fails. That matters: the
+    /// original wizard checked `cat > file` exit codes, which always succeed, and reported
+    /// green for two weeks over Codex skills written to a path Codex never reads. A step
+    /// that is red here means the thing genuinely does not work on the box.
+    /// Returns nil on success, or the reason it failed.
+    private func runVaultScript(_ name: String, seconds: UInt64) async -> String? {
+        let script = SSHManager.shellEscaped("\(vaultDir)/commands/\(name)")
+
+        // Fail loudly if the vault predates the script rather than silently skipping it —
+        // a skipped step here is a box that looks onboarded and is not.
+        guard let probe = await runStep("test -f \(script) && echo present", seconds: 30),
+              probe.ok, probe.stdout.contains("present") else {
+            return "The vault at \(vaultDir) has no commands/\(name) — is it on main and up to date?"
+        }
+
+        let cmd = "VAULT=\(SSHManager.shellEscaped(vaultDir)) "
+            + "TARGET_HOME=\(SSHManager.shellEscaped(resolvedHome)) "
+            + "bash \(script)"
+        guard let r = await runStep(cmd, seconds: seconds) else {
+            return "\(name) timed out or never completed."
+        }
+        guard r.ok else {
+            // Surface the script's own FAIL/RESULT lines — they name the exact thing that broke.
+            let why = (r.stdout + "\n" + r.stderr)
+                .split(separator: "\n")
+                .filter { $0.contains("FAIL") || $0.contains("RESULT") || $0.contains("VERIFY") }
+                .suffix(3)
+                .joined(separator: " ")
+            return why.isEmpty ? "\(name) failed. \(failureTail(r))" : String(why)
+        }
+        return nil
     }
 
     // MARK: - Step 8 (app): verify the round-trip + commit the host to the app
