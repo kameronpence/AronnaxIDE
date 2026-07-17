@@ -83,6 +83,13 @@ struct SettingsView: View {
                 }
                 .help("Guided setup: connect, vault deploy key, clone, and tools")
 
+                Button {
+                    openWindow(id: NewProjectWizard.windowID)
+                } label: {
+                    Label("New Project…", systemImage: "folder.badge.plus")
+                }
+                .help("Create a local project on kepler — GitHub repo, beads + Dolt remote, and vault memory")
+
                 DisclosureGroup("Add manually (host list only)") {
                     VStack(spacing: 6) {
                         TextField("Name (e.g. GATSA staging)", text: $newHostName)
