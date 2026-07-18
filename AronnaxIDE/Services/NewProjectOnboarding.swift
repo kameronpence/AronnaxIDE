@@ -20,8 +20,22 @@ final class NewProjectOnboarding: ObservableObject {
 
     enum Phase: Equatable { case form, running, done, failed }
 
+    /// A GitHub account the project can be created under. `alias` is the SSH host alias the
+    /// origin uses (github.com = personal, github-gatsa = the GATSA account); `owner` is the
+    /// resolved account name, used as both the repo owner and the gh account to act as.
+    struct Account: Identifiable, Hashable {
+        let id: String       // == alias, unique per account
+        let alias: String
+        let owner: String
+        var displayName: String { owner }
+    }
+
     @Published var name = ""
     @Published var isPublic = false
+
+    @Published var accounts: [Account] = []
+    @Published var selectedAccountID: String?
+    @Published var accountsLoading = false
 
     @Published var phase: Phase = .form
     @Published var log = ""            // captured script output, shown live-ish in the pane
@@ -32,6 +46,31 @@ final class NewProjectOnboarding: ObservableObject {
     private var work: Task<Void, Never>?
 
     init(settings: AppSettings) { self.settings = settings }
+
+    var selectedAccount: Account? { accounts.first { $0.id == selectedAccountID } }
+
+    /// Enumerate the GitHub accounts on the hub the same way the Git/Deploy pane does: the SSH
+    /// host aliases whose HostName is github.com, resolved to real account names via `ssh -T`.
+    /// Deploy-key aliases (identity contains `/`) are dropped — they aren't push accounts.
+    func loadAccounts() async {
+        guard accounts.isEmpty, let hub else { return }
+        accountsLoading = true
+        let controller = GitController(host: hub)
+        var found: [Account] = []
+        for alias in await controller.githubAccounts() {
+            guard let name = await controller.githubIdentity(alias: alias), !name.contains("/")
+            else { continue }
+            found.append(Account(id: alias, alias: alias, owner: name))
+        }
+        // Fall back to the documented personal default so the wizard still works if resolution
+        // fails (offline, ssh blocked) — better a single sane choice than an empty picker.
+        if found.isEmpty { found = [Account(id: "github.com", alias: "github.com", owner: "kameronpence")] }
+        accounts = found
+        if selectedAccountID == nil {
+            selectedAccountID = found.first { $0.alias == "github.com" }?.id ?? found.first?.id
+        }
+        accountsLoading = false
+    }
 
     /// New projects ALWAYS go on the hub (kepler): that is where the vault, `gh` auth, and
     /// `Projects/` live. Deliberately not `activeHost`, which can be a remote box.
@@ -107,10 +146,17 @@ final class NewProjectOnboarding: ObservableObject {
             return
         }
 
-        // VAULT explicit (belt-and-braces over the script's autodetect); OWNER defaults to
-        // kameronpence inside the script. The name is shell-escaped — it's already validated
-        // to a safe charset, but never trust a form value straight into a command.
+        // VAULT explicit (belt-and-braces over the script's autodetect). OWNER/ORIGIN_HOST/
+        // GH_ACCOUNT come from the picked account: the repo owner, the SSH alias the origin
+        // uses, and the gh account to create as (the script switches to it and restores after).
+        // Falls back to the personal default when no account resolved. The name is shell-escaped
+        // — already validated to a safe charset, but never trust a form value into a command.
+        let owner = selectedAccount?.owner ?? "kameronpence"
+        let alias = selectedAccount?.alias ?? "github.com"
         let cmd = "VAULT=\(SSHManager.shellEscaped(vaultDir)) "
+            + "OWNER=\(SSHManager.shellEscaped(owner)) "
+            + "ORIGIN_HOST=\(SSHManager.shellEscaped(alias)) "
+            + "GH_ACCOUNT=\(SSHManager.shellEscaped(owner)) "
             + "bash \(script) \(SSHManager.shellEscaped(projectName))"
             + (isPublic ? " --public" : "")
 
@@ -140,6 +186,11 @@ final class NewProjectOnboarding: ObservableObject {
         if r.ok, let ok = resultOKLine(r.stdout) {
             resultLine = ok
             createdProjectName = projectName
+            // A freshly created project must appear, not arrive pre-hidden. `hiddenProjectPaths`
+            // is keyed by full path and never pruned, so if a project once lived at this path,
+            // was hidden, then deleted, the stale flag would hide the new one on sight. Clear it.
+            let newPath = (settings.projectsRoot as NSString).appendingPathComponent(projectName)
+            settings.setProjectHidden(newPath, false)
             settings.requestProjectsRefresh()   // hub rescans Projects/ so it shows in the sidebar
             phase = .done
         } else {
