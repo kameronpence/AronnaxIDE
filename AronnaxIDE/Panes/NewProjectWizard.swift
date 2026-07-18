@@ -51,6 +51,7 @@ struct NewProjectWizard: View {
         }
         .frame(minWidth: 620, idealWidth: 680, minHeight: 460, idealHeight: 540)
         .writeConfirm($pendingWrite)
+        .task { await model.loadAccounts() }   // enumerate GitHub accounts when the wizard opens
         .onDisappear { model.cancel() }   // closing the wizard cancels an in-flight create
     }
 
@@ -73,6 +74,18 @@ struct NewProjectWizard: View {
 
             Form {
                 TextField("Name (e.g. relayptc-tools)", text: $model.name)
+                if model.accountsLoading {
+                    HStack(spacing: 8) {
+                        ProgressView().controlSize(.small)
+                        Text("Loading GitHub accounts…").foregroundStyle(.secondary)
+                    }
+                } else {
+                    Picker("GitHub account", selection: $model.selectedAccountID) {
+                        ForEach(model.accounts) { acct in
+                            Text(acct.displayName).tag(Optional(acct.id))
+                        }
+                    }
+                }
                 Toggle("Public repo", isOn: $model.isPublic)
             }
             .formStyle(.columns)
@@ -99,7 +112,7 @@ struct NewProjectWizard: View {
                 Spacer()
                 Button("Create") { requestCreate() }
                     .keyboardShortcut(.defaultAction)
-                    .disabled(!model.nameValid || model.hubIsReadOnly)
+                    .disabled(!model.nameValid || model.hubIsReadOnly || model.accountsLoading)
             }
         }
     }
