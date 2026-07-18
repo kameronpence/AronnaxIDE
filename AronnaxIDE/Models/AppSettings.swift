@@ -63,6 +63,13 @@ final class AppSettings: ObservableObject {
     /// Where project folders live: `<vault>/Projects`.
     var projectsRoot: String { (resolvedAgentWorkdir as NSString).appendingPathComponent("Projects") }
 
+    /// Bumped when something outside `ContentView` creates a project on the hub (the New
+    /// Project wizard runs in its own window scene with no handle on `ProjectService`).
+    /// `ContentView` observes this and re-scans `Projects/` so the new project appears in the
+    /// sidebar without a restart. A counter, not a Bool, so back-to-back creates each fire.
+    @Published var projectsRefreshToken = 0
+    func requestProjectsRefresh() { projectsRefreshToken &+= 1 }
+
     /// Per-agent permission posture the Coding pane launches each agent with — the
     /// two CLIs have different modes, so they're tracked separately. Switching one
     /// relaunches only that agent's session in the new mode.

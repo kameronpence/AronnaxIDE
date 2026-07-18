@@ -37,5 +37,14 @@ struct AronnaxIDEApp: App {
                 .preferredColorScheme(.light)
         }
         .windowResizability(.contentSize)
+
+        // The New-Project wizard is its own window too, for the same reason.
+        Window("New Project", id: NewProjectWizard.windowID) {
+            NewProjectWizardWindow()
+                .environmentObject(settings)
+                .textSelection(.enabled)
+                .preferredColorScheme(.light)
+        }
+        .windowResizability(.contentSize)
     }
 }

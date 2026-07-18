@@ -301,6 +301,15 @@ private struct SidebarView: View {
                 projects.setRoot(host: settings.hub, root: settings.projectsRoot)
             }
         }
+        .onChange(of: settings.projectsRefreshToken) { _, _ in
+            // The New Project wizard just wired a project on the hub — rescan so it shows up.
+            // No isHub guard: `projects` is always pointed at the hub's Projects/ (a server
+            // active in the sidebar doesn't re-point it), so if we're on a server when the
+            // create finishes, refresh still updates the hub list in the background and the
+            // project is already there when the user switches back — where setRoot would
+            // otherwise early-return on the unchanged hub root and never rescan.
+            projects.refresh(force: true)
+        }
     }
 
     /// One selectable project row (used for both hub-discovered projects + the server's
