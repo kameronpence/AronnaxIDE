@@ -140,6 +140,11 @@ final class NewProjectOnboarding: ObservableObject {
         if r.ok, let ok = resultOKLine(r.stdout) {
             resultLine = ok
             createdProjectName = projectName
+            // A freshly created project must appear, not arrive pre-hidden. `hiddenProjectPaths`
+            // is keyed by full path and never pruned, so if a project once lived at this path,
+            // was hidden, then deleted, the stale flag would hide the new one on sight. Clear it.
+            let newPath = (settings.projectsRoot as NSString).appendingPathComponent(projectName)
+            settings.setProjectHidden(newPath, false)
             settings.requestProjectsRefresh()   // hub rescans Projects/ so it shows in the sidebar
             phase = .done
         } else {
