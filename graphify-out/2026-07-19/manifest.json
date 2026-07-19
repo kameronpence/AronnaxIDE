@@ -1,12 +1,42 @@
 {
   ".beads/backup/backup_state.json": {
-    "mtime": 1784436606.564213,
-    "ast_hash": "24e6a9a2c81f973b252e7d6502de7797",
+    "mtime": 1784351703.207061,
+    "ast_hash": "be5eda623b7a73a97a653f0d9395684d",
+    "semantic_hash": ""
+  },
+  ".beads/export-state.json": {
+    "mtime": 1784178605.8892753,
+    "ast_hash": "bf3f68c7966bc5b144c6821914ee6d5c",
+    "semantic_hash": ""
+  },
+  ".beads/hooks/post-checkout": {
+    "mtime": 1782508857.0,
+    "ast_hash": "c78d5896e6eb7c74065ddc573fae8edd",
+    "semantic_hash": ""
+  },
+  ".beads/hooks/post-merge": {
+    "mtime": 1782508857.0,
+    "ast_hash": "8c07717bcaeabe54d7c30921092f36fb",
+    "semantic_hash": ""
+  },
+  ".beads/hooks/pre-commit": {
+    "mtime": 1782508857.0,
+    "ast_hash": "5f4e7a9bf3883be26898911e4c07d5cb",
+    "semantic_hash": ""
+  },
+  ".beads/hooks/pre-push": {
+    "mtime": 1782508857.0,
+    "ast_hash": "56dd5d0dd23c61057937105785a12a46",
+    "semantic_hash": ""
+  },
+  ".beads/hooks/prepare-commit-msg": {
+    "mtime": 1782508857.0,
+    "ast_hash": "e762b4aabe060b4f4f4eb383fed0e23f",
     "semantic_hash": ""
   },
   ".beads/metadata.json": {
-    "mtime": 1784428950.7821822,
-    "ast_hash": "03c2a7beb79e29457acb91c818abf17b",
+    "mtime": 1782508857.0,
+    "ast_hash": "d16d6dcc01b903394eea553f72431fdf",
     "semantic_hash": ""
   },
   ".claude/settings.json": {
@@ -100,8 +130,8 @@
     "semantic_hash": ""
   },
   "AronnaxIDE/Panes/GitDeployPanel.swift": {
-    "mtime": 1784429853.4714143,
-    "ast_hash": "ddd942a68aefe753cf3e34c6b050055e",
+    "mtime": 1783469380.1973517,
+    "ast_hash": "766c060171869425dfa3624cb653f2e7",
     "semantic_hash": ""
   },
   "AronnaxIDE/Panes/HostHealthPanel.swift": {
@@ -614,9 +644,14 @@
     "ast_hash": "beda0ed85cb3de0c0dc0562bbe289ee8",
     "semantic_hash": ""
   },
+  ".beads/README.md": {
+    "mtime": 1782508857.0,
+    "ast_hash": "a00afb35b5b41d506fabf0dfbbb64a0a",
+    "semantic_hash": ""
+  },
   ".beads/config.yaml": {
-    "mtime": 1784428950.782449,
-    "ast_hash": "10d7a71fc0daa531300a6cd69459d6f2",
+    "mtime": 1784282349.621521,
+    "ast_hash": "a1b98a4ff64e65737d0917e8738984af",
     "semantic_hash": ""
   },
   "AGENTS.md": {
@@ -860,13 +895,13 @@
     "semantic_hash": ""
   },
   "AronnaxIDE/Panes/NewProjectWizard.swift": {
-    "mtime": 1784437386.0164602,
-    "ast_hash": "5ca22350c9af525e24390680bf903161",
+    "mtime": 1784353269.4351928,
+    "ast_hash": "49143723760c8b4f0c0d4daf84209093",
     "semantic_hash": ""
   },
   "AronnaxIDE/Services/NewProjectOnboarding.swift": {
-    "mtime": 1784437386.0166821,
-    "ast_hash": "a1740c87a2824e0872ba83bc34819587",
+    "mtime": 1784353269.4354064,
+    "ast_hash": "b59fc9b89812d3c1478894674b9230e3",
     "semantic_hash": ""
   }
 }
