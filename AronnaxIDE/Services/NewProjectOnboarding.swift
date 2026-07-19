@@ -50,41 +50,48 @@ final class NewProjectOnboarding: ObservableObject {
 
     var selectedAccount: Account? { accounts.first { $0.id == selectedAccountID } }
 
-    /// Enumerate the GitHub accounts on the hub the same way the Git/Deploy pane does: the SSH
-    /// host aliases whose HostName is github.com, resolved to real account names via `ssh -T`.
-    /// Deploy-key aliases (identity is `owner/repo`) are dropped — they aren't push accounts.
+    /// Enumerate the GitHub accounts on the hub via ONE consolidated command — the vault's
+    /// `list-github-accounts.sh`, run in a login shell exactly like `new-project.sh`.
     ///
-    /// Creation needs the real account name (it becomes the repo owner + the gh account to act
-    /// as), so an alias is only offered once resolved. Crucially this does NOT silently fall back
-    /// to a personal-only default when a resolve fails — that would hide GATSA behind
-    /// kameronpence and look like "GATSA isn't set up". Instead an unresolved alias is retried
-    /// once, and if the whole list can't be resolved the wizard shows an error + Retry rather
-    /// than a wrong, quietly-truncated list.
+    /// This replaced a per-alias approach (parse ssh config + one `ssh -T` per alias, each its
+    /// own runShell) that silently returned only the default account over some SSH transports,
+    /// so GATSA never appeared. Doing all the ssh work in a single script ON the box — where
+    /// `ssh -G` sees the real config/Includes and the keys are present — is robust: verified to
+    /// return both accounts over direct, non-login, and login shells. The script emits
+    /// `<alias>|<account>` lines (deploy keys already filtered).
     func loadAccounts(force: Bool = false) async {
         guard let hub, force || accounts.isEmpty else { return }
         accountsLoading = true
         accountsError = nil
-        let controller = GitController(host: hub)
+        let script = SSHManager.shellEscaped("\(vaultDir)/commands/list-github-accounts.sh")
+        let cmd = "zsh -lc \(SSHManager.shellEscaped("bash \(script)"))"
+        let result = try? await SSHManager.shared.runShell(cmd, on: hub, timeoutSeconds: 60)
         var found: [Account] = []
         var anyUnresolved = false
-        for alias in await controller.githubAccounts() {
-            // One retry: the resolve is an ssh -T over the MacBook→hub→GitHub double hop, so a
-            // single slow round trip shouldn't be enough to drop an account for the whole session.
-            var name = await controller.githubIdentity(alias: alias)
-            if name == nil { name = await controller.githubIdentity(alias: alias) }
-            guard let name else { anyUnresolved = true; continue }
-            if name.contains("/") { continue }   // deploy key, not a push account
-            found.append(Account(id: alias, alias: alias, owner: name))
+        for line in (result?.stdout ?? "").split(separator: "\n") {
+            let parts = line.split(separator: "|", maxSplits: 1).map(String.init)
+            guard parts.count == 2, !parts[0].isEmpty else { continue }
+            if parts[1] == "!UNRESOLVED" { anyUnresolved = true; continue }
+            found.append(Account(id: parts[0], alias: parts[0], owner: parts[1]))
         }
-        accounts = found
-        if found.isEmpty {
-            accountsError = "Couldn't reach GitHub to list your accounts — check the connection and Retry."
-        } else if anyUnresolved {
-            accountsError = "One or more accounts couldn't be reached and were skipped — Retry to refresh."
+        // Only trust the list if the script actually completed (exit 0). A non-zero exit means
+        // the enumeration itself broke, so whatever we parsed may be a truncated subset — the
+        // very failure this whole approach exists to avoid. Discard it entirely so Create stays
+        // blocked (it requires a non-empty list) and only the error + Retry shows.
+        if result?.ok != true {
+            accounts = []
+            accountsError = "Couldn't list your GitHub accounts on kepler — check the connection and Retry."
+        } else {
+            accounts = found
+            if found.isEmpty {
+                accountsError = "No GitHub accounts resolved on kepler — Retry."
+            } else if anyUnresolved {
+                accountsError = "A GitHub account couldn't be reached and was left out — Retry to include it."
+            }
         }
         // Keep a valid selection: default to personal (github.com) if present, else the first.
-        if selectedAccountID == nil || !found.contains(where: { $0.id == selectedAccountID }) {
-            selectedAccountID = found.first { $0.alias == "github.com" }?.id ?? found.first?.id
+        if selectedAccountID == nil || !accounts.contains(where: { $0.id == selectedAccountID }) {
+            selectedAccountID = accounts.first { $0.alias == "github.com" }?.id ?? accounts.first?.id
         }
         accountsLoading = false
     }

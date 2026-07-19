@@ -80,10 +80,17 @@ struct NewProjectWizard: View {
                         Text("Loading GitHub accounts…").foregroundStyle(.secondary)
                     }
                 } else if !model.accounts.isEmpty {
-                    Picker("GitHub account", selection: $model.selectedAccountID) {
-                        ForEach(model.accounts) { acct in
-                            Text(acct.displayName).tag(Optional(acct.id))
+                    HStack(spacing: 6) {
+                        Picker("GitHub account", selection: $model.selectedAccountID) {
+                            ForEach(model.accounts) { acct in
+                                Text(acct.displayName).tag(Optional(acct.id))
+                            }
                         }
+                        Button { Task { await model.loadAccounts(force: true) } } label: {
+                            Image(systemName: "arrow.clockwise")
+                        }
+                        .buttonStyle(.borderless).controlSize(.small)
+                        .help("Re-scan GitHub accounts")
                     }
                 }
                 if let err = model.accountsError, !model.accountsLoading {
