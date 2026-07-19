@@ -36,6 +36,7 @@ final class NewProjectOnboarding: ObservableObject {
     @Published var accounts: [Account] = []
     @Published var selectedAccountID: String?
     @Published var accountsLoading = false
+    @Published var accountsError: String?   // set when one or more accounts couldn't be resolved
 
     @Published var phase: Phase = .form
     @Published var log = ""            // captured script output, shown live-ish in the pane
@@ -51,22 +52,38 @@ final class NewProjectOnboarding: ObservableObject {
 
     /// Enumerate the GitHub accounts on the hub the same way the Git/Deploy pane does: the SSH
     /// host aliases whose HostName is github.com, resolved to real account names via `ssh -T`.
-    /// Deploy-key aliases (identity contains `/`) are dropped — they aren't push accounts.
-    func loadAccounts() async {
-        guard accounts.isEmpty, let hub else { return }
+    /// Deploy-key aliases (identity is `owner/repo`) are dropped — they aren't push accounts.
+    ///
+    /// Creation needs the real account name (it becomes the repo owner + the gh account to act
+    /// as), so an alias is only offered once resolved. Crucially this does NOT silently fall back
+    /// to a personal-only default when a resolve fails — that would hide GATSA behind
+    /// kameronpence and look like "GATSA isn't set up". Instead an unresolved alias is retried
+    /// once, and if the whole list can't be resolved the wizard shows an error + Retry rather
+    /// than a wrong, quietly-truncated list.
+    func loadAccounts(force: Bool = false) async {
+        guard let hub, force || accounts.isEmpty else { return }
         accountsLoading = true
+        accountsError = nil
         let controller = GitController(host: hub)
         var found: [Account] = []
+        var anyUnresolved = false
         for alias in await controller.githubAccounts() {
-            guard let name = await controller.githubIdentity(alias: alias), !name.contains("/")
-            else { continue }
+            // One retry: the resolve is an ssh -T over the MacBook→hub→GitHub double hop, so a
+            // single slow round trip shouldn't be enough to drop an account for the whole session.
+            var name = await controller.githubIdentity(alias: alias)
+            if name == nil { name = await controller.githubIdentity(alias: alias) }
+            guard let name else { anyUnresolved = true; continue }
+            if name.contains("/") { continue }   // deploy key, not a push account
             found.append(Account(id: alias, alias: alias, owner: name))
         }
-        // Fall back to the documented personal default so the wizard still works if resolution
-        // fails (offline, ssh blocked) — better a single sane choice than an empty picker.
-        if found.isEmpty { found = [Account(id: "github.com", alias: "github.com", owner: "kameronpence")] }
         accounts = found
-        if selectedAccountID == nil {
+        if found.isEmpty {
+            accountsError = "Couldn't reach GitHub to list your accounts — check the connection and Retry."
+        } else if anyUnresolved {
+            accountsError = "One or more accounts couldn't be reached and were skipped — Retry to refresh."
+        }
+        // Keep a valid selection: default to personal (github.com) if present, else the first.
+        if selectedAccountID == nil || !found.contains(where: { $0.id == selectedAccountID }) {
             selectedAccountID = found.first { $0.alias == "github.com" }?.id ?? found.first?.id
         }
         accountsLoading = false

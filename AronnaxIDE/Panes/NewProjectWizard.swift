@@ -79,11 +79,19 @@ struct NewProjectWizard: View {
                         ProgressView().controlSize(.small)
                         Text("Loading GitHub accounts…").foregroundStyle(.secondary)
                     }
-                } else {
+                } else if !model.accounts.isEmpty {
                     Picker("GitHub account", selection: $model.selectedAccountID) {
                         ForEach(model.accounts) { acct in
                             Text(acct.displayName).tag(Optional(acct.id))
                         }
+                    }
+                }
+                if let err = model.accountsError, !model.accountsLoading {
+                    HStack(spacing: 8) {
+                        Label(err, systemImage: "exclamationmark.triangle.fill")
+                            .font(.caption).foregroundStyle(.orange)
+                        Button("Retry") { Task { await model.loadAccounts(force: true) } }
+                            .controlSize(.small)
                     }
                 }
                 Toggle("Public repo", isOn: $model.isPublic)
@@ -112,7 +120,8 @@ struct NewProjectWizard: View {
                 Spacer()
                 Button("Create") { requestCreate() }
                     .keyboardShortcut(.defaultAction)
-                    .disabled(!model.nameValid || model.hubIsReadOnly || model.accountsLoading)
+                    .disabled(!model.nameValid || model.hubIsReadOnly || model.accountsLoading
+                              || model.accounts.isEmpty)
             }
         }
     }

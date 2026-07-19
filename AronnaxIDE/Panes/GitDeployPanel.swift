@@ -167,9 +167,10 @@ struct GitDeployPanel: View {
                 }
 
                 if let remote = s.remote {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("origin").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
-                        Text(maskedRemote(remote)).font(.callout.monospaced()).textSelection(.enabled)
+                    // Two pills: the repository URL, and the account it pushes as (still the
+                    // switcher when more than one account is available).
+                    HStack(spacing: 8) {
+                        urlPill(remote)
                         accountPicker(s)
                     }
                 }
@@ -286,6 +287,18 @@ struct GitDeployPanel: View {
     /// aliases) available on the host. Changing it rewrites `origin` to push as that account
     /// (converting HTTPS origins to SSH). Shown for any GitHub origin, SSH or HTTPS; a plain
     /// label when there's nothing to switch to. Hidden entirely for non-GitHub remotes.
+    /// The GitHub repository URL, as a pill. Long URLs truncate in the middle (full URL on
+    /// hover) and stay selectable.
+    private func urlPill(_ remote: String) -> some View {
+        Label(maskedRemote(remote), systemImage: "link")
+            .font(.caption.weight(.medium)).foregroundStyle(.secondary)
+            .lineLimit(1).truncationMode(.middle)
+            .padding(.horizontal, 8).padding(.vertical, 4)
+            .background(Color.secondary.opacity(0.12), in: Capsule())
+            .textSelection(.enabled)
+            .help(remote)
+    }
+
     @ViewBuilder private func accountPicker(_ s: GitStatus) -> some View {
         if let ref = GitController.parseRemote(s.remote),
            GitController.isGitHubHost(ref.host, in: model.accounts) {
@@ -294,8 +307,10 @@ struct GitDeployPanel: View {
             let current = ref.isSSH ? ref.host : Self.httpsAccount
             let usable = selectableAccounts(current: current, currentSlug: ref.slug)
             let options = ref.isSSH ? usable : [Self.httpsAccount] + usable
-            HStack(spacing: 8) {
-                Image(systemName: "person.badge.key").font(.caption).foregroundStyle(.secondary)
+            // A pill showing the account. With more than one account it IS the switcher (a menu);
+            // otherwise it's a static pill naming who the repo pushes as.
+            HStack(spacing: 6) {
+                Image(systemName: "person.badge.key").font(.caption)
                 if options.count > 1 {
                     Picker("GitHub account", selection: Binding(
                         get: { current },
@@ -308,14 +323,17 @@ struct GitDeployPanel: View {
                     )) {
                         ForEach(options, id: \.self) { Text(accountLabel($0)).tag($0) }
                     }
+                    .pickerStyle(.menu)
                     .labelsHidden()
                     .fixedSize()
                     .disabled(hubReadOnly || model.actionBusy)
-                    Text("account").font(.caption).foregroundStyle(.secondary)
                 } else {
-                    Text("pushes as \(accountLabel(current))").font(.caption).foregroundStyle(.secondary)
+                    Text(accountLabel(current))
                 }
             }
+            .font(.caption.weight(.medium)).foregroundStyle(.secondary)
+            .padding(.horizontal, 8).padding(.vertical, 4)
+            .background(Color.secondary.opacity(0.12), in: Capsule())
         }
     }
 
