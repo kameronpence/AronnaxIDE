@@ -522,31 +522,29 @@ final class SSHManager {
         }
 
         return try await withTaskCancellationHandler {
-            // Drain both pipes concurrently, so a child writing more than the pipe
-            // buffer (~64 KB) can't deadlock against us while the command runs.
+            // Drain both pipes via `readabilityHandler` (kqueue-driven) — NO thread is ever
+            // parked in a blocking read(2). That property is load-bearing: with ControlPersist,
+            // ssh forks a background master that inherits these write ends and holds them open
+            // forever after our command exits, and on macOS close() does NOT interrupt a thread
+            // already blocked in read(2) on that fd — the read stays parked until data/EOF that
+            // will never come. So the previous design (blocking drains + "close the pipes to
+            // unblock them") could not work, and the wizard hung forever at "Clone the vault"
+            // even after the command's own timeout fired. Handler-based drains have nothing to
+            // interrupt: finish() detaches the handler and returns whatever accumulated.
             let progress = ByteProgress()
-            async let outData = Self.readToEnd(outPipe.fileHandleForReading, progress: progress)
-            async let errData = Self.readToEnd(errPipe.fileHandleForReading, progress: progress)
+            let outDrain = PipeDrain(outPipe.fileHandleForReading, progress: progress)
+            let errDrain = PipeDrain(errPipe.fileHandleForReading, progress: progress)
 
-            // Gate on the PROCESS exiting, never on the pipes reaching EOF. With
-            // ControlPersist, ssh forks a background master that INHERITS these stdout/stderr
-            // write ends and keeps them open after our command is long gone — so `readToEnd`
-            // would block on an EOF that never arrives, and the timeout timer above (which only
-            // terminates the ssh *process*) could never unblock it. That is the "Add Server
-            // wizard hangs forever at Clone the vault, always" bug: step 5 is the first
-            // reconnect after the human deploy-key step, by which time the 300s master has
-            // expired, so step 5's ssh re-establishes the master and inherits the clone's pipes.
+            // Gate on the PROCESS exiting (bounded above by terminate/SIGKILL), never on EOF.
             await Self.waitForExit(process)
             timeoutTimer?.cancel()
 
-            // The process is gone, so no new bytes can be produced — anything left is just the
-            // pipe buffer, which drains in milliseconds. Normally both pipes then reach EOF and
-            // the drains return on their own, and this closer is cancelled before it acts, so a
-            // normal command pays no extra latency. Only when a ControlPersist master still holds
-            // the write ends do the drains wedge with NO further progress; detect that by
-            // inactivity (not a fixed deadline, which could truncate a large stream still being
-            // read) and force the read ends closed — the incremental drains then return
-            // everything they accumulated.
+            // The process is dead, so no new bytes can be produced — anything left is the pipe
+            // buffer, which the handlers drain in milliseconds. Normally EOF arrives and both
+            // drains finish on their own; this watchdog is cancelled before it acts. Only when a
+            // lingering master holds the write ends (EOF never comes) does progress freeze — then
+            // force-finish both drains with everything they accumulated. Inactivity-based, not a
+            // fixed deadline, so a large tail still streaming is never truncated.
             let closer = Task {
                 var last = -1
                 while !Task.isCancelled {
@@ -556,10 +554,11 @@ final class SSHManager {
                     try? await Task.sleep(nanoseconds: 300_000_000)
                 }
                 guard !Task.isCancelled else { return }
-                try? outPipe.fileHandleForReading.close()
-                try? errPipe.fileHandleForReading.close()
+                outDrain.finish()
+                errDrain.finish()
             }
-            let (out, err) = await (outData, errData)
+            let out = await outDrain.value()
+            let err = await errDrain.value()
             closer.cancel()
             try Task.checkCancellation()
 
@@ -597,26 +596,85 @@ final class SSHManager {
         func snapshot() -> Int { lock.lock(); defer { lock.unlock() }; return total }
     }
 
-    /// Reads a file handle to EOF off the main actor. Returns whatever was read,
-    /// treating read errors as end-of-stream rather than failing the command.
-    ///
-    /// Reads INCREMENTALLY, accumulating as it goes and reporting progress: if the handle is
-    /// force-closed to break a ControlPersist master that's holding the write end open (see
-    /// `launch`), this still returns every byte read so far. `handle.readToEnd()` would instead
-    /// throw and discard the whole buffer — silently emptying a command's stdout in that scenario.
-    private static func readToEnd(_ handle: FileHandle, progress: ByteProgress) async -> Data {
-        await withCheckedContinuation { continuation in
-            DispatchQueue.global(qos: .userInitiated).async {
-                var buffer = Data()
-                while true {
-                    let chunk: Data?
-                    do { chunk = try handle.read(upToCount: 1 << 16) }
-                    catch { break }   // closed / error — stop, keep what we've read
-                    guard let chunk, !chunk.isEmpty else { break }   // EOF
-                    buffer.append(chunk)
-                    progress.add(chunk.count)
+    /// Drains one pipe via `readabilityHandler` — kqueue-driven, so no thread ever blocks in
+    /// read(2). That is the whole point: a ControlPersist master forked by our ssh inherits the
+    /// pipe's write end and holds it open forever, and on macOS close() does NOT interrupt a
+    /// thread already parked in read(2) — so any blocking-read design hangs unrescuably. Here
+    /// there is nothing to interrupt: `finish()` (EOF or forced) detaches the handler and hands
+    /// back everything accumulated so far.
+    private final class PipeDrain: @unchecked Sendable {
+        private let lock = NSLock()
+        private var buffer = Data()
+        private var finished = false
+        private var cont: CheckedContinuation<Data, Never>?
+        private let handle: FileHandle
+        private let progress: ByteProgress
+
+        init(_ handle: FileHandle, progress: ByteProgress) {
+            self.handle = handle
+            self.progress = progress
+            // Non-blocking from the start: every read below returns immediately (bytes,
+            // EAGAIN, or EOF), so no thread can ever park in read(2) — the property this
+            // class exists for.
+            let fd = handle.fileDescriptor
+            let flags = fcntl(fd, F_GETFL, 0)
+            if flags >= 0 { _ = fcntl(fd, F_SETFL, flags | O_NONBLOCK) }
+            handle.readabilityHandler = { [weak self] _ in self?.pump() }
+        }
+
+        /// Bytes leave the pipe ONLY inside `drainLocked`, under the lock — the same lock
+        /// `finish()` takes. So a forced finish can never interleave between a callback taking
+        /// bytes out of the pipe and storing them: whoever holds the lock drains-then-decides
+        /// atomically. (This is why the handler doesn't use `availableData` — that reads the
+        /// pipe outside any lock and loses the race.)
+        private func drainLocked() -> Bool {
+            var tmp = [UInt8](repeating: 0, count: 1 << 16)
+            while true {
+                let n = read(handle.fileDescriptor, &tmp, tmp.count)
+                if n > 0 {
+                    buffer.append(contentsOf: tmp[0..<n])
+                    progress.add(n)
+                    continue
                 }
-                continuation.resume(returning: buffer)
+                return n == 0   // 0 = EOF; negative = EAGAIN/EINTR → just not-EOF-yet
+            }
+        }
+
+        private func pump() {
+            lock.lock()
+            guard !finished else { lock.unlock(); return }
+            if drainLocked() { finishLocked() } else { lock.unlock() }
+        }
+
+        /// Must hold `lock`; releases it. Detaches the handler (cancels the dispatch source)
+        /// and resumes the waiter. No manual close: the fd closes when the Pipe deallocates —
+        /// closing here could race an in-flight handler callback.
+        private func finishLocked() {
+            finished = true
+            let c = cont; cont = nil
+            let out = buffer
+            lock.unlock()
+            handle.readabilityHandler = nil
+            c?.resume(returning: out)
+        }
+
+        /// Forced teardown when a lingering pipe-holder means EOF will never come (or plain
+        /// EOF). Idempotent. Sweeps anything still buffered first — the sweep is non-blocking
+        /// by construction, so this can never hang.
+        func finish() {
+            lock.lock()
+            guard !finished else { lock.unlock(); return }
+            _ = drainLocked()
+            finishLocked()
+        }
+
+        /// The drained bytes; resumes immediately if already finished.
+        func value() async -> Data {
+            await withCheckedContinuation { c in
+                lock.lock()
+                if finished { let out = buffer; lock.unlock(); c.resume(returning: out); return }
+                cont = c
+                lock.unlock()
             }
         }
     }
