@@ -1,7 +1,7 @@
 {
   ".beads/backup/backup_state.json": {
-    "mtime": 1784573467.8742647,
-    "ast_hash": "207660c27d2dfba87822f88dea2ebc29",
+    "mtime": 1784436606.564213,
+    "ast_hash": "24e6a9a2c81f973b252e7d6502de7797",
     "semantic_hash": ""
   },
   ".beads/metadata.json": {
@@ -185,13 +185,13 @@
     "semantic_hash": ""
   },
   "AronnaxIDE/Services/SSHManager.swift": {
-    "mtime": 1784526985.6859612,
-    "ast_hash": "57f16d0672e0886432910662fbf5bbbb",
+    "mtime": 1784149027.4873383,
+    "ast_hash": "92856bea3ba0f13e2112a8035dc39409",
     "semantic_hash": ""
   },
   "AronnaxIDE/Services/ServerOnboarding.swift": {
-    "mtime": 1784524767.68507,
-    "ast_hash": "ef6d0ea65d84d4f68162298684bb497b",
+    "mtime": 1784292109.7655985,
+    "ast_hash": "9f0a5aad1c0ceda4e644eef4ac5d4afc",
     "semantic_hash": ""
   },
   "AronnaxIDE/Services/UsageService.swift": {
