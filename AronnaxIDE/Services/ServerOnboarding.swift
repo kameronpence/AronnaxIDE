@@ -378,7 +378,14 @@ final class ServerOnboarding: ObservableObject {
             guard !Task.isCancelled else { return }
             guard let installer = Self.cliInstaller[tool] else { continue }
             set(6, .running, "Installing \(tool)…")
-            guard let install = await runStep(installer, seconds: 180), install.ok else {
+            // Run every CLI installer NON-INTERACTIVELY. CodeRabbit's installer ends with an
+            // interactive "Start browser sign-in now? [Y/n]" prompt; over the wizard's
+            // non-interactive SSH there's nothing to answer it, so it hangs to the 180s timeout
+            // and reports "cr timed out or failed" — even though the install itself succeeded.
+            // `CI=1` is the installer's documented switch to skip that post-install sign-in
+            // (auth is done later per-project via `coderabbit auth login`, with the right GitHub
+            // account). Exported so it reaches the piped shell, and harmless to the others.
+            guard let install = await runStep("export CI=1; \(installer)", seconds: 180), install.ok else {
                 set(6, .failed, "Couldn't install \(tool) — the installer timed out or failed. Install it manually, then Retry.")
                 return
             }
