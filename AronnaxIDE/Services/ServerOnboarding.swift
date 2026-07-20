@@ -348,7 +348,11 @@ final class ServerOnboarding: ObservableObject {
     /// manager, agent CLIs via their official installers — then re-check.
     private func installTools(_ missing: [String]) async {
         guard !Task.isCancelled else { return }
-        let sys = missing.filter { $0 == "zsh" || $0 == "tmux" }
+        var sys = missing.filter { $0 == "zsh" || $0 == "tmux" }
+        // CodeRabbit's installer downloads a .zip and REQUIRES `unzip` to extract it; a fresh
+        // box usually doesn't ship unzip, so cr fails at extraction every single time. Install
+        // unzip as a system package (same name on apt/dnf/yum/apk) before the CLI installers run.
+        if missing.contains("cr") { sys.append("unzip") }
         var sysInstall: CommandResult?
         if !sys.isEmpty {
             set(6, .running, "Installing \(sys.joined(separator: " + "))…")
