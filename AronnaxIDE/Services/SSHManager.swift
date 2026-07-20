@@ -414,17 +414,41 @@ final class SSHManager {
     /// Tears down the shared master connection for `host` (e.g. on quit or before
     /// a forced reconnect). No-op if no master is running.
     func closeMaster(for host: Host) {
+        let path = controlPath(for: host)
         let process = Process()
         process.executableURL = URL(fileURLWithPath: sshPath)
         process.arguments = [
-            "-o", "ControlPath=\(controlPath(for: host))",
+            "-o", "ControlPath=\(path)",
             "-O", "exit",
             host.sshAlias,
         ]
         process.standardOutput = FileHandle.nullDevice
         process.standardError = FileHandle.nullDevice
-        try? process.run()
-        process.waitUntilExit()
+        if (try? process.run()) != nil {
+            // `ssh -O exit` asks the master to quit over its OWN (possibly black-holed) TCP and
+            // has no timeout of its own — so waitUntilExit() here can block FOREVER. This runs
+            // precisely when a command already timed out and we're tearing a stale master down,
+            // which is the "wizard hangs on a step with no error, forever, long past the per-
+            // command timeout" bug: the timeout fired, then teardown wedged. Bound it hard.
+            //
+            // Bound it with SIGTERM after 5s, and cancel the timer once it exits so terminate()
+            // can't fire late. SIGTERM alone is the right hard bound here: `ssh` is interruptible
+            // and doesn't mask signals, so `ssh -O exit` always dies promptly on SIGTERM. We
+            // deliberately do NOT escalate to a raw `kill(pid, SIGKILL)` — that would race against
+            // PID reuse (the child can exit and its PID be recycled between the liveness check and
+            // the signal) and could kill an unrelated process. `Process.terminate()` acts on the
+            // tracked child, not a bare PID, so it has no such hazard.
+            let term = DispatchWorkItem { [process] in if process.isRunning { process.terminate() } }
+            DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 5, execute: term)
+            process.waitUntilExit()
+            term.cancel()
+            // Only drop the control socket when WE had to force the process down — i.e. the
+            // master was genuinely wedged. A clean `ssh -O exit` already removed its own socket,
+            // and unconditionally deleting could nuke a socket another pane just rebuilt here.
+            if process.terminationReason == .uncaughtSignal {
+                try? FileManager.default.removeItem(atPath: path)
+            }
+        }
     }
 
     /// Closes the shared master for `host` at most once per reconnect `generation`.
