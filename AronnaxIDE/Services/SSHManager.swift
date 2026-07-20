@@ -498,16 +498,45 @@ final class SSHManager {
         }
 
         return try await withTaskCancellationHandler {
-            // Drain both pipes concurrently *before* waiting, so a child writing
-            // more than the pipe buffer (~64 KB) can't deadlock against us. If the
-            // task is cancelled, `onCancel` terminates ssh, the pipes hit EOF, and
-            // these reads unblock.
-            async let outData = Self.readToEnd(outPipe.fileHandleForReading)
-            async let errData = Self.readToEnd(errPipe.fileHandleForReading)
-            let (out, err) = await (outData, errData)
+            // Drain both pipes concurrently, so a child writing more than the pipe
+            // buffer (~64 KB) can't deadlock against us while the command runs.
+            let progress = ByteProgress()
+            async let outData = Self.readToEnd(outPipe.fileHandleForReading, progress: progress)
+            async let errData = Self.readToEnd(errPipe.fileHandleForReading, progress: progress)
 
-            process.waitUntilExit()
+            // Gate on the PROCESS exiting, never on the pipes reaching EOF. With
+            // ControlPersist, ssh forks a background master that INHERITS these stdout/stderr
+            // write ends and keeps them open after our command is long gone — so `readToEnd`
+            // would block on an EOF that never arrives, and the timeout timer above (which only
+            // terminates the ssh *process*) could never unblock it. That is the "Add Server
+            // wizard hangs forever at Clone the vault, always" bug: step 5 is the first
+            // reconnect after the human deploy-key step, by which time the 300s master has
+            // expired, so step 5's ssh re-establishes the master and inherits the clone's pipes.
+            await Self.waitForExit(process)
             timeoutTimer?.cancel()
+
+            // The process is gone, so no new bytes can be produced — anything left is just the
+            // pipe buffer, which drains in milliseconds. Normally both pipes then reach EOF and
+            // the drains return on their own, and this closer is cancelled before it acts, so a
+            // normal command pays no extra latency. Only when a ControlPersist master still holds
+            // the write ends do the drains wedge with NO further progress; detect that by
+            // inactivity (not a fixed deadline, which could truncate a large stream still being
+            // read) and force the read ends closed — the incremental drains then return
+            // everything they accumulated.
+            let closer = Task {
+                var last = -1
+                while !Task.isCancelled {
+                    let now = progress.snapshot()
+                    if now == last { break }   // a full interval with no new bytes → wedged
+                    last = now
+                    try? await Task.sleep(nanoseconds: 300_000_000)
+                }
+                guard !Task.isCancelled else { return }
+                try? outPipe.fileHandleForReading.close()
+                try? errPipe.fileHandleForReading.close()
+            }
+            let (out, err) = await (outData, errData)
+            closer.cancel()
             try Task.checkCancellation()
 
             return CommandResult(
@@ -521,13 +550,49 @@ final class SSHManager {
         }
     }
 
-    /// Reads a file handle to EOF off the main actor. Returns whatever was read,
-    /// treating read errors as end-of-stream rather than failing the command.
-    private static func readToEnd(_ handle: FileHandle) async -> Data {
+    /// Awaits `process` exiting off the calling task. Lets `launch` bound on the process
+    /// instead of on the pipes reaching EOF — a ControlPersist master can inherit and hold the
+    /// command's stdout/stderr write ends open past the command's own exit, so waiting for pipe
+    /// EOF can hang forever.
+    private static func waitForExit(_ process: Process) async {
         await withCheckedContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {
-                let data = (try? handle.readToEnd()) ?? Data()
-                continuation.resume(returning: data)
+                process.waitUntilExit()
+                continuation.resume()
+            }
+        }
+    }
+
+    /// Thread-safe running total of bytes drained across both pipes, so `launch` can tell a
+    /// still-draining read (progress advancing) apart from one wedged on a ControlPersist master
+    /// holding the write end open (progress frozen).
+    private final class ByteProgress: @unchecked Sendable {
+        private let lock = NSLock()
+        private var total = 0
+        func add(_ n: Int) { lock.lock(); total += n; lock.unlock() }
+        func snapshot() -> Int { lock.lock(); defer { lock.unlock() }; return total }
+    }
+
+    /// Reads a file handle to EOF off the main actor. Returns whatever was read,
+    /// treating read errors as end-of-stream rather than failing the command.
+    ///
+    /// Reads INCREMENTALLY, accumulating as it goes and reporting progress: if the handle is
+    /// force-closed to break a ControlPersist master that's holding the write end open (see
+    /// `launch`), this still returns every byte read so far. `handle.readToEnd()` would instead
+    /// throw and discard the whole buffer — silently emptying a command's stdout in that scenario.
+    private static func readToEnd(_ handle: FileHandle, progress: ByteProgress) async -> Data {
+        await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                var buffer = Data()
+                while true {
+                    let chunk: Data?
+                    do { chunk = try handle.read(upToCount: 1 << 16) }
+                    catch { break }   // closed / error — stop, keep what we've read
+                    guard let chunk, !chunk.isEmpty else { break }   // EOF
+                    buffer.append(chunk)
+                    progress.add(chunk.count)
+                }
+                continuation.resume(returning: buffer)
             }
         }
     }
