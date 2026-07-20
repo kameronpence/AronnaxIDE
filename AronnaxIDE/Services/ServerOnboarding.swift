@@ -476,6 +476,23 @@ final class ServerOnboarding: ObservableObject {
     /// that is red here means the thing genuinely does not work on the box.
     /// Returns nil on success, or the reason it failed.
     private func runVaultScript(_ name: String, seconds: UInt64) async -> String? {
+        let vd = SSHManager.shellEscaped(vaultDir)
+
+        // Bring the box's vault clone up to date FIRST. The box cloned the vault back in step 5;
+        // if a fix later lands in one of these scripts, a plain Retry would otherwise keep running
+        // the stale copy that shipped with the box. Guard it exactly like cloneVault(): only
+        // fast-forward when it's genuinely safe — on main, clean worktree, not ahead of origin —
+        // because `git pull --ff-only` alone does NOT refuse a dirty or feature-branch checkout.
+        // Any of those conditions failing just skips the update (exit 0) and we run whatever the
+        // box has, letting the script's own verification speak. Bounded so a stall can't wedge it.
+        let ff = "export \(Self.gitEnv); "
+            + "B=$(git -C \(vd) rev-parse --abbrev-ref HEAD 2>/dev/null); [ \"$B\" = main ] || exit 0; "
+            + "[ -z \"$(git -C \(vd) status --porcelain)\" ] || exit 0; "
+            + "git -C \(vd) fetch -q origin main || exit 0; "
+            + "git -C \(vd) merge-base --is-ancestor HEAD origin/main || exit 0; "
+            + "git -C \(vd) merge --ff-only -q origin/main"
+        _ = await runStep(ff, seconds: 60)
+
         let script = SSHManager.shellEscaped("\(vaultDir)/commands/\(name)")
 
         // Fail loudly if the vault predates the script rather than silently skipping it —
